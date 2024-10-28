@@ -1,0 +1,29 @@
+# Git 자동 줄바꿈 처리 설정
+* text=auto eol=lf
+
+# Windows에서 배치 파일은 CRLF 유지
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 바이너리 파일은 변환하지 않음
+*.jar binary
+*.war binary
+*.ear binary
+*.pdf binary
+*.ico binary
+*.jpg binary
+*.png binary
+*.gif binary
+
+# Java 소스 파일
+*.java text eol=lf
+*.gradle text eol=lf
+*.properties text eol=lf
+
+# 문서
+*.md text eol=lf
+*.txt text eol=lf
+
+# Git 설정 파일
+.gitignore text eol=lf
+.gitattributes text eol=lf
