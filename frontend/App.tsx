@@ -1,8 +1,9 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { Text, TextProps, StyleSheet, View } from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
 import MainNavigator from './src/navigation/MainNavigator';
 
-const App = () => {
+const App = (): JSX.Element => {
   return (
     <NavigationContainer>
       <MainNavigator />
