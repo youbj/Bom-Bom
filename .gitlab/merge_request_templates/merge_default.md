@@ -11,7 +11,7 @@
 - [ ] local code lint 검사를 진행하셨나요?
 - [ ] 병합 후 실행하여 오류 여부 파악했나요?
 
-## relavant issue number
+## relevant issue number
 - 관련된 이슈 넘버가 있으면 이곳에 기입해주세요
 
 ## 이슈를 자동으로 닫는 경우
