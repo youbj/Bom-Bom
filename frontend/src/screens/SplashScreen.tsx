@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, Image, Animated} from 'react-native';
+import {View, Image, Animated} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {SplashScreenNavigationProp} from '../../types/navigation.d';
 

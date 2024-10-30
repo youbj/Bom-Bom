@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text as RNText, TextProps, StyleSheet, TextStyle} from 'react-native';
+import {Text as RNText, TextProps, TextStyle} from 'react-native';
 import { getFontFamily, flattenStyle } from '../utils/FontUtils';
 
 interface CustomTextProps extends TextProps {

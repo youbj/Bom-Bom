@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, Image, TouchableOpacity} from 'react-native';
+import {View, Image, TouchableOpacity} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LoginScreenNavigationProp } from '../../types/navigation.d';
 

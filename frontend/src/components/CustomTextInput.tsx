@@ -2,7 +2,6 @@ import React from 'react';
 import {
   TextInput as RNTextInput,
   TextInputProps,
-  TextStyle,
   View,
 } from 'react-native';
 import {getFontFamily, flattenStyle} from '../utils/FontUtils';
