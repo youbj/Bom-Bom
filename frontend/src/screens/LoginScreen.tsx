@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
 import {View, Text, Image, TouchableOpacity} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { LoginScreenNavigationProp } from '../../types/navigation.d';
 
 import defaultStyle from '../styles/DefaultStyles';
 import loginStyles from '../styles/LoginStyles';
@@ -9,6 +11,12 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const LoginScreen = (): JSX.Element => {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+  const navigation = useNavigation<LoginScreenNavigationProp>();
+  const onPress = () => {
+    navigation.navigate('Join')
+  }
+
+
 
   return (
     <View style={defaultStyle.container}>
@@ -44,7 +52,8 @@ const LoginScreen = (): JSX.Element => {
       </TouchableOpacity>
       <View style={loginStyles.space} />
       <TouchableOpacity
-        style={[loginStyles.button, loginStyles.transparentButton]}>
+        style={[loginStyles.button, loginStyles.transparentButton]}
+        onPress={onPress}>
         <CustomText style={loginStyles.text}>
           아직 회원이 아니시라면?
         </CustomText>

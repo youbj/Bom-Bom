@@ -47,6 +47,7 @@ const loginStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 12,
+    elevation: 2,
   },
   buttonText: {
     color: '#FFFFFF',
@@ -68,7 +69,8 @@ const loginStyles = StyleSheet.create({
     color: '#aaa'
   },
   transparentButton: {
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
+    elevation: 0,
   }
 });
 
