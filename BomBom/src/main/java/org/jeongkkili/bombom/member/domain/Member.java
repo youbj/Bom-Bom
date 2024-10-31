@@ -1,6 +1,5 @@
 package org.jeongkkili.bombom.member.domain;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -55,7 +54,7 @@ public class Member {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	public Member(String loginId, String password, String name, Type type, String phoneNumber, LocalDateTime createdAt, LocalDateTime updatedAt) {
+	public Member(String loginId, String password, String name, Type type, String phoneNumber) {
 		this.loginId = loginId;
 		this.password = password;
 		this.name = name;
