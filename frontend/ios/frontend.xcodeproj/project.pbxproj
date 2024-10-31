@@ -14,6 +14,18 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		7699B88040F8A987B510C191 /* libPods-frontend-frontendTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-frontend-frontendTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		BC6A164870074D549BEC37EA /* NEXONLv1GothicBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D391D211A774B5A8CF6CC53 /* NEXONLv1GothicBold.ttf */; };
+		68F044849F1941B59B1228C6 /* NEXONLv1GothicLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A858F7730A744D58840C30A4 /* NEXONLv1GothicLight.ttf */; };
+		A211D8046B144EF7BE30154E /* NEXONLv1GothicRegular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A9E041D8536A462DA6E63EEC /* NEXONLv1GothicRegular.ttf */; };
+		BF4C76F95BDF45799636DB88 /* Paperlogy-1Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 408C9A70D77343F0B9A9CA38 /* Paperlogy-1Thin.ttf */; };
+		63D2526882134BF09136A83E /* Paperlogy-2ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 61E881ACB2E5465F84634DDC /* Paperlogy-2ExtraLight.ttf */; };
+		448AAE9C1107432C99D4C98F /* Paperlogy-3Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3C106137731A47DCBBBFA44A /* Paperlogy-3Light.ttf */; };
+		547134B3C7AB4AE6BBE18D4E /* Paperlogy-4Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 85E323C202C44054A49B33DB /* Paperlogy-4Regular.ttf */; };
+		4554A2E564744338B26D4A5C /* Paperlogy-5Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9E871601027D494D94E721B1 /* Paperlogy-5Medium.ttf */; };
+		149FCD51427D4752974EC17C /* Paperlogy-6SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 136FC1EEDC874BF6B2397CAF /* Paperlogy-6SemiBold.ttf */; };
+		890CEF7CF2864E4A924B33A5 /* Paperlogy-7Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD2548E455134E378AFCF9E5 /* Paperlogy-7Bold.ttf */; };
+		DAC0655D4ECD46D7B7657E9A /* Paperlogy-8ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AE5DC92E2FA44961A1EF2920 /* Paperlogy-8ExtraBold.ttf */; };
+		B31D6640203146229BF808CF /* Paperlogy-9Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9DB5D40A419742BFB4AD4277 /* Paperlogy-9Black.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +57,18 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = frontend/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-frontend-frontendTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-frontend-frontendTests.release.xcconfig"; path = "Target Support Files/Pods-frontend-frontendTests/Pods-frontend-frontendTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		5D391D211A774B5A8CF6CC53 /* NEXONLv1GothicBold.ttf */ = {isa = PBXFileReference; name = "NEXONLv1GothicBold.ttf"; path = "../assets/fonts/NEXONLv1GothicBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		A858F7730A744D58840C30A4 /* NEXONLv1GothicLight.ttf */ = {isa = PBXFileReference; name = "NEXONLv1GothicLight.ttf"; path = "../assets/fonts/NEXONLv1GothicLight.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		A9E041D8536A462DA6E63EEC /* NEXONLv1GothicRegular.ttf */ = {isa = PBXFileReference; name = "NEXONLv1GothicRegular.ttf"; path = "../assets/fonts/NEXONLv1GothicRegular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		408C9A70D77343F0B9A9CA38 /* Paperlogy-1Thin.ttf */ = {isa = PBXFileReference; name = "Paperlogy-1Thin.ttf"; path = "../assets/fonts/Paperlogy-1Thin.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		61E881ACB2E5465F84634DDC /* Paperlogy-2ExtraLight.ttf */ = {isa = PBXFileReference; name = "Paperlogy-2ExtraLight.ttf"; path = "../assets/fonts/Paperlogy-2ExtraLight.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		3C106137731A47DCBBBFA44A /* Paperlogy-3Light.ttf */ = {isa = PBXFileReference; name = "Paperlogy-3Light.ttf"; path = "../assets/fonts/Paperlogy-3Light.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		85E323C202C44054A49B33DB /* Paperlogy-4Regular.ttf */ = {isa = PBXFileReference; name = "Paperlogy-4Regular.ttf"; path = "../assets/fonts/Paperlogy-4Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		9E871601027D494D94E721B1 /* Paperlogy-5Medium.ttf */ = {isa = PBXFileReference; name = "Paperlogy-5Medium.ttf"; path = "../assets/fonts/Paperlogy-5Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		136FC1EEDC874BF6B2397CAF /* Paperlogy-6SemiBold.ttf */ = {isa = PBXFileReference; name = "Paperlogy-6SemiBold.ttf"; path = "../assets/fonts/Paperlogy-6SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		AD2548E455134E378AFCF9E5 /* Paperlogy-7Bold.ttf */ = {isa = PBXFileReference; name = "Paperlogy-7Bold.ttf"; path = "../assets/fonts/Paperlogy-7Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		AE5DC92E2FA44961A1EF2920 /* Paperlogy-8ExtraBold.ttf */ = {isa = PBXFileReference; name = "Paperlogy-8ExtraBold.ttf"; path = "../assets/fonts/Paperlogy-8ExtraBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		9DB5D40A419742BFB4AD4277 /* Paperlogy-9Black.ttf */ = {isa = PBXFileReference; name = "Paperlogy-9Black.ttf"; path = "../assets/fonts/Paperlogy-9Black.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +148,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				45ED0BE47FA24AA0BA6F5C8D /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -149,6 +174,26 @@
 			);
 			path = Pods;
 			sourceTree = "<group>";
+		};
+		45ED0BE47FA24AA0BA6F5C8D /* Resources */ = {
+			isa = "PBXGroup";
+			children = (
+				5D391D211A774B5A8CF6CC53 /* NEXONLv1GothicBold.ttf */,
+				A858F7730A744D58840C30A4 /* NEXONLv1GothicLight.ttf */,
+				A9E041D8536A462DA6E63EEC /* NEXONLv1GothicRegular.ttf */,
+				408C9A70D77343F0B9A9CA38 /* Paperlogy-1Thin.ttf */,
+				61E881ACB2E5465F84634DDC /* Paperlogy-2ExtraLight.ttf */,
+				3C106137731A47DCBBBFA44A /* Paperlogy-3Light.ttf */,
+				85E323C202C44054A49B33DB /* Paperlogy-4Regular.ttf */,
+				9E871601027D494D94E721B1 /* Paperlogy-5Medium.ttf */,
+				136FC1EEDC874BF6B2397CAF /* Paperlogy-6SemiBold.ttf */,
+				AD2548E455134E378AFCF9E5 /* Paperlogy-7Bold.ttf */,
+				AE5DC92E2FA44961A1EF2920 /* Paperlogy-8ExtraBold.ttf */,
+				9DB5D40A419742BFB4AD4277 /* Paperlogy-9Black.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -245,6 +290,18 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				BC6A164870074D549BEC37EA /* NEXONLv1GothicBold.ttf in Resources */,
+				68F044849F1941B59B1228C6 /* NEXONLv1GothicLight.ttf in Resources */,
+				A211D8046B144EF7BE30154E /* NEXONLv1GothicRegular.ttf in Resources */,
+				BF4C76F95BDF45799636DB88 /* Paperlogy-1Thin.ttf in Resources */,
+				63D2526882134BF09136A83E /* Paperlogy-2ExtraLight.ttf in Resources */,
+				448AAE9C1107432C99D4C98F /* Paperlogy-3Light.ttf in Resources */,
+				547134B3C7AB4AE6BBE18D4E /* Paperlogy-4Regular.ttf in Resources */,
+				4554A2E564744338B26D4A5C /* Paperlogy-5Medium.ttf in Resources */,
+				149FCD51427D4752974EC17C /* Paperlogy-6SemiBold.ttf in Resources */,
+				890CEF7CF2864E4A924B33A5 /* Paperlogy-7Bold.ttf in Resources */,
+				DAC0655D4ECD46D7B7657E9A /* Paperlogy-8ExtraBold.ttf in Resources */,
+				B31D6640203146229BF808CF /* Paperlogy-9Black.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
