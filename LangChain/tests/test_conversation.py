@@ -1,4 +1,3 @@
-
 from test_recorder import AudioRecorder
 from test_api import ConversationAPI
 import logging
