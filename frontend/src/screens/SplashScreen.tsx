@@ -3,8 +3,8 @@ import {View, Image, Animated} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {SplashScreenNavigationProp} from '../../types/navigation.d';
 
-import defaultStyle from '../styles/DefaultStyles';
-import splashStyle from '../styles/SplashStyles';
+import defaultStyle from '../styles/DefaultStyle';
+import splashStyle from '../styles/SplashStyle';
 import CustomText from '../components/CustomText';
 
 const SplashScreen = (): JSX.Element => {

@@ -8,8 +8,8 @@ import {
 
 import CustomText from '../components/CustomText';
 import CustomTextInput from '../components/CustomTextInput';
-import defaultStyle from '../styles/DefaultStyles';
-import joinDetailStyle from '../styles/JoinDetailStyles';
+import defaultStyle from '../styles/DefaultStyle';
+import joinDetailStyle from '../styles/JoinDetailStyle';
 
 const JoinDetailScreen = (): JSX.Element => {
   const navigation = useNavigation<BackToLoginNavigationProp>();

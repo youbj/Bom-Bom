@@ -6,6 +6,7 @@ export type AuthStackParamList = {
   Splash: undefined;
   Login: undefined;
   Join: undefined;
+  Main: undefined;
   JoinDetail: { isType: 'SOCIAL_WORKER' | 'FAMILY' };
 };
 
@@ -13,4 +14,14 @@ export type SplashScreenNavigationProp = NativeStackNavigationProp<AuthStackPara
 export type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 export type JoinScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Join'>;
 export type JoinDetailRouteProp = RouteProp<AuthStackParamList, 'JoinDetail'>;
-export type BackToLoginNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'JoinDetail'>
+export type BackToLoginNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'JoinDetail'>;
+export type AuthToMainNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
+
+// 메인 페이지 StackParamList
+
+export type MainStackParamList = {
+  Main: undefined;
+  Record: undefined;
+}
+
+export type MainToRecordNavigationProp = NativeStackNavigationProp<MainStackParamList, 'Main'>
