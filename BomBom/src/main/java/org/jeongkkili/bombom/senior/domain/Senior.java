@@ -12,6 +12,8 @@ import org.jeongkkili.bombom.member.domain.Member;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -45,6 +47,7 @@ public class Senior {
 	@Column(name = "address", nullable = false)
 	private String address;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "gender", nullable = false)
 	private Gender gender;
 
@@ -59,10 +62,10 @@ public class Senior {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	@OneToMany(mappedBy = "exit_history")
+	@OneToMany(mappedBy = "senior")
 	private List<ExitHistory> exitHistory = new ArrayList<>();
 
-	@OneToMany(mappedBy = "entry_history")
+	@OneToMany(mappedBy = "senior")
 	private List<EntryHistory> entryHistory = new ArrayList<>();
 
 	@Builder
