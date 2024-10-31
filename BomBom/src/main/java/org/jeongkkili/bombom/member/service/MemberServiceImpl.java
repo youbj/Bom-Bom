@@ -6,6 +6,7 @@ import org.jeongkkili.bombom.member.controller.request.LoginReq;
 import org.jeongkkili.bombom.member.domain.Member;
 import org.jeongkkili.bombom.member.domain.Type;
 import org.jeongkkili.bombom.member.controller.request.RegistMemberReq;
+import org.jeongkkili.bombom.member.exception.AlreadyExistIdException;
 import org.jeongkkili.bombom.member.exception.MemberNotFoundException;
 import org.jeongkkili.bombom.member.exception.WrongPasswordException;
 import org.jeongkkili.bombom.member.repository.MemberRepository;
@@ -28,13 +29,26 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	@Transactional
 	public void registMember(RegistMemberReq req) {
-		memberRepository.save(Member.builder()
+		if(checkAlreadyExistId(req.getLoginId())) {
+			throw new AlreadyExistIdException("Already Exist Id: " + req.getLoginId());
+		}
+
+		Member member = memberRepository.save(Member.builder()
 			.loginId(req.getLoginId())
 			.password(hashPassword(req.getPassword()))
 			.name(req.getName())
 			.phoneNumber(req.getPhoneNumber())
 			.type(Type.valueOf(req.getType()))
 			.build());
+
+		if(req.getType().equals("SOCIAL_WORKER")) {
+			StringBuilder sb = new StringBuilder();
+			String memberId = String.valueOf(member.getId());
+			sb.append("SW");
+			sb.append("0".repeat(8 - memberId.length()));
+			sb.append(memberId);
+			member.updateCi(sb.toString());
+		}
 	}
 
 	@Override
@@ -47,6 +61,7 @@ public class MemberServiceImpl implements MemberService {
 			.loginId(member.getLoginId())
 			.name(member.getName())
 			.phoneNumber(member.getPhoneNumber())
+			.type(member.getType())
 			.accessToken(jwtoken.getAccessToken())
 			.refreshToken(jwtoken.getRefreshToken())
 			.build();
