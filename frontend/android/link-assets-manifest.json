@@ -1,0 +1,53 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/NEXONLv1GothicBold.ttf",
+      "sha1": "be0fad3dde906c724a28ec5f4afd39f9ff5a1d71"
+    },
+    {
+      "path": "assets/fonts/NEXONLv1GothicLight.ttf",
+      "sha1": "0fcf0483e779b02d9f78b224763fbccbb42c9641"
+    },
+    {
+      "path": "assets/fonts/NEXONLv1GothicRegular.ttf",
+      "sha1": "a8d8f6d5043a7bc29dd6b3d0d8f18e1f9141b1f0"
+    },
+    {
+      "path": "assets/fonts/Paperlogy-1Thin.ttf",
+      "sha1": "028b29fae205cc7905d8afb6c3e73b34edc93072"
+    },
+    {
+      "path": "assets/fonts/Paperlogy-2ExtraLight.ttf",
+      "sha1": "1fee21317cd817a49aebc4709a1b97e2b47aba11"
+    },
+    {
+      "path": "assets/fonts/Paperlogy-3Light.ttf",
+      "sha1": "f066d9152cd11927abb77fe8fb347dfe2f368636"
+    },
+    {
+      "path": "assets/fonts/Paperlogy-4Regular.ttf",
+      "sha1": "7d58a47f4f961fd60008c80c7e01f9ae22627499"
+    },
+    {
+      "path": "assets/fonts/Paperlogy-5Medium.ttf",
+      "sha1": "e48e7801cc6b835f029cdd816c0504e9428c6dd1"
+    },
+    {
+      "path": "assets/fonts/Paperlogy-6SemiBold.ttf",
+      "sha1": "09869afc20842dc096efb9d9f1ecfb3a6c810a7e"
+    },
+    {
+      "path": "assets/fonts/Paperlogy-7Bold.ttf",
+      "sha1": "ca0ee5cedc6e2d07021126858a423ad37e6f43d8"
+    },
+    {
+      "path": "assets/fonts/Paperlogy-8ExtraBold.ttf",
+      "sha1": "b35a8debe4ad08ea6d30fd4d1d0298e033caefac"
+    },
+    {
+      "path": "assets/fonts/Paperlogy-9Black.ttf",
+      "sha1": "bd982d0b678d504836e92f0e0a67fee521eafa99"
+    }
+  ]
+}
