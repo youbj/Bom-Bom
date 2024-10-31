@@ -1,6 +1,6 @@
-import { StyleSheet } from 'react-native';
+import {StyleSheet} from 'react-native';
 
-const loginStyles = StyleSheet.create({
+const loginStyle = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '400',
@@ -8,17 +8,6 @@ const loginStyles = StyleSheet.create({
   logo: {
     width: 128,
     height: 128,
-    marginBottom: 16,
-  },
-  input: {
-    flex: 1,
-    width: '100%',
-    height: 40,
-    backgroundColor: '#F5F7FA',
-    borderColor: '#E5E8EB',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
     marginBottom: 16,
   },
   passwordInput: {
@@ -66,13 +55,12 @@ const loginStyles = StyleSheet.create({
   text: {
     fontWeight: '600',
     fontSize: 16,
-    color: '#aaa'
+    color: '#aaa',
   },
   transparentButton: {
     backgroundColor: '#fff',
     elevation: 0,
-  }
+  },
 });
 
-export default loginStyles;
-
+export default loginStyle;
