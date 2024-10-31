@@ -1,6 +1,6 @@
 import {StyleSheet} from 'react-native';
 
-const splashStyles = StyleSheet.create({
+const splashStyle = StyleSheet.create({
   logo: {
     width: 128,
     height: 128,
@@ -14,4 +14,4 @@ const splashStyles = StyleSheet.create({
   },
 });
 
-export default splashStyles;
+export default splashStyle;

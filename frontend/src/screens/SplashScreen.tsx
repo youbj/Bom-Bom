@@ -4,7 +4,7 @@ import {useNavigation} from '@react-navigation/native';
 import {SplashScreenNavigationProp} from '../../types/navigation.d';
 
 import defaultStyle from '../styles/DefaultStyles';
-import splashStyles from '../styles/SplashStyles';
+import splashStyle from '../styles/SplashStyles';
 import CustomText from '../components/CustomText';
 
 const SplashScreen = (): JSX.Element => {
@@ -28,12 +28,12 @@ const SplashScreen = (): JSX.Element => {
     <Animated.View style={[defaultStyle.container, {opacity}]}>
       <Image
         source={require('../assets/images/logo.png')}
-        style={splashStyles.logo}
+        style={splashStyle.logo}
       />
 
-      <View style={splashStyles.spacing} />
+      <View style={splashStyle.spacing} />
 
-      <CustomText style={splashStyles.text}>봄 : 봄</CustomText>
+      <CustomText style={splashStyle.text}>봄 : 봄</CustomText>
     </Animated.View>
   );
 };
