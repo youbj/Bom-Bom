@@ -1,4 +1,4 @@
-package org.jeongkkili.bombom.entry.controller.request;
+package org.jeongkkili.bombom.member_senior.controller.request;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -7,9 +7,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SaveEntryReq {
+public class AddAssociationReq {
 
+	private String loginId;
 	private Long seniorId;
-	private String place;
 }

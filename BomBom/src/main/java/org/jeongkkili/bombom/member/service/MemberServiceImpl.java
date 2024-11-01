@@ -6,6 +6,7 @@ import org.jeongkkili.bombom.member.controller.request.LoginReq;
 import org.jeongkkili.bombom.member.domain.Member;
 import org.jeongkkili.bombom.member.domain.Type;
 import org.jeongkkili.bombom.member.controller.request.RegistMemberReq;
+import org.jeongkkili.bombom.member.exception.AlreadyExistIdException;
 import org.jeongkkili.bombom.member.exception.MemberNotFoundException;
 import org.jeongkkili.bombom.member.exception.WrongPasswordException;
 import org.jeongkkili.bombom.member.repository.MemberRepository;
@@ -28,6 +29,9 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	@Transactional
 	public void registMember(RegistMemberReq req) {
+		if(checkAlreadyExistId(req.getLoginId())) {
+			throw new AlreadyExistIdException("Already Exist Id: " + req.getLoginId());
+		}
 		memberRepository.save(Member.builder()
 			.loginId(req.getLoginId())
 			.password(hashPassword(req.getPassword()))
@@ -39,14 +43,14 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	public LoginDto login(LoginReq req) {
-		Member member = memberRepository.findByLoginId(req.getLoginId());
-		if(member == null) throw new MemberNotFoundException("Member not found with ID: " + req.getLoginId());
+		Member member = memberRepository.getByLoginIdOrThrow(req.getLoginId());
 		if(!checkPassword(req.getPassword(), member.getPassword())) throw new WrongPasswordException("Wrong password with ID: " + req.getLoginId());
 		Jwtoken jwtoken = jwtProvider.createToken(member.getId());
 		return LoginDto.builder()
 			.loginId(member.getLoginId())
 			.name(member.getName())
 			.phoneNumber(member.getPhoneNumber())
+			.type(member.getType())
 			.accessToken(jwtoken.getAccessToken())
 			.refreshToken(jwtoken.getRefreshToken())
 			.build();
@@ -54,7 +58,7 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	public boolean checkAlreadyExistId(String loginId) {
-		return memberRepository.findByLoginId(loginId) != null;
+		return memberRepository.findByLoginId(loginId).isPresent();
 	}
 
 	private String hashPassword(String plainPassword) {

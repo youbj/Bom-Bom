@@ -6,20 +6,18 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.jeongkkili.bombom.entry.domain.EntryHistory;
 import org.jeongkkili.bombom.exit.domain.ExitHistory;
-import org.jeongkkili.bombom.member.domain.Member;
+import org.jeongkkili.bombom.member_senior.domain.MemberSenior;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -58,9 +56,12 @@ public class Senior {
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id")
-	private Member member;
+	@UpdateTimestamp
+	@Column(name = "updated_at", nullable = false)
+	private LocalDateTime updatedAt;
+
+	@OneToMany(mappedBy = "senior")
+	private List<MemberSenior> memberSeniors = new ArrayList<>();
 
 	@OneToMany(mappedBy = "senior")
 	private List<ExitHistory> exitHistory = new ArrayList<>();
@@ -69,17 +70,11 @@ public class Senior {
 	private List<EntryHistory> entryHistory = new ArrayList<>();
 
 	@Builder
-	public Senior(String name, String phoneNumber, String address, Gender gender, Date birth, Member member) {
+	public Senior(String name, String phoneNumber, String address, Gender gender, Date birth) {
 		this.name = name;
 		this.phoneNumber = phoneNumber;
 		this.address = address;
 		this.gender = gender;
 		this.birth = birth;
-		addMember(member);
-	}
-
-	private void addMember(Member member) {
-		this.member = member;
-		member.getSeniors().add(this);
 	}
 }
