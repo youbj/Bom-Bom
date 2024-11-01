@@ -6,7 +6,7 @@ from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from langchain.agents import create_openai_functions_agent
 from langchain.agents import AgentExecutor
-from langchain_core.memory import ConversationBufferMemory
+from langchain.memory import ConversationBufferMemory
 from langchain_community.chat_message_histories import ChatMessageHistory
 import logging
 from typing import Dict, List, Optional
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class ConversationAPI:
     def __init__(self):
         self.recognizer = sr.Recognizer()
-        self.llm = ChatOpenAI(temperature=0.7, model="gpt-3.5-turbo")
+        self.llm = ChatOpenAI(temperature=0.7, model="gpt-4.0")
         
         # 메모리 초기화
         self.memory = ConversationBufferMemory(
@@ -52,9 +52,10 @@ class ConversationAPI:
                 1. 이전 대화가 있다면 자연스럽게 참고하되, 없다면 새로운 대화를 시작하세요.
                 2. 노인분들의 이야기를 경청하고 공감하며 친근하게 대화하세요.
                 3. 말씀하신 내용에 대해 구체적인 관심을 보이고 자연스러운 후속 질문을 해주세요.
-                4. 위험 신호가 감지되면 이를 기록하고 적절히 대응하세요.
-                5. 대화를 갑자기 바꾸지 말고 자연스럽게 이어가세요.
-                6. "이전 발화를 찾을 수 없습니다"와 같은 기술적인 언급은 하지 마세요.
+                4. 질문은 한번에 하나만 해주세요.
+                5. 위험 신호가 감지되면 이를 기록하고 적절히 대응하세요.
+                6. 대화를 갑자기 바꾸지 말고 자연스럽게 이어가세요.
+                7. "이전 발화를 찾을 수 없습니다"와 같은 기술적인 언급은 하지 마세요.
                 
                 대화 예시:
                 - 첫 대화: "안녕하세요! 오늘은 어떻게 지내고 계신가요?"
