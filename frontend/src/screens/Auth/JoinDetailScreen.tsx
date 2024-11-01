@@ -4,12 +4,12 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import {
   JoinDetailRouteProp,
   BackToLoginNavigationProp,
-} from '../../types/navigation.d';
+} from '../../../types/navigation.d';
 
-import CustomText from '../components/CustomText';
-import CustomTextInput from '../components/CustomTextInput';
-import defaultStyle from '../styles/DefaultStyle';
-import joinDetailStyle from '../styles/JoinDetailStyle';
+import CustomText from '../../components/CustomText';
+import CustomTextInput from '../../components/CustomTextInput';
+import defaultStyle from '../../styles/DefaultStyle';
+import joinDetailStyle from '../../styles/JoinDetailStyle';
 
 const JoinDetailScreen = (): JSX.Element => {
   const navigation = useNavigation<BackToLoginNavigationProp>();

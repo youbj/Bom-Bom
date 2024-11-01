@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import JoinScreen from '../screens/JoinScreen';
-import JoinDetailScreen from '../screens/JoinDetailScreen';
+import JoinDetailScreen from '../screens/Auth/JoinDetailScreen';
 import { AuthNavigatorProps } from '../../types/navigation.d';
 
 const Stack = createNativeStackNavigator();
