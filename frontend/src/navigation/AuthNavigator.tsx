@@ -4,12 +4,10 @@ import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import JoinScreen from '../screens/JoinScreen';
 import JoinDetailScreen from '../screens/JoinDetailScreen';
+import { AuthNavigatorProps } from '../../types/navigation.d';
 
 const Stack = createNativeStackNavigator();
 
-type AuthNavigatorProps = {
-  setIsLoggedIn: (loggedIn: boolean) => void;
-};
 
 const AuthNavigator = ({ setIsLoggedIn }: AuthNavigatorProps) => {
   return (

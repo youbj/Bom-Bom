@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import { View, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { LoginScreenNavigationProp } from '../../types/navigation.d';
+import { LoginScreenNavigationProp, LoginScreenProps } from '../../types/navigation.d';
 
 import defaultStyle from '../styles/DefaultStyle';
 import loginStyle from '../styles/LoginStyle';
 import CustomText from '../components/CustomText';
 import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-type LoginScreenProps = {
-  setIsLoggedIn: (loggedIn: boolean) => void;
-};
 
 const LoginScreen = ({ setIsLoggedIn }: LoginScreenProps): JSX.Element => {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);

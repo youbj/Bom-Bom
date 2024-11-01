@@ -17,11 +17,11 @@ export type JoinDetailRouteProp = RouteProp<AuthStackParamList, 'JoinDetail'>;
 export type BackToLoginNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'JoinDetail'>;
 export type AuthToMainNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
-// 메인 페이지 StackParamList
+// 로그인 전후 판단을 위한 Props
+export type AuthNavigatorProps = {
+  setIsLoggedIn: (loggedIn: boolean) => void;
+};
 
-export type MainStackParamList = {
-  Main: undefined;
-  Record: undefined;
-}
-
-export type MainToRecordNavigationProp = NativeStackNavigationProp<MainStackParamList, 'Main'>
+export type LoginScreenProps = {
+  setIsLoggedIn: (loggedIn: boolean) => void;
+};
