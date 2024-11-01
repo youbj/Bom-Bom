@@ -10,12 +10,6 @@ mysql-connector-python==8.2.0
 # Message Queue
 confluent-kafka==2.4.0
 
-# Audio Processing
-pyaudio==0.2.13
-SpeechRecognition==3.10.0
-gTTS==2.4.0
-wave==0.0.2
-
 # AI & Language Models
 openai>=1.6.1, <2.0.0
 langchain==0.3.6
