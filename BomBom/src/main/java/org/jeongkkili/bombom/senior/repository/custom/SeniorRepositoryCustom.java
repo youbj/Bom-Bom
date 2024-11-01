@@ -33,6 +33,7 @@ public class SeniorRepositoryCustom {
 			.where(
 				memberSenior.member.eq(member)
 			)
+			.orderBy(senior.name.asc())
 			.fetch();
 	}
 }
