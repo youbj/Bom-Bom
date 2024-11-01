@@ -2,12 +2,12 @@
 from fastapi import APIRouter
 from app.api.endpoints import conversation, analysis, reports
 
-api_router = APIRouter()
+api_router = APIRouter(prefix="/api")
 
 api_router.include_router(
     conversation.router,
-    prefix="/conversations",
-    tags=["conversations"]
+    prefix="/conversation",
+    tags=["conversation"]
 )
 
 api_router.include_router(

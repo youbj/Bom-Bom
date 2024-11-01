@@ -1,5 +1,4 @@
-# app/config.py
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from pydantic_settings import BaseSettings
 from typing import Optional
 from dotenv import load_dotenv
@@ -29,8 +28,11 @@ class MySQLSettings(BaseModel):
 
 class GPTSettings(BaseModel):
     """GPT 설정"""
+    model_config = ConfigDict(
+        protected_namespaces=()  # 경고 제거를 위한 설정
+    )
     api_key: str = os.getenv("OPENAI_API_KEY", "")
-    model_name: str = "gpt-4"
+    model_name: str = "gpt-4o-mini"
     temperature: float = 0.7
     max_tokens: int = 150
 
@@ -39,7 +41,6 @@ class Settings(BaseSettings):
     model_config = {"env_file": ".env", "extra": "allow"}
 
     # 기본 설정값
-    audio_upload_dir: str = "./uploads/audio"
     report_output_dir: str = "./outputs/reports"
     
     # 컴포넌트 설정
