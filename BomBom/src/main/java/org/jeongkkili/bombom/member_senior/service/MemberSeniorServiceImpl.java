@@ -21,8 +21,8 @@ public class MemberSeniorServiceImpl implements MemberSeniorService {
 	private final SeniorRepository seniorRepository;
 
 	@Override
-	public void addAssociation(String memberLoginId, Long seniorId) {
-		Member member = memberRepository.getByLoginIdOrThrow(memberLoginId);
+	public void addAssociation(Long memberId, Long seniorId) {
+		Member member = memberRepository.getOrThrow(memberId);
 		Senior senior = seniorRepository.getOrThrow(seniorId);
 		memberSeniorRepository.save(MemberSenior.builder().member(member).senior(senior).build());
 	}

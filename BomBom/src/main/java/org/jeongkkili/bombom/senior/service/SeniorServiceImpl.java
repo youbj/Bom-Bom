@@ -1,6 +1,7 @@
 package org.jeongkkili.bombom.senior.service;
 
 import org.jeongkkili.bombom.member_senior.service.MemberSeniorService;
+import org.jeongkkili.bombom.senior.controller.request.RegisterSeniorReq;
 import org.jeongkkili.bombom.senior.domain.Senior;
 import org.jeongkkili.bombom.senior.repository.SeniorRepository;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,14 @@ public class SeniorServiceImpl implements SeniorService {
 	private final SeniorRepository seniorRepository;
 
 	@Override
-	public void registerSenior(Senior senior, String loginId) {
-		Senior registSenior =  seniorRepository.save(senior);
-		memberSeniorService.addAssociation(loginId, registSenior.getId());
+	public void registerSenior(RegisterSeniorReq req, Long memberId) {
+		Senior senior =  seniorRepository.save(Senior.builder()
+				.name(req.getName())
+				.phoneNumber(req.getPhoneNumber())
+				.address(req.getAddress())
+				.birth(req.getBirth())
+				.gender(req.getGender())
+			.build());
+		memberSeniorService.addAssociation(memberId, senior.getId());
 	}
 }

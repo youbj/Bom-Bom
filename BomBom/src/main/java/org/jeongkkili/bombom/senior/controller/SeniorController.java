@@ -1,6 +1,7 @@
 package org.jeongkkili.bombom.senior.controller;
 
-import org.jeongkkili.bombom.member_senior.service.MemberSeniorService;
+import org.jeongkkili.bombom.core.aop.annotation.RequireJwtoken;
+import org.jeongkkili.bombom.core.aop.member.MemberContext;
 import org.jeongkkili.bombom.senior.controller.request.RegisterSeniorReq;
 import org.jeongkkili.bombom.senior.domain.Senior;
 import org.jeongkkili.bombom.senior.service.SeniorService;
@@ -19,15 +20,11 @@ public class SeniorController {
 
 	private final SeniorService seniorService;
 
+	@RequireJwtoken
 	@PostMapping("/regist")
 	public ResponseEntity<Void> registSenior(@RequestBody RegisterSeniorReq req) {
-		seniorService.registerSenior(Senior.builder()
-			.name(req.getName())
-			.phoneNumber(req.getPhoneNumber())
-			.address(req.getAddress())
-			.birth(req.getBirth())
-			.gender(req.getGender())
-			.build(), req.getLoginId());
+		Long memberId = MemberContext.getMemberId();
+		seniorService.registerSenior(req, memberId);
 		return ResponseEntity.ok().build();
 	}
 }

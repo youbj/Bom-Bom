@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RegisterSeniorReq {
 
-	private String loginId;
 	private String name;
 	private String phoneNumber;
 	private String address;

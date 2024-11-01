@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AddAssociationReq {
 
-	private String loginId;
 	private Long seniorId;
 }
