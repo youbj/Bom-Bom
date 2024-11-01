@@ -32,29 +32,18 @@ public class MemberServiceImpl implements MemberService {
 		if(checkAlreadyExistId(req.getLoginId())) {
 			throw new AlreadyExistIdException("Already Exist Id: " + req.getLoginId());
 		}
-
-		Member member = memberRepository.save(Member.builder()
+		memberRepository.save(Member.builder()
 			.loginId(req.getLoginId())
 			.password(hashPassword(req.getPassword()))
 			.name(req.getName())
 			.phoneNumber(req.getPhoneNumber())
 			.type(Type.valueOf(req.getType()))
 			.build());
-
-		if(req.getType().equals("SOCIAL_WORKER")) {
-			StringBuilder sb = new StringBuilder();
-			String memberId = String.valueOf(member.getId());
-			sb.append("SW");
-			sb.append("0".repeat(8 - memberId.length()));
-			sb.append(memberId);
-			member.updateCi(sb.toString());
-		}
 	}
 
 	@Override
 	public LoginDto login(LoginReq req) {
-		Member member = memberRepository.findByLoginId(req.getLoginId());
-		if(member == null) throw new MemberNotFoundException("Member not found with ID: " + req.getLoginId());
+		Member member = memberRepository.getByLoginIdOrThrow(req.getLoginId());
 		if(!checkPassword(req.getPassword(), member.getPassword())) throw new WrongPasswordException("Wrong password with ID: " + req.getLoginId());
 		Jwtoken jwtoken = jwtProvider.createToken(member.getId());
 		return LoginDto.builder()
@@ -69,7 +58,7 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	public boolean checkAlreadyExistId(String loginId) {
-		return memberRepository.findByLoginId(loginId) != null;
+		return memberRepository.findByLoginId(loginId).isPresent();
 	}
 
 	private String hashPassword(String plainPassword) {

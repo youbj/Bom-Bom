@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.jeongkkili.bombom.senior.domain.Senior;
+import org.jeongkkili.bombom.member_senior.domain.MemberSenior;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,9 +49,6 @@ public class Member {
 	@Column(name = "phone_number", nullable = false)
 	private String phoneNumber;
 
-	@Column(name = "ci", nullable = true)
-	private String ci;
-
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
@@ -61,7 +58,7 @@ public class Member {
 	private LocalDateTime updatedAt;
 
 	@OneToMany(mappedBy = "member")
-	private List<Senior> seniors = new ArrayList<>();
+	private List<MemberSenior> memberSeniors = new ArrayList<>();
 
 	@Builder
 	public Member(String loginId, String password, String name, Type type, String phoneNumber) {
@@ -70,9 +67,5 @@ public class Member {
 		this.name = name;
 		this.type = type;
 		this.phoneNumber = phoneNumber;
-	}
-
-	public void updateCi(String ci) {
-		this.ci = ci;
 	}
 }

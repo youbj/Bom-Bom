@@ -3,7 +3,6 @@ package org.jeongkkili.bombom.entry.controller;
 import org.jeongkkili.bombom.entry.controller.request.EntryReq;
 import org.jeongkkili.bombom.entry.controller.request.SaveEntryReq;
 import org.jeongkkili.bombom.entry.service.EntryHistoryService;
-import org.jeongkkili.bombom.entry.service.dto.PlaceDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,11 +22,6 @@ public class EntryHistoryController {
 	public ResponseEntity<Void> addEntryHistory(@RequestBody EntryReq req) {
 		entryHistoryService.addEntryHistory(req.getSeniorId());
 		return ResponseEntity.ok().build();
-	}
-
-	@PostMapping("/predict")
-	public ResponseEntity<PlaceDto> getPredictPlace(@RequestBody EntryReq req) {
-		return ResponseEntity.ok(entryHistoryService.predictPlaceByDurationTime(req.getSeniorId()));
 	}
 
 	@PostMapping("/save")
