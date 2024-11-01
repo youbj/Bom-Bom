@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { View, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { LoginScreenNavigationProp, LoginScreenProps } from '../../types/navigation.d';
+import { LoginScreenNavigationProp, LoginScreenProps } from '../../../types/navigation.d';
 
-import defaultStyle from '../styles/DefaultStyle';
-import loginStyle from '../styles/LoginStyle';
-import CustomText from '../components/CustomText';
-import CustomTextInput from '../components/CustomTextInput';
+import defaultStyle from '../../styles/DefaultStyle';
+import loginStyle from '../../styles/Auth/LoginStyle';
+import CustomText from '../../components/CustomText';
+import CustomTextInput from '../../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const LoginScreen = ({ setIsLoggedIn }: LoginScreenProps): JSX.Element => {
@@ -24,7 +24,7 @@ const LoginScreen = ({ setIsLoggedIn }: LoginScreenProps): JSX.Element => {
   return (
     <View style={defaultStyle.container}>
       <Image
-        source={require('../assets/images/logo.png')}
+        source={require('../../assets/images/logo.png')}
         style={loginStyle.logo}
       />
       <CustomText style={loginStyle.title}>봄 : 봄</CustomText>

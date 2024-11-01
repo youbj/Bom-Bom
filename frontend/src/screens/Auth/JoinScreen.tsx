@@ -1,12 +1,12 @@
 import React, {useState} from 'react';
 import {View, TouchableOpacity} from 'react-native';
-import CustomText from '../components/CustomText';
+import CustomText from '../../components/CustomText';
 import {useNavigation} from '@react-navigation/native';
 
-import defaultStyle from '../styles/DefaultStyle';
-import joinStyle from '../styles/JoinStyle';
+import defaultStyle from '../../styles/DefaultStyle';
+import joinStyle from '../../styles/Auth/JoinStyle';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {JoinScreenNavigationProp} from '../../types/navigation.d';
+import {JoinScreenNavigationProp} from '../../../types/navigation.d';
 
 const JoinScreen = (): JSX.Element => {
   const navigation = useNavigation<JoinScreenNavigationProp>();

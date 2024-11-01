@@ -9,7 +9,7 @@ import {
 import CustomText from '../../components/CustomText';
 import CustomTextInput from '../../components/CustomTextInput';
 import defaultStyle from '../../styles/DefaultStyle';
-import joinDetailStyle from '../../styles/JoinDetailStyle';
+import joinDetailStyle from '../../styles/Auth/JoinDetailStyle';
 
 const JoinDetailScreen = (): JSX.Element => {
   const navigation = useNavigation<BackToLoginNavigationProp>();

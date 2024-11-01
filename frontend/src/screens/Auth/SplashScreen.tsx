@@ -1,11 +1,11 @@
 import React, {useEffect, useRef} from 'react';
 import {View, Image, Animated} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {SplashScreenNavigationProp} from '../../types/navigation.d';
+import {SplashScreenNavigationProp} from '../../../types/navigation.d';
 
-import defaultStyle from '../styles/DefaultStyle';
-import splashStyle from '../styles/SplashStyle';
-import CustomText from '../components/CustomText';
+import defaultStyle from '../../styles/DefaultStyle';
+import splashStyle from '../../styles/Auth/SplashStyle';
+import CustomText from '../../components/CustomText';
 
 const SplashScreen = (): JSX.Element => {
   const opacity = useRef(new Animated.Value(1)).current;
@@ -27,7 +27,7 @@ const SplashScreen = (): JSX.Element => {
   return (
     <Animated.View style={[defaultStyle.container, {opacity}]}>
       <Image
-        source={require('../assets/images/logo.png')}
+        source={require('../../assets/images/logo.png')}
         style={splashStyle.logo}
       />
 

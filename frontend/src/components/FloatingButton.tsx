@@ -40,19 +40,19 @@ const FloatingButton: React.FC = () => {
     <View style={styles.container}>
       {isOpen && (
         <>
-          <Animated.View style={[styles.secondaryButton, buttonStyle(-50)]}>
+          <Animated.View style={[styles.secondaryButton, buttonStyle(-70)]}>
             <TouchableOpacity style={styles.button} onPress={handlePress('Home')}>
               <Text style={styles.label}>Home</Text>
             </TouchableOpacity>
           </Animated.View>
 
-          <Animated.View style={[styles.secondaryButton, buttonStyle(-100)]}>
+          <Animated.View style={[styles.secondaryButton, buttonStyle(-140)]}>
             <TouchableOpacity style={styles.button} onPress={handlePress('Message')}>
               <Text style={styles.label}>Message</Text>
             </TouchableOpacity>
           </Animated.View>
 
-          <Animated.View style={[styles.secondaryButton, buttonStyle(-150)]}>
+          <Animated.View style={[styles.secondaryButton, buttonStyle(-210)]}>
             <TouchableOpacity style={styles.button} onPress={handlePress('Verify')}>
               <Text style={styles.label}>Verify</Text>
             </TouchableOpacity>
@@ -69,43 +69,43 @@ const FloatingButton: React.FC = () => {
 
 export default FloatingButton;
 
+
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute', // FloatingButton을 화면에 고정
-    right: width * 0.05,
-    bottom: height * 0.05,
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: 'absolute',
+    right: '5%', // 화면 오른쪽에 5% 여백
+    bottom: '5%', // 화면 아래쪽에 5% 여백
+    alignItems: 'center', // secondaryButton들이 fab과 중앙 정렬되도록 설정
   },
   fab: {
     backgroundColor: '#6200ee',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: width * 0.15, // 화면 너비의 15% 크기로 설정
+    height: width * 0.15,
+    borderRadius: (width * 0.15) / 2,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,
   },
   fabText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: width * 0.08,
     fontWeight: 'bold',
   },
   secondaryButton: {
-    position: 'absolute', // secondaryButton 위치를 고정
-    right: width * 0.05 + 5,
-    bottom: height * 0.15,
+    position: 'absolute',
+    right: (width * 0.15 - width * 0.125) / 2, // fab의 너비와 secondaryButton 너비를 기준으로 중앙 맞춤
+    bottom: height * 0.03,
   },
   button: {
     backgroundColor: '#6200ee',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: width * 0.125, // 화면 너비의 12.5% 크기로 설정
+    height: width * 0.125,
+    borderRadius: (width * 0.125) / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
     color: 'white',
-    fontSize: 12,
+    fontSize: width * 0.03,
   },
 });
