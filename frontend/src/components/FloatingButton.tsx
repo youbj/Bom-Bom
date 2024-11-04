@@ -1,11 +1,15 @@
-// FloatingButton.tsx
+// src/components/FloatingButton.tsx
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-const FloatingButton: React.FC = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+interface FloatingButtonProps {
+  toggleOverlay: () => void;
+}
+
+const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const animation = useState(new Animated.Value(0))[0];
 
   const toggleMenu = () => {
@@ -18,6 +22,7 @@ const FloatingButton: React.FC = () => {
     }).start();
 
     setIsOpen(!isOpen);
+    toggleOverlay();
   };
 
   const buttonStyle = (position: number) => ({
@@ -38,6 +43,7 @@ const FloatingButton: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      {/* Secondary Buttons */}
       {isOpen && (
         <>
           <Animated.View style={[styles.secondaryButton, buttonStyle(-70)]}>
@@ -60,8 +66,9 @@ const FloatingButton: React.FC = () => {
         </>
       )}
 
+      {/* Main Floating Button */}
       <TouchableOpacity onPress={toggleMenu} style={styles.fab}>
-        <Text style={styles.fabText}>+</Text>
+      <Text style={styles.fabText}>{isOpen ? 'X' : '+'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -69,22 +76,23 @@ const FloatingButton: React.FC = () => {
 
 export default FloatingButton;
 
-
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    right: '5%', // 화면 오른쪽에 5% 여백
-    bottom: '5%', // 화면 아래쪽에 5% 여백
-    alignItems: 'center', // secondaryButton들이 fab과 중앙 정렬되도록 설정
+    right: '5%',
+    bottom: '5%',
+    alignItems: 'center',
+    zIndex: 1000, // Ensure FloatingButton is above other elements
   },
   fab: {
     backgroundColor: '#6200ee',
-    width: width * 0.15, // 화면 너비의 15% 크기로 설정
+    width: width * 0.15,
     height: width * 0.15,
     borderRadius: (width * 0.15) / 2,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,
+    zIndex: 1001, // Floating button above overlay
   },
   fabText: {
     color: 'white',
@@ -93,12 +101,13 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     position: 'absolute',
-    right: (width * 0.15 - width * 0.125) / 2, // fab의 너비와 secondaryButton 너비를 기준으로 중앙 맞춤
+    right: (width * 0.15 - width * 0.125) / 2,
     bottom: height * 0.03,
+    zIndex: 1001,
   },
   button: {
     backgroundColor: '#6200ee',
-    width: width * 0.125, // 화면 너비의 12.5% 크기로 설정
+    width: width * 0.125,
     height: width * 0.125,
     borderRadius: (width * 0.125) / 2,
     alignItems: 'center',
