@@ -7,7 +7,7 @@ import org.jeongkkili.bombom.senior.service.dto.GetSeniorListDto;
 
 public interface SeniorService {
 
-	void registerSenior(RegisterSeniorReq req, Long memberId);
+	void registerSenior(List<RegisterSeniorReq> reqList, Long memberId);
 
 	List<GetSeniorListDto> getSeniorList(Long memberId);
 }

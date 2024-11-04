@@ -19,11 +19,11 @@ public class MemberSeniorController {
 
 	private final MemberSeniorService memberSeniorService;
 
-	@RequireJwtoken
-	@PostMapping("/add")
-	public ResponseEntity<Void> addAssociation(@RequestBody AddAssociationReq req) {
-		Long memberId = MemberContext.getMemberId();
-		memberSeniorService.addAssociation(memberId, req.getSeniorId());
-		return ResponseEntity.ok().build();
-	}
+	// @RequireJwtoken
+	// @PostMapping("/add")
+	// public ResponseEntity<Void> addAssociation(@RequestBody AddAssociationReq req) {
+	// 	Long memberId = MemberContext.getMemberId();
+	// 	// memberSeniorService.addAssociation(memberId, req.getSeniorId());
+	// 	return ResponseEntity.ok().build();
+	// }
 }

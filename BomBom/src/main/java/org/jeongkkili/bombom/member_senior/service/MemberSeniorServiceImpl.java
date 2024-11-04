@@ -1,5 +1,7 @@
 package org.jeongkkili.bombom.member_senior.service;
 
+import java.util.List;
+
 import org.jeongkkili.bombom.member.domain.Member;
 import org.jeongkkili.bombom.member.repository.MemberRepository;
 import org.jeongkkili.bombom.member_senior.domain.MemberSenior;
@@ -21,9 +23,7 @@ public class MemberSeniorServiceImpl implements MemberSeniorService {
 	private final SeniorRepository seniorRepository;
 
 	@Override
-	public void addAssociation(Long memberId, Long seniorId) {
-		Member member = memberRepository.getOrThrow(memberId);
-		Senior senior = seniorRepository.getOrThrow(seniorId);
-		memberSeniorRepository.save(MemberSenior.builder().member(member).senior(senior).build());
+	public void addAssociation(List<MemberSenior> associations) {
+		memberSeniorRepository.saveAll(associations);
 	}
 }

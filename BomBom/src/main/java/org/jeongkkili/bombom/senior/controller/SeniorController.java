@@ -27,9 +27,9 @@ public class SeniorController {
 
 	@RequireJwtoken
 	@PostMapping("/regist")
-	public ResponseEntity<Void> registSenior(@RequestBody RegisterSeniorReq req) {
+	public ResponseEntity<Void> registSenior(@RequestBody List<RegisterSeniorReq> reqList) {
 		Long memberId = MemberContext.getMemberId();
-		seniorService.registerSenior(req, memberId);
+		seniorService.registerSenior(reqList, memberId);
 		return ResponseEntity.ok().build();
 	}
 
