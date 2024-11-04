@@ -13,7 +13,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class GetSeniorListDto {
 
-	private Long id;
+	private Long seniorId;
 	private String name;
 	private String address;
 	private String gender;
