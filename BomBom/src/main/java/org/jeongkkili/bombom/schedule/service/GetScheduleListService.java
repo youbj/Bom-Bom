@@ -6,5 +6,5 @@ import org.jeongkkili.bombom.schedule.service.dto.ScheduleMonthDto;
 
 public interface GetScheduleListService {
 
-	List<ScheduleMonthDto> getMonthlyScheduleList(Long seniorId, Integer year, Integer month);
+	List<ScheduleMonthDto> getMonthlyScheduleList(Long seniorId, Integer year, Integer month, Long memberId);
 }

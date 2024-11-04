@@ -8,7 +8,7 @@ import org.jeongkkili.bombom.entry.repository.EntryHistoryRepository;
 import org.jeongkkili.bombom.exit.domain.ExitHistory;
 import org.jeongkkili.bombom.exit.repository.ExitHistoryRepository;
 import org.jeongkkili.bombom.senior.domain.Senior;
-import org.jeongkkili.bombom.senior.repository.SeniorRepository;
+import org.jeongkkili.bombom.senior.service.GetSeniorService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -19,13 +19,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EntryHistoryServiceImpl implements EntryHistoryService {
 
-	private final SeniorRepository seniorRepository;
+	private final GetSeniorService getSeniorService;
 	private final EntryHistoryRepository entryHistoryRepository;
 	private final ExitHistoryRepository exitHistoryRepository;
 
 	@Override
 	public void addEntryHistory(Long seniorId) {
-		Senior senior = seniorRepository.getOrThrow(seniorId);
+		Senior senior = getSeniorService.getSeniorById(seniorId);
 		ExitHistory latestExitHistory = exitHistoryRepository.getLatestOrThrow(senior);
 		// TODO: 장소에 대한 정보를 스피커를 통해 입력 받고 db에 저장
 		String place = "";
@@ -39,7 +39,7 @@ public class EntryHistoryServiceImpl implements EntryHistoryService {
 
 	@Override
 	public void addEntryHistory(Long seniorId, String place) {
-		Senior senior = seniorRepository.getOrThrow(seniorId);
+		Senior senior = getSeniorService.getSeniorById(seniorId);
 		ExitHistory latestExitHistory = exitHistoryRepository.getLatestOrThrow(senior);
 
 		entryHistoryRepository.save(EntryHistory.builder()

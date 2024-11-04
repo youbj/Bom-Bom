@@ -4,5 +4,5 @@ import org.jeongkkili.bombom.schedule.controller.request.RegistScheduleReq;
 
 public interface RegistScheduleService {
 
-	void registSchedule(RegistScheduleReq req);
+	void registSchedule(RegistScheduleReq req, Long memberId);
 }

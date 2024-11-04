@@ -1,5 +1,7 @@
 package org.jeongkkili.bombom.schedule.controller;
 
+import org.jeongkkili.bombom.core.aop.annotation.RequireJwtoken;
+import org.jeongkkili.bombom.core.aop.member.MemberContext;
 import org.jeongkkili.bombom.schedule.controller.request.RegistScheduleReq;
 import org.jeongkkili.bombom.schedule.service.RegistScheduleService;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +17,11 @@ public class RegistScheduleController extends ScheduleController {
 
 	private final RegistScheduleService registScheduleService;
 
+	@RequireJwtoken
 	@PostMapping("/regist")
 	public ResponseEntity<Void> registSchedule(@RequestBody RegistScheduleReq req) {
-		registScheduleService.registSchedule(req);
+		Long memberId = MemberContext.getMemberId();
+		registScheduleService.registSchedule(req, memberId);
 		return ResponseEntity.ok().build();
 	}
 }

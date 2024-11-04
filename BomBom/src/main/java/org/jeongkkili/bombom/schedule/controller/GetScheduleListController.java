@@ -3,6 +3,7 @@ package org.jeongkkili.bombom.schedule.controller;
 import java.util.List;
 
 import org.jeongkkili.bombom.core.aop.annotation.RequireJwtoken;
+import org.jeongkkili.bombom.core.aop.member.MemberContext;
 import org.jeongkkili.bombom.schedule.service.GetScheduleListService;
 import org.jeongkkili.bombom.schedule.service.dto.ScheduleMonthDto;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ public class GetScheduleListController extends ScheduleController {
 		@RequestParam("year") Integer year,
 		@RequestParam("month") Integer month
 	) {
-		return ResponseEntity.ok(getScheduleListService.getMonthlyScheduleList(seniorId, year, month));
+		Long memberId = MemberContext.getMemberId();
+		return ResponseEntity.ok(getScheduleListService.getMonthlyScheduleList(seniorId, year, month, memberId));
 	}
 }

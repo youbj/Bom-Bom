@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-public class GetSeniorListController {
+public class GetSeniorListController extends SeniorController {
 
 	private final GetSeniorListService getSeniorListService;
 

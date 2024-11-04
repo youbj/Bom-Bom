@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jeongkkili.bombom.member.domain.Member;
 import org.jeongkkili.bombom.member.repository.MemberRepository;
+import org.jeongkkili.bombom.member.service.MemberService;
 import org.jeongkkili.bombom.member_senior.domain.MemberSenior;
 import org.jeongkkili.bombom.member_senior.service.MemberSeniorService;
 import org.jeongkkili.bombom.senior.controller.request.RegisterSeniorReq;
@@ -19,13 +20,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RegisterSeniorServiceImpl implements RegisterSeniorService {
 
-	private final MemberRepository memberRepository;
+	private final MemberService memberService;
 	private final MemberSeniorService memberSeniorService;
 	private final SeniorRepository seniorRepository;
 
 	@Override
 	public void registerSenior(List<RegisterSeniorReq> reqList, Long memberId) {
-		Member member = memberRepository.getOrThrow(memberId);
+		Member member = memberService.getMemberById(memberId);
 		List<Senior> seniors = reqList.stream()
 			.map(req -> Senior.builder()
 				.name(req.getName())
