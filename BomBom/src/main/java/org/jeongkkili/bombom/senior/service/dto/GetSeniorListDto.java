@@ -1,24 +1,21 @@
-package org.jeongkkili.bombom.senior.controller.request;
+package org.jeongkkili.bombom.senior.service.dto;
 
 import java.util.Date;
 
 import org.jeongkkili.bombom.senior.domain.Gender;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RegisterSeniorReq {
+public class GetSeniorListDto {
 
+	private Long id;
 	private String name;
-	private String phoneNumber;
 	private String address;
+	private String gender;
 	private Date birth;
-	private Gender gender;
 }

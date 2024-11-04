@@ -2,7 +2,7 @@ package org.jeongkkili.bombom.senior.service;
 
 import org.jeongkkili.bombom.senior.domain.Senior;
 
-public interface SeniorService {
+public interface GetSeniorService {
 
-	void registerSenior(Senior senior, String loginId);
+	Senior getSeniorById(Long seniorId);
 }

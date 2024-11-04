@@ -1,4 +1,6 @@
-package org.jeongkkili.bombom.member_senior.controller.request;
+package org.jeongkkili.bombom.schedule.controller.request;
+
+import java.time.LocalDateTime;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,7 +12,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AddAssociationReq {
+public class RegistScheduleReq {
 
 	private Long seniorId;
+	private LocalDateTime scheduleAt;
+	private String memo;
 }

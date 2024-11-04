@@ -61,6 +61,11 @@ public class MemberServiceImpl implements MemberService {
 		return memberRepository.findByLoginId(loginId).isPresent();
 	}
 
+	@Override
+	public Member getMemberById(Long memberId) {
+		return memberRepository.getOrThrow(memberId);
+	}
+
 	private String hashPassword(String plainPassword) {
 		return BCrypt.hashpw(plainPassword, BCrypt.gensalt());
 	}

@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.jeongkkili.bombom.entry.domain.EntryHistory;
 import org.jeongkkili.bombom.exit.domain.ExitHistory;
 import org.jeongkkili.bombom.member_senior.domain.MemberSenior;
+import org.jeongkkili.bombom.schedule.domain.Schedule;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -68,6 +69,9 @@ public class Senior {
 
 	@OneToMany(mappedBy = "senior")
 	private List<EntryHistory> entryHistory = new ArrayList<>();
+
+	@OneToMany(mappedBy = "senior")
+	private List<Schedule> schedules = new ArrayList<>();
 
 	@Builder
 	public Senior(String name, String phoneNumber, String address, Gender gender, Date birth) {
