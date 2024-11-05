@@ -5,7 +5,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.util.Date;
 
-import org.jeongkkili.bombom.senior.domain.Gender;
+import org.jeongkkili.bombom.senior.domain.Senior;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,25 +14,29 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class GetSeniorListDto {
+public class GetSeniorDetailDto {
 
 	private Long seniorId;
 	private String name;
 	private String address;
+	private String profileImgUrl;
 	private String gender;
 	private Integer age;
 	private Date birth;
 
-	public GetSeniorListDto(Long seniorId, String name, String address, String gender, Date birth) {
-		this.seniorId = seniorId;
-		this.name = name;
-		this.address = address;
-		this.gender = gender;
-		this.birth = birth;
-		this.age = calculateAge(birth);
+	public static GetSeniorDetailDto toDto(Senior senior) {
+		return GetSeniorDetailDto.builder()
+			.seniorId(senior.getId())
+			.name(senior.getName())
+			.address(senior.getAddress())
+			.profileImgUrl(senior.getProfileImg())
+			.gender(senior.getGender().toString())
+			.birth(senior.getBirth())
+			.age(calculateAge(senior.getBirth()))
+			.build();
 	}
 
-	private Integer calculateAge(Date birthDate) {
+	private static Integer calculateAge(Date birthDate) {
 		LocalDate birthLocalDate = birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 		LocalDate now = LocalDate.now();
 		return Period.between(birthLocalDate, now).getYears();

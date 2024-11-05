@@ -31,7 +31,7 @@ public class S3ImageServiceImpl implements S3ImageService {
 
 	@Override
 	public FileMetaInfo uploadSeniorProfileImg(MultipartFile file, Long seniorId) {
-		String url = upload(file, SENIOR_PROFILE_IMG_DIR, seniorId);
+		String url = upload(file, seniorId);
 		String name = file.getOriginalFilename();
 		String format = getFileExtension(name);
 		Long size = file.getSize();
@@ -43,11 +43,11 @@ public class S3ImageServiceImpl implements S3ImageService {
 			.build();
 	}
 
-	private String upload(MultipartFile file, String dirName, Long seniorId) {
+	private String upload(MultipartFile file, Long seniorId) {
 		if (file.isEmpty()) {
 			throw new S3Exception("Image file is empty");
 		}
-		String fileName = dirName + seniorId + "/" + UUID.randomUUID() + file.getOriginalFilename();
+		String fileName = SENIOR_PROFILE_IMG_DIR + seniorId + "/" + UUID.randomUUID() + file.getOriginalFilename();
 		try (InputStream inputStream = file.getInputStream()) {
 			ObjectMetadata metadata = new ObjectMetadata();
 			metadata.setContentLength(file.getSize());
