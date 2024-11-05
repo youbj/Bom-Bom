@@ -5,6 +5,7 @@ import AuthNavigator from './src/navigation/AuthNavigator';
 import MainNavigator from './src/navigation/MainNavigator';
 import FloatingButton from './src/components/FloatingButton';
 import Overlay from './src/components/Overlay';
+import FloatNavigator from './src/navigation/FloatNavigator';
 
 const App = (): JSX.Element => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
