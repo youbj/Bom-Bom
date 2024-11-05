@@ -75,7 +75,9 @@ const JoinDetailScreen = (): JSX.Element => {
   ];
 
   return (
-    <ScrollView style={{backgroundColor: 'white'}}>
+    <ScrollView
+      style={{backgroundColor: 'white'}}
+      showsVerticalScrollIndicator={false}>
       <View style={defaultStyle.container}>
         <CustomText style={joinDetailStyle.title}>회원 가입</CustomText>
         <View style={joinDetailStyle.space}></View>

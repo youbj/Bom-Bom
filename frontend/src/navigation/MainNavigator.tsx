@@ -3,6 +3,7 @@ import {createNativeStackNavigator, NativeStackNavigationProp} from '@react-navi
 import MainScreen from '../screens/MainScreen';
 import FloatNavigator from './FloatNavigator';
 import { MainNavigatorParamList } from '../../types/navigation.d';
+import EnrollScreen from '../screens/EnrollScreen';
 
 const Stack = createNativeStackNavigator<MainNavigatorParamList>();
 
@@ -12,6 +13,7 @@ const MainNavigator = () => {
     <Stack.Navigator>
       <Stack.Screen name="Main" component={MainScreen} options={{headerShown: false}}></Stack.Screen>
       <Stack.Screen name="FloatNavigator" component={FloatNavigator} options={{ headerShown: false }} />
+      <Stack.Screen name="Enroll" component={EnrollScreen} options={{headerShown: false}}></Stack.Screen>
     </Stack.Navigator>
   );
 };
