@@ -54,9 +54,6 @@ public class MemberServiceImpl implements MemberService {
 		if(!checkPassword(req.getPassword(), member.getPassword())) throw new WrongPasswordException("Wrong password with ID: " + req.getLoginId());
 		Jwtoken jwtoken = jwtProvider.createToken(member.getId());
 		return LoginDto.builder()
-			.loginId(member.getLoginId())
-			.name(member.getName())
-			.phoneNumber(member.getPhoneNumber())
 			.type(member.getType())
 			.accessToken(jwtoken.getAccessToken())
 			.refreshToken(jwtoken.getRefreshToken())
