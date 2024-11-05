@@ -25,3 +25,13 @@ export type AuthNavigatorProps = {
 export type LoginScreenProps = {
   setIsLoggedIn: (loggedIn: boolean) => void;
 };
+
+// 메인 페이지 이후의 StackParamList
+
+export type MainStackParamList = {
+  Main: undefined;
+  Enroll: undefined;
+}
+
+export type MainToEnrollNavigationProp = NativeStackNavigationProp<MainStackParamList, 'Main'>;
+export type EnrollToMainNavigationProp = NativeStackNavigationProp<MainStackParamList, 'Enroll'>

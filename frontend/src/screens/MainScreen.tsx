@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import CustomText from '../components/CustomText';
 import defaultStyle from '../styles/DefaultStyle';
 import MainStyle from '../styles/MainStyle';
 import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MainToEnrollNavigationProp } from '../../types/navigation.d';
 
 type Elder = {
+  index: number;
   name: string;
   address: string;
   age: number;
@@ -20,13 +23,18 @@ const MainScreen = () => {
   const [filteredResult, setFilteredResult] = useState<Elder[]>([]);
   const [nameCount, setNameCount] = useState(1);
   const [ageCount, setAgeCount] = useState(0);
+  const enrollNavigation = useNavigation<MainToEnrollNavigationProp>();
+
+  const onPressEnroll = () => {
+    enrollNavigation.navigate('Enroll')
+  };
 
   const elderList: Elder[] = [
-    { name: '박정의', address: '서울시 강남구', age: 75, gender: '여' },
-    { name: '유병주', address: '서울시 강서구', age: 77, gender: '남' },
-    { name: '윤정섭', address: '서울시 강북구', age: 81, gender: '남' },
-    { name: '이강현', address: '서울시 강동구', age: 73, gender: '여' },
-    { name: '임동길', address: '서울시 종로구', age: 88, gender: '남' },
+    { index: 1, name: '박정의', address: '서울시 강남구', age: 75, gender: '여' },
+    { index: 2, name: '유병주', address: '서울시 강서구', age: 77, gender: '남' },
+    { index: 3, name: '윤정섭', address: '서울시 강북구', age: 81, gender: '남' },
+    { index: 4, name: '이강현', address: '서울시 강동구', age: 73, gender: '여' },
+    { index: 5, name: '임동길', address: '서울시 종로구', age: 88, gender: '남' },
   ];
 
   useEffect(() => {
@@ -113,7 +121,7 @@ const MainScreen = () => {
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={{ paddingRight: 3 }}>
+        <TouchableOpacity style={{ paddingRight: 3 }} onPress={onPressEnroll}>
           <Icon name="account-plus" size={30} />
         </TouchableOpacity>
       </View>
