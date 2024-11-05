@@ -1,5 +1,6 @@
 package org.jeongkkili.bombom.qualify.service;
 
+import org.jeongkkili.bombom.qualify.domain.QualifyNum;
 import org.jeongkkili.bombom.qualify.exception.QualifyNumMissingException;
 import org.jeongkkili.bombom.qualify.repository.QualifyNumRepository;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,12 @@ public class QualifyServiceImpl implements QualifyService {
 	@Override
 	public boolean verifyQualifyNumber(String qualifyNumber) {
 		if(qualifyNumber == null || qualifyNumber.isEmpty()) throw new QualifyNumMissingException("Qualify number is empty");
-		return qualifyNumRepository.findByQualifyNumber(qualifyNumber) != null;
+		QualifyNum qualifyNum = qualifyNumRepository.findByQualifyNumber(qualifyNumber);
+		return qualifyNum != null && !qualifyNum.isInUse();
+	}
+
+	@Override
+	public QualifyNum getQualifyNum(String qualifyNumber) {
+		return qualifyNumRepository.findByQualifyNumber(qualifyNumber);
 	}
 }

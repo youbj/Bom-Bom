@@ -1,5 +1,7 @@
 package org.jeongkkili.bombom.qualify.domain;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,8 +27,16 @@ public class QualifyNum {
 	@Column(name = "qualify_number", unique = true, nullable = false)
 	private String qualifyNumber;
 
+	@Column(name = "in_use", nullable = false)
+	@ColumnDefault("false")
+	private boolean inUse;
+
 	@Builder
 	public QualifyNum(String qualifyNumber) {
 		this.qualifyNumber = qualifyNumber;
+	}
+
+	public void changeInUseTrue() {
+		this.inUse = true;
 	}
 }

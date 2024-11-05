@@ -11,6 +11,8 @@ import org.jeongkkili.bombom.member.exception.MemberNotFoundException;
 import org.jeongkkili.bombom.member.exception.WrongPasswordException;
 import org.jeongkkili.bombom.member.repository.MemberRepository;
 import org.jeongkkili.bombom.member.service.dto.LoginDto;
+import org.jeongkkili.bombom.qualify.domain.QualifyNum;
+import org.jeongkkili.bombom.qualify.service.QualifyService;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MemberServiceImpl implements MemberService {
 
 	private final MemberRepository memberRepository;
+	private final QualifyService qualifyService;
 	private final JwtProvider jwtProvider;
 
 	@Override
@@ -31,6 +34,10 @@ public class MemberServiceImpl implements MemberService {
 	public void registMember(RegistMemberReq req) {
 		if(checkAlreadyExistId(req.getLoginId())) {
 			throw new AlreadyExistIdException("Already Exist Id: " + req.getLoginId());
+		}
+		if(req.getType().equals("SOCIAL_WORKER")) {
+			QualifyNum qualifyNum = qualifyService.getQualifyNum(req.getQualifyNum());
+			qualifyNum.changeInUseTrue();
 		}
 		memberRepository.save(Member.builder()
 			.loginId(req.getLoginId())

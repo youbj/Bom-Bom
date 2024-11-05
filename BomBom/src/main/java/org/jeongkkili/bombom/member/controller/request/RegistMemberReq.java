@@ -17,4 +17,5 @@ public class RegistMemberReq {
 	private String name;
 	private String phoneNumber;
 	private String type;
+	private String qualifyNum;
 }
