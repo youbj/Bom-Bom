@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import {StyleSheet} from 'react-native';
 
 const defaultStyle = StyleSheet.create({
   container: {
@@ -19,6 +19,6 @@ const defaultStyle = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 16,
   },
-})
+});
 
 export default defaultStyle;
