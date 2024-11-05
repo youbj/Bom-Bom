@@ -19,7 +19,7 @@ public class QualifyServiceImpl implements QualifyService {
 	public boolean verifyQualifyNumber(String qualifyNumber) {
 		if(qualifyNumber == null || qualifyNumber.isEmpty()) throw new QualifyNumMissingException("Qualify number is empty");
 		QualifyNum qualifyNum = qualifyNumRepository.findByQualifyNumber(qualifyNumber);
-		return qualifyNum != null && !qualifyNum.isInUse();
+		return qualifyNum != null && !qualifyNum.getInUse();
 	}
 
 	@Override

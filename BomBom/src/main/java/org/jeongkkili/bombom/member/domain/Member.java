@@ -63,6 +63,9 @@ public class Member {
 	@OneToMany(mappedBy = "member")
 	private List<MemberFcmToken> memberFcmTokens = new ArrayList<>();
 
+	@OneToMany(mappedBy = "member")
+	private List<ApproveRequest> approveRequests = new ArrayList<>();
+
 	@Builder
 	public Member(String loginId, String password, String name, Type type, String phoneNumber) {
 		this.loginId = loginId;

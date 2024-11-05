@@ -11,4 +11,6 @@ public interface MemberSeniorService {
 	void addAssociation(List<MemberSenior> associations);
 
 	boolean checkAssociation(Member member, Senior senior);
+
+	Member getSocialWorker(Senior senior);
 }

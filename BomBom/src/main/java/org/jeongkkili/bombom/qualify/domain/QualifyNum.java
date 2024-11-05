@@ -29,14 +29,14 @@ public class QualifyNum {
 
 	@Column(name = "in_use", nullable = false)
 	@ColumnDefault("false")
-	private boolean inUse;
+	private Boolean inUse;
 
 	@Builder
 	public QualifyNum(String qualifyNumber) {
 		this.qualifyNumber = qualifyNumber;
 	}
 
-	public void changeInUseTrue() {
-		this.inUse = true;
+	public void changeInUseTrue(Boolean inUse) {
+		this.inUse = inUse;
 	}
 }

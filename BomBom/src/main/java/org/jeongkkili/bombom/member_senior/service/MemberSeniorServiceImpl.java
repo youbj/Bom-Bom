@@ -27,4 +27,9 @@ public class MemberSeniorServiceImpl implements MemberSeniorService {
 	public boolean checkAssociation(Member member, Senior senior) {
 		return memberSeniorRepository.getOrThrow(member, senior) != null;
 	}
+
+	@Override
+	public Member getSocialWorker(Senior senior) {
+		return memberSeniorRepository.getSocialWorkerIdBySeniorOrThrow(senior);
+	}
 }

@@ -10,6 +10,8 @@ public interface GetSeniorService {
 
 	Senior getSeniorById(Long seniorId);
 
+	Senior getSeniorByNameAndPhoneNumber(String name, String phoneNumber);
+
 	List<GetSeniorListDto> getSeniorList(Long memberId);
 
 	GetSeniorDetailDto getSeniorDetail(Long memberId, Long seniorId);

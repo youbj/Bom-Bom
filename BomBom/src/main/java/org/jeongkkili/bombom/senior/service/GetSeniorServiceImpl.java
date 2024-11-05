@@ -31,6 +31,11 @@ public class GetSeniorServiceImpl implements GetSeniorService {
 	}
 
 	@Override
+	public Senior getSeniorByNameAndPhoneNumber(String name, String phoneNumber) {
+		return seniorRepository.getByNameAndPhoneNumberOrThrow(name, phoneNumber);
+	}
+
+	@Override
 	public List<GetSeniorListDto> getSeniorList(Long memberId) {
 		Member member = memberService.getMemberById(memberId);
 		return seniorRepositoryCustom.getSeniorList(member);

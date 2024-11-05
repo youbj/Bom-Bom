@@ -37,7 +37,7 @@ public class MemberServiceImpl implements MemberService {
 		}
 		if(req.getType().equals("SOCIAL_WORKER")) {
 			QualifyNum qualifyNum = qualifyService.getQualifyNum(req.getQualifyNum());
-			qualifyNum.changeInUseTrue();
+			qualifyNum.changeInUseTrue(true);
 		}
 		memberRepository.save(Member.builder()
 			.loginId(req.getLoginId())

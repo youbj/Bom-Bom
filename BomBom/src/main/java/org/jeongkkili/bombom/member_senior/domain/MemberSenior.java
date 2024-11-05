@@ -35,10 +35,14 @@ public class MemberSenior {
 	@JoinColumn(name = "senior_id")
 	private Senior senior;
 
+	@Column(name = "is_social_worker")
+	private boolean isSocialWorker;
+
 	@Builder
-	public MemberSenior(Member member, Senior senior) {
+	public MemberSenior(Member member, Senior senior, boolean isSocialWorker) {
 		addMember(member);
 		addSenior(senior);
+		this.isSocialWorker = isSocialWorker;
 	}
 
 	private void addMember(Member member) {

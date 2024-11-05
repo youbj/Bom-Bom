@@ -42,6 +42,7 @@ public class RegisterSeniorServiceImpl implements RegisterSeniorService {
 			.map(senior -> MemberSenior.builder()
 				.member(member)
 				.senior(senior)
+				.isSocialWorker(true)
 				.build())
 			.toList();
 		memberSeniorService.addAssociation(associations);
