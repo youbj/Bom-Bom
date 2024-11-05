@@ -24,6 +24,8 @@ repositories {
 }
 
 dependencies {
+    /* S3 file upload */
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
     /* QueryDSL */
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'

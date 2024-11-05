@@ -53,6 +53,9 @@ public class Senior {
 	@Column(name = "birth", nullable = false)
 	private Date birth;
 
+	@Column(name = "profile_img", nullable = true)
+	private String profileImg;
+
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
@@ -81,4 +84,6 @@ public class Senior {
 		this.gender = gender;
 		this.birth = birth;
 	}
+
+	public void updateProfileImg(String profileImg) { this.profileImg = profileImg; }
 }
