@@ -3,7 +3,11 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 
-const Overlay: React.FC = () => {
+interface OverlayProps {
+    onClose: () => void; // 클릭 시 호출할 함수
+}
+
+const Overlay: React.FC<OverlayProps> = ({ onClose }) => {
   return (
     <BlurView
       style={styles.overlay}

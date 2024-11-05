@@ -1,6 +1,8 @@
 // src/components/FloatingButton.tsx
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { MainNavigatorProp } from '../../types/navigation.d'
 
 const { width, height } = Dimensions.get('window');
 
@@ -11,6 +13,7 @@ interface FloatingButtonProps {
 const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
   const [isOpen, setIsOpen] = useState(false);
   const animation = useState(new Animated.Value(0))[0];
+  const navigation = useNavigation<MainNavigatorProp>();
 
   const toggleMenu = () => {
     const toValue = isOpen ? 0 : 1;
@@ -37,6 +40,11 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
     opacity: animation,
   });
 
+  const handlePressMessage = () => {
+    toggleMenu(); // 메뉴 닫기
+    navigation.navigate('FloatNavigator');
+  };
+
   const handlePress = (message: string) => () => {
     console.log(message);
   };
@@ -53,7 +61,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
           </Animated.View>
 
           <Animated.View style={[styles.secondaryButton, buttonStyle(-140)]}>
-            <TouchableOpacity style={styles.button} onPress={handlePress('Message')}>
+            <TouchableOpacity style={styles.button} onPress={handlePressMessage}>
               <Text style={styles.label}>Message</Text>
             </TouchableOpacity>
           </Animated.View>
