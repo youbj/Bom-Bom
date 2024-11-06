@@ -4,8 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from '
 import { useNavigation } from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { MainNavigatorProp } from '../../types/navigation.d'
-
-const { width, height } = Dimensions.get('window');
+import FloatingButtonStyle from '../styles/Float/FloatingButtonStyle';
 
 interface FloatingButtonProps {
   toggleOverlay: () => void;
@@ -44,7 +43,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
   const handlePressVerify = async () => {
     toggleMenu();
     // const userType = await EncryptedStorage.getItem('userType');
-    let userType = 'socialWorker';
+    let userType = 'family';
     console.log(userType);
     if (userType === 'family') {
       navigation.navigate('FloatNavigator', {
@@ -68,33 +67,33 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={FloatingButtonStyle.container}>
       {/* Secondary Buttons */}
       {isOpen && (
         <>
-          <Animated.View style={[styles.secondaryButton, buttonStyle(-70)]}>
-            <TouchableOpacity style={styles.button} onPress={handlePress('Home')}>
-              <Text style={styles.label}>Home</Text>
+          <Animated.View style={[FloatingButtonStyle.secondaryButton, buttonStyle(-70)]}>
+            <TouchableOpacity style={FloatingButtonStyle.button} onPress={handlePress('Home')}>
+              <Text style={FloatingButtonStyle.label}>Home</Text>
             </TouchableOpacity>
           </Animated.View>
 
-          <Animated.View style={[styles.secondaryButton, buttonStyle(-140)]}>
-            <TouchableOpacity style={styles.button} onPress={handlePressMessage}>
-              <Text style={styles.label}>Message</Text>
+          <Animated.View style={[FloatingButtonStyle.secondaryButton, buttonStyle(-140)]}>
+            <TouchableOpacity style={FloatingButtonStyle.button} onPress={handlePressMessage}>
+              <Text style={FloatingButtonStyle.label}>Message</Text>
             </TouchableOpacity>
           </Animated.View>
 
-          <Animated.View style={[styles.secondaryButton, buttonStyle(-210)]}>
-            <TouchableOpacity style={styles.button} onPress={handlePressVerify}>
-              <Text style={styles.label}>Verify</Text>
+          <Animated.View style={[FloatingButtonStyle.secondaryButton, buttonStyle(-210)]}>
+            <TouchableOpacity style={FloatingButtonStyle.button} onPress={handlePressVerify}>
+              <Text style={FloatingButtonStyle.label}>Verify</Text>
             </TouchableOpacity>
           </Animated.View>
         </>
       )}
 
       {/* Main Floating Button */}
-      <TouchableOpacity onPress={toggleMenu} style={styles.fab}>
-      <Text style={styles.fabText}>{isOpen ? 'X' : '+'}</Text>
+      <TouchableOpacity onPress={toggleMenu} style={FloatingButtonStyle.fab}>
+      <Text style={FloatingButtonStyle.fabText}>{isOpen ? 'X' : '+'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -102,45 +101,3 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
 
 export default FloatingButton;
 
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    right: '5%',
-    bottom: '5%',
-    alignItems: 'center',
-    zIndex: 1000, // Ensure FloatingButton is above other elements
-  },
-  fab: {
-    backgroundColor: '#6200ee',
-    width: width * 0.15,
-    height: width * 0.15,
-    borderRadius: (width * 0.15) / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 8,
-    zIndex: 1001, // Floating button above overlay
-  },
-  fabText: {
-    color: 'white',
-    fontSize: width * 0.08,
-    fontWeight: 'bold',
-  },
-  secondaryButton: {
-    position: 'absolute',
-    right: (width * 0.15 - width * 0.125) / 2,
-    bottom: height * 0.03,
-    zIndex: 1001,
-  },
-  button: {
-    backgroundColor: '#6200ee',
-    width: width * 0.125,
-    height: width * 0.125,
-    borderRadius: (width * 0.125) / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    color: 'white',
-    fontSize: width * 0.03,
-  },
-});

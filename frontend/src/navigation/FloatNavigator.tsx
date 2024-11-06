@@ -1,9 +1,9 @@
 // src/navigation/FloatNavigator.tsx
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import MessageScreen from '../screens/Message/MessageScreen';
-import FamilyVerifyRequestScreen from '../screens/Verify/FamilyVerifyRequestScreen';
-import SocialWorkerApprovalScreen from '../screens/Verify/SocialWorkerApprovalScreen';
+import MessageScreen from '../screens/Float/Message/MessageScreen';
+import FamilyVerifyRequestScreen from '../screens/Float/Verify/FamilyVerifyRequestScreen';
+import SocialWorkerApprovalScreen from '../screens/Float/Verify/SocialWorkerApprovalScreen';
 import { FloatNavigatorParamList } from '../../types/navigation.d';
 
 interface FloatNavigatorProps {

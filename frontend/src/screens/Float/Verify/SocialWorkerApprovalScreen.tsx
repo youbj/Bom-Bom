@@ -1,8 +1,10 @@
 // src/screens/Verify/SocialWorkerApprovalScreen.tsx
 import React from 'react';
-import { View, Button, FlatList, StyleSheet } from 'react-native';
-import CustomText from '../../components/CustomText';
-import CustomTextInput from '../../components/CustomTextInput';
+import { View, Button, FlatList } from 'react-native';
+import CustomText from '../../../components/CustomText';
+import SocialWorkerStyle from '../../../styles/Float/SocialWorkerStyle';
+import BackButton from '../../../components/BackButton';
+
 
 interface Request {
   id: string;
@@ -30,12 +32,12 @@ const SocialWorkerApprovalScreen: React.FC = () => {
   };
 
   const renderRequest = ({ item }: { item: Request }) => (
-    <View style={styles.requestItem}>
-      <View style={styles.textContainer}>
-        <CustomText style={styles.name}>{item.elderlyName} / {item.age} / {item.phoneNumber}</CustomText>
-        <CustomText style={styles.info}>{item.familyName} / {item.familyPhoneNumber}</CustomText>
+    <View style={SocialWorkerStyle.requestItem}>
+      <View style={SocialWorkerStyle.textContainer}>
+        <CustomText style={SocialWorkerStyle.name}>{item.elderlyName} / {item.age} / {item.phoneNumber}</CustomText>
+        <CustomText style={SocialWorkerStyle.info}>{item.familyName} / {item.familyPhoneNumber}</CustomText>
       </View>
-      <View style={styles.buttonContainer}>
+      <View style={SocialWorkerStyle.buttonContainer}>
         <Button title="승인" onPress={() => handleApprove(item.id)} color="#4CAF50" />
         <Button title="거절" onPress={() => handleReject(item.id)} color="#FF8A80" />
       </View>
@@ -43,13 +45,14 @@ const SocialWorkerApprovalScreen: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <CustomText style={styles.title}>인원 목록</CustomText>
+    <View style={SocialWorkerStyle.container}>
+      <BackButton/>
+      <CustomText style={SocialWorkerStyle.title}>인원 목록</CustomText>
       <FlatList
         data={requests}
         renderItem={renderRequest}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={SocialWorkerStyle.listContainer}
       />
     </View>
   );
@@ -57,45 +60,4 @@ const SocialWorkerApprovalScreen: React.FC = () => {
 
 export default SocialWorkerApprovalScreen;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    paddingBottom: 100,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  requestItem: {
-    backgroundColor: '#FED7C3',
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 15,
-    elevation: 3,
-  },
-  textContainer: {
-    marginBottom: 10,
-  },
-  name: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  info: {
-    fontSize: 14,
-    color: '#555',
-    marginBottom: 3,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-});
+

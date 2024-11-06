@@ -17,7 +17,7 @@ const App = (): JSX.Element => {
     const fetchUserType = async () => {
       // const storedUserType = await EncryptedStorage.getItem('userType');
       // setUserType(storedUserType);
-      setUserType('socialWorker');
+      setUserType('family');
     };
     if (isLoggedIn) {
       fetchUserType();
