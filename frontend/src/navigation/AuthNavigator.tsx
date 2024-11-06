@@ -8,15 +8,15 @@ import { AuthNavigatorProps } from '../../types/navigation.d';
 
 const Stack = createNativeStackNavigator();
 
-
 const AuthNavigator = ({ setIsLoggedIn }: AuthNavigatorProps) => {
   return (
     <Stack.Navigator initialRouteName="Splash">
       <Stack.Screen
         name="Splash"
-        component={SplashScreen}
         options={{ headerShown: false }}
-      />
+      >
+        {props => <SplashScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+      </Stack.Screen>
       <Stack.Screen
         name="Login"
         options={{ headerShown: false }}

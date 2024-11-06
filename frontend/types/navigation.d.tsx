@@ -40,6 +40,9 @@ export type LoginScreenProps = {
   setIsLoggedIn: (loggedIn: boolean) => void;
 };
 
+export type SplashScreenProps ={
+  setIsLoggedIn: (loggedIn: boolean) => void;
+}
 // 메인 페이지 이후의 StackParamList
 
 export type MainStackParamList = {

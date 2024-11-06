@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import EncryptedStorage from 'react-native-encrypted-storage';
 import CustomText from '../components/CustomText';
+
 import defaultStyle from '../styles/DefaultStyle';
 import MainStyle from '../styles/MainStyle';
 import CustomTextInput from '../components/CustomTextInput';
@@ -17,13 +19,14 @@ type Elder = {
 };
 
 const MainScreen = () => {
-  const [type, setType] = useState('S');
+  const [type, setType] = useState<string>('');
   const [title, setTitle] = useState('');
   const [result, setResult] = useState('');
   const [filteredResult, setFilteredResult] = useState<Elder[]>([]);
   const [nameCount, setNameCount] = useState(1);
   const [ageCount, setAgeCount] = useState(0);
   const enrollNavigation = useNavigation<MainToEnrollNavigationProp>();
+  const navigation = useNavigation();
 
   const onPressEnroll = () => {
     enrollNavigation.navigate('Enroll')
@@ -37,8 +40,24 @@ const MainScreen = () => {
     { index: 5, name: '임동길', address: '서울시 종로구', age: 88, gender: '남' },
   ];
 
+  // EncryptedStorage에서 type 불러오기
   useEffect(() => {
-    setTitle(type === 'S' ? '담당 독거 노인 목록' : '나의 가족 목록');
+    const fetchType = async () => {
+      try {
+        const session = await EncryptedStorage.getItem('user_session');
+        const storedType = session ? JSON.parse(session).type : '';
+        setType(storedType);
+      } catch (error) {
+        console.error('type 가져오기 오류:', error);
+      }
+    };
+
+    fetchType();
+  }, []);
+
+  // type에 따라 title 설정
+  useEffect(() => {
+    setTitle(type === 'SOCIAL_WORKER' ? '담당 독거 노인 목록' : '나의 가족 목록');
     const sortedByName = [...elderList].sort((a, b) => a.name.localeCompare(b.name));
     setFilteredResult(sortedByName);
   }, [type]);
@@ -71,6 +90,8 @@ const MainScreen = () => {
       : [...filteredResult].sort((a, b) => b.age - a.age);
     setFilteredResult(sorted);
   };
+
+
 
   return (
     <View
