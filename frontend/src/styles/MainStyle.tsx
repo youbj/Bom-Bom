@@ -4,7 +4,7 @@ const MainStyle = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: '600',
-    marginBottom: 15,
+    marginVertical: 15,
     marginLeft: 5,
   },
 

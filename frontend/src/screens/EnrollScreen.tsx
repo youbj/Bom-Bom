@@ -10,6 +10,8 @@ import defaultStyle from '../styles/DefaultStyle';
 import CustomText from '../components/CustomText';
 import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import BackButton from '../components/BackButton';
+import LogoutButton from '../components/LogoutButton';
 
 type Person = {
   name: string;
@@ -132,12 +134,15 @@ const EnrollScreen = () => {
     }
   };
 
+
   return (
     <View
       style={[
         defaultStyle.container,
         {paddingTop: 50, justifyContent: 'flex-start'},
       ]}>
+      <BackButton />
+      <LogoutButton />
       <CustomText style={enrollStyle.title}>담당 어르신 등록</CustomText>
 
       <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>
