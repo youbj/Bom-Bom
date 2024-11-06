@@ -36,9 +36,6 @@ public class MemberFcmToken {
 	@Column(name = "fcm_token", nullable = false)
 	private String fcmToken;
 
-	@Column(name = "device_info")
-	private String deviceInfo;
-
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
@@ -48,14 +45,17 @@ public class MemberFcmToken {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	public MemberFcmToken(Member member, String fcmToken, String deviceInfo) {
+	public MemberFcmToken(Member member, String fcmToken) {
 		addMember(member);
 		this.fcmToken = fcmToken;
-		this.deviceInfo = deviceInfo;
 	}
 
 	private void addMember(Member member) {
 		this.member = member;
 		member.getMemberFcmTokens().add(this);
+	}
+
+	public void updateFcmToken(String fcmToken) {
+		this.fcmToken = fcmToken;
 	}
 }
