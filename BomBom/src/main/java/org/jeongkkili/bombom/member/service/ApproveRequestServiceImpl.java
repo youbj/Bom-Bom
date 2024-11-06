@@ -49,8 +49,11 @@ public class ApproveRequestServiceImpl implements ApproveRequestService {
 				.member(socialWorker)
 				.familyId(family.getId())
 				.familyName(family.getName())
+				.familyPhoneNumber(family.getPhoneNumber())
 				.seniorId(senior.getId())
 				.seniorName(senior.getName())
+				.seniorPhoneNumber(senior.getPhoneNumber())
+				.seniorBirth(senior.getBirth())
 			.build());
 		// notificationService.notifyUser(socialWorker.getId(), "새로운 승인 요청", "새로운 보호자 승인 요청이 도착했습니다.");
 	}

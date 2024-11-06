@@ -1,6 +1,7 @@
 package org.jeongkkili.bombom.member.domain;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
@@ -42,11 +43,20 @@ public class ApproveRequest {
 	@Column(name = "senior_name", nullable = false)
 	private String seniorName;
 
+	@Column(name = "senior_phone_number", nullable = false)
+	private String seniorPhoneNumber;
+
 	@Column(name = "family_id", nullable = false)
 	private Long familyId;
 
 	@Column(name = "family_name", nullable = false)
 	private String familyName;
+
+	@Column(name = "family_phone_number", nullable = false)
+	private String familyPhoneNumber;
+
+	@Column(name = "senior_birth", nullable = false)
+	private Date seniorBirth;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "type", nullable = false)
@@ -61,12 +71,15 @@ public class ApproveRequest {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	public ApproveRequest(Member member, Long seniorId, String seniorName, Long familyId, String familyName) {
+	public ApproveRequest(Member member, Long seniorId, String seniorName, String seniorPhoneNumber, Long familyId, String familyName, String familyPhoneNumber, Date seniorBirth) {
 		addMember(member);
 		this.seniorId = seniorId;
 		this.seniorName = seniorName;
+		this.seniorPhoneNumber = seniorPhoneNumber;
 		this.familyId = familyId;
 		this.familyName = familyName;
+		this.familyPhoneNumber = familyPhoneNumber;
+		this.seniorBirth = seniorBirth;
 	}
 
 	private void addMember(Member member) {

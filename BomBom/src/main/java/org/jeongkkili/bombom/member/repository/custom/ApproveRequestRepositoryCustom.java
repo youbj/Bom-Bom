@@ -25,8 +25,10 @@ public class ApproveRequestRepositoryCustom {
 		return queryFactory.select(Projections.constructor(ApproveRequestDto.class,
 			approveRequest.member.id,
 			approveRequest.familyName,
+			approveRequest.familyPhoneNumber,
 			approveRequest.seniorName,
-			approveRequest.createdAt
+			approveRequest.seniorPhoneNumber,
+			approveRequest.seniorBirth
 			))
 			.from(approveRequest)
 			.where(approveRequest.type.eq(ApproveType.PENDING))
