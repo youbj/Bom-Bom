@@ -1,7 +1,5 @@
 package org.jeongkkili.bombom.member.controller.request;
 
-import java.util.Date;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

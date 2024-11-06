@@ -11,12 +11,14 @@ import org.jeongkkili.bombom.senior.repository.custom.SeniorRepositoryCustom;
 import org.jeongkkili.bombom.senior.service.dto.GetSeniorDetailDto;
 import org.jeongkkili.bombom.senior.service.dto.GetSeniorListDto;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Slf4j
 public class GetSeniorServiceImpl implements GetSeniorService {
 

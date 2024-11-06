@@ -12,14 +12,8 @@ public interface MemberSeniorRepository extends JpaRepository<MemberSenior, Long
 
 	Optional<MemberSenior> findByMemberAndSenior(Member member, Senior senior);
 
-	Optional<Member> findBySeniorAndIsSocialWorkerTrue(Senior senior);
-
 	default MemberSenior getOrThrow(Member member, Senior senior) {
 		return findByMemberAndSenior(member, senior)
 			.orElseThrow(() -> new AssociationNotFoundException("Association between member and senior not found"));
-	}
-
-	default Member getSocialWorkerIdBySeniorOrThrow(Senior senior) {
-		return findBySeniorAndIsSocialWorkerTrue(senior).orElseThrow(() -> new AssociationNotFoundException("Association between member and senior not found"));
 	}
 }

@@ -10,12 +10,14 @@ import org.jeongkkili.bombom.exit.repository.ExitHistoryRepository;
 import org.jeongkkili.bombom.senior.domain.Senior;
 import org.jeongkkili.bombom.senior.service.GetSeniorService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 @Slf4j
 public class EntryHistoryServiceImpl implements EntryHistoryService {
 

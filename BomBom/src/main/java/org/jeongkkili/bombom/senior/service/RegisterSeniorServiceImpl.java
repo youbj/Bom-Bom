@@ -3,7 +3,6 @@ package org.jeongkkili.bombom.senior.service;
 import java.util.List;
 
 import org.jeongkkili.bombom.member.domain.Member;
-import org.jeongkkili.bombom.member.repository.MemberRepository;
 import org.jeongkkili.bombom.member.service.MemberService;
 import org.jeongkkili.bombom.member_senior.domain.MemberSenior;
 import org.jeongkkili.bombom.member_senior.service.MemberSeniorService;
@@ -11,12 +10,14 @@ import org.jeongkkili.bombom.senior.controller.request.RegisterSeniorReq;
 import org.jeongkkili.bombom.senior.domain.Senior;
 import org.jeongkkili.bombom.senior.repository.SeniorRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 @Slf4j
 public class RegisterSeniorServiceImpl implements RegisterSeniorService {
 

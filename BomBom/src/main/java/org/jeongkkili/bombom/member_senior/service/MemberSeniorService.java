@@ -10,7 +10,11 @@ public interface MemberSeniorService {
 
 	void addAssociation(List<MemberSenior> associations);
 
-	boolean checkAssociation(Member member, Senior senior);
+	void addAssociation(Member member, Senior senior);
+
+	void checkAssociation(Member member, Senior senior);
 
 	Member getSocialWorker(Senior senior);
+
+	boolean existAssociation(Member member, Senior senior);
 }

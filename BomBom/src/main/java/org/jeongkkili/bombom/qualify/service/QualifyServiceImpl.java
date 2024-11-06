@@ -4,12 +4,14 @@ import org.jeongkkili.bombom.qualify.domain.QualifyNum;
 import org.jeongkkili.bombom.qualify.exception.QualifyNumMissingException;
 import org.jeongkkili.bombom.qualify.repository.QualifyNumRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 @Slf4j
 public class QualifyServiceImpl implements QualifyService {
 

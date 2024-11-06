@@ -36,10 +36,10 @@ public class MemberSenior {
 	private Senior senior;
 
 	@Column(name = "is_social_worker")
-	private boolean isSocialWorker;
+	private Boolean isSocialWorker;
 
 	@Builder
-	public MemberSenior(Member member, Senior senior, boolean isSocialWorker) {
+	public MemberSenior(Member member, Senior senior, Boolean isSocialWorker) {
 		addMember(member);
 		addSenior(senior);
 		this.isSocialWorker = isSocialWorker;

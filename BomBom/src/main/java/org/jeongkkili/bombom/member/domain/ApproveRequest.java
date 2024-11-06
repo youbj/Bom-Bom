@@ -8,6 +8,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,17 +48,17 @@ public class ApproveRequest {
 	@Column(name = "family_name", nullable = false)
 	private String familyName;
 
-	@Column(name = "is_approve", nullable = false)
-	@ColumnDefault("false")
-	private Boolean isApprove;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "type", nullable = false)
+	private ApproveType type = ApproveType.PENDING;
 
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
 
 	@UpdateTimestamp
-	@Column(name = "approved_at", nullable = false)
-	private LocalDateTime approvedAt;
+	@Column(name = "updated_at", nullable = false)
+	private LocalDateTime updatedAt;
 
 	@Builder
 	public ApproveRequest(Member member, Long seniorId, String seniorName, Long familyId, String familyName) {
@@ -72,7 +74,7 @@ public class ApproveRequest {
 		member.getApproveRequests().add(this);
 	}
 
-	public void changeApprove(Boolean isApprove) {
-		this.isApprove = isApprove;
+	public void changeType(ApproveType type) {
+		this.type = type;
 	}
 }
