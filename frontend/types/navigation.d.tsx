@@ -12,12 +12,14 @@ export type AuthStackParamList = {
 
 export type MainNavigatorParamList = {
   Main: undefined;
-  FloatNavigator: undefined;  // 중첩된 FloatNavigator
+  FloatNavigator: { screen: keyof FloatNavigatorParamList };
   Enroll: undefined;
 };
 
 export type FloatNavigatorParamList = {
   MessageScreen: undefined;
+  FamilyVerifyRequestScreen : undefined;
+  SocialWorkerApprovalScreen : undefined;
 };
 
 export type SplashScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Splash'>;
