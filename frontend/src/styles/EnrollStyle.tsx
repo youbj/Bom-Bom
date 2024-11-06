@@ -2,8 +2,9 @@ import { StyleSheet } from "react-native";
 
 const enrollStyle = StyleSheet.create({
   title: {
-    fontSize: 40,
-    marginBottom: 30,
+    fontSize: 30,
+    fontWeight: '600',
+    marginVertical: 20,
   },
   subContainer: {
     flexDirection: 'column',
