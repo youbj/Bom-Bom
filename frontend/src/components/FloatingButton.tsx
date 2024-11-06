@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import EncryptedStorage from 'react-native-encrypted-storage';
 import { MainNavigatorProp } from '../../types/navigation.d'
 
 const { width, height } = Dimensions.get('window');
@@ -40,9 +41,26 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
     opacity: animation,
   });
 
+  const handlePressVerify = async () => {
+    toggleMenu();
+    // const userType = await EncryptedStorage.getItem('userType');
+    let userType = 'socialWorker';
+    console.log(userType);
+    if (userType === 'family') {
+      navigation.navigate('FloatNavigator', {
+        screen: 'FamilyVerifyRequestScreen',
+      });
+    } else if (userType === 'socialWorker') {
+      navigation.navigate('FloatNavigator', {
+        screen: 'SocialWorkerApprovalScreen',
+      });
+    }
+  };
+  
+
   const handlePressMessage = () => {
     toggleMenu(); // 메뉴 닫기
-    navigation.navigate('FloatNavigator');
+    navigation.navigate('FloatNavigator', {screen: 'MessageScreen'});
   };
 
   const handlePress = (message: string) => () => {
@@ -67,7 +85,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
           </Animated.View>
 
           <Animated.View style={[styles.secondaryButton, buttonStyle(-210)]}>
-            <TouchableOpacity style={styles.button} onPress={handlePress('Verify')}>
+            <TouchableOpacity style={styles.button} onPress={handlePressVerify}>
               <Text style={styles.label}>Verify</Text>
             </TouchableOpacity>
           </Animated.View>

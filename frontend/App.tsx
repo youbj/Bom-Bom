@@ -1,15 +1,28 @@
 // App.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import AuthNavigator from './src/navigation/AuthNavigator';
 import MainNavigator from './src/navigation/MainNavigator';
 import FloatingButton from './src/components/FloatingButton';
 import Overlay from './src/components/Overlay';
-import FloatNavigator from './src/navigation/FloatNavigator';
+import EncryptedStorage from 'react-native-encrypted-storage';
+
 
 const App = (): JSX.Element => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOverlayVisible, setOverlayVisible] = useState(false);
+  const [userType, setUserType] = useState<string | null>(null); // User type: 'family' or 'socialWorker'
+
+  useEffect(() => {
+    const fetchUserType = async () => {
+      // const storedUserType = await EncryptedStorage.getItem('userType');
+      // setUserType(storedUserType);
+      setUserType('socialWorker');
+    };
+    if (isLoggedIn) {
+      fetchUserType();
+    }
+  }, [isLoggedIn]);
 
   const toggleOverlay = () => {
     setOverlayVisible(!isOverlayVisible);
@@ -19,7 +32,7 @@ const App = (): JSX.Element => {
     <NavigationContainer>
       {isLoggedIn ? (
         <>
-          <MainNavigator />
+          <MainNavigator userType={userType}/>
           {/* 오버레이 */}
           {isOverlayVisible && <Overlay onClose={toggleOverlay} />}
           {/* 플로팅 버튼 */}
