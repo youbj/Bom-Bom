@@ -11,11 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class LoginDto {
 
-	private String loginId;
-	private String name;
-	private String phoneNumber;
 	private Type type;
 	private String accessToken;
 	private String refreshToken;
-
 }

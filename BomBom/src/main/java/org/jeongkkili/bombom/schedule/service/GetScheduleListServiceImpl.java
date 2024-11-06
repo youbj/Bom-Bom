@@ -10,12 +10,14 @@ import org.jeongkkili.bombom.schedule.service.dto.ScheduleMonthDto;
 import org.jeongkkili.bombom.senior.domain.Senior;
 import org.jeongkkili.bombom.senior.service.GetSeniorService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Slf4j
 public class GetScheduleListServiceImpl implements GetScheduleListService {
 

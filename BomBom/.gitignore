@@ -314,5 +314,6 @@ gradle-app.setting
 *.hprof
 
 .env
+/src/main/resources/firebase-service-account.json
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,intellij,intellij+all,gradle,maven

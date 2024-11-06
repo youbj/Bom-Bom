@@ -44,3 +44,7 @@ cloud:
       auto: false
     s3:
       bucket: ${AWS_S3_BUCKET_NAME}
+
+firebase:
+  config:
+    file: ${FIREBASE_JSON_PATH}

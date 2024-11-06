@@ -10,12 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RegistMemberReq {
+public class ApproveRequestReq {
 
-	private String loginId;
-	private String password;
-	private String name;
-	private String phoneNumber;
-	private String type;
-	private String qualifyNum;
+	private String seniorName;
+	private String seniorPhoneNumber;
 }
