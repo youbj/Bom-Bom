@@ -6,6 +6,8 @@ import static org.jeongkkili.bombom.member_senior.domain.QMemberSenior.memberSen
 import java.util.List;
 
 import org.jeongkkili.bombom.member.domain.Member;
+import org.jeongkkili.bombom.senior.domain.Senior;
+import org.jeongkkili.bombom.senior.service.dto.GetSeniorDetailDto;
 import org.jeongkkili.bombom.senior.service.dto.GetSeniorListDto;
 import org.springframework.stereotype.Repository;
 
