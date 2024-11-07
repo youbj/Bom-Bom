@@ -25,7 +25,6 @@ public class GetConvServiceImpl implements GetConvService {
 	private final GetSeniorService getSeniorService;
 	private final MemberService memberService;
 	private final MemberSeniorService memberSeniorService;
-	private final ConversationRepository convRepository;
 	private final ConversationRepositoryCustom convRepositoryCustom;
 
 	@Override
@@ -34,5 +33,10 @@ public class GetConvServiceImpl implements GetConvService {
 		Senior senior = getSeniorService.getSeniorById(seniorId);
 		memberSeniorService.checkAssociation(member, senior);
 		return convRepositoryCustom.getConversationList(senior);
+	}
+
+	@Override
+	public Double getTodayEmotion(Senior senior) {
+		return convRepositoryCustom.getTodayEmotionAvg(senior);
 	}
 }

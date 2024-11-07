@@ -3,6 +3,7 @@ package org.jeongkkili.bombom.senior.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.jeongkkili.bombom.conversation.service.GetConvService;
 import org.jeongkkili.bombom.member.domain.Member;
 import org.jeongkkili.bombom.member.service.MemberService;
 import org.jeongkkili.bombom.member_senior.service.MemberSeniorService;
@@ -27,6 +28,7 @@ public class GetSeniorServiceImpl implements GetSeniorService {
 	private final SeniorRepository seniorRepository;
 	private final MemberService memberService;
 	private final MemberSeniorService memberSeniorService;
+	private final GetConvService getConvService;
 	private final SeniorRepositoryCustom seniorRepositoryCustom;
 
 	@Override
@@ -49,9 +51,8 @@ public class GetSeniorServiceImpl implements GetSeniorService {
 	public GetSeniorDetailDto getSeniorDetail(Long memberId, Long seniorId) {
 		Member member = memberService.getMemberById(memberId);
 		Senior senior = seniorRepository.getOrThrow(seniorId);
-		System.out.println(member.getName());
-		System.out.println(senior.getName());
 		memberSeniorService.checkAssociation(member, senior);
+		Double emotionAvg = getConvService.getTodayEmotion(senior);
 		List<MemberListBySeniorVo> familyList = senior.getMemberSeniors().stream()
 			.filter(memberSenior -> !memberSenior.getIsSocialWorker())
 			.map(memberSenior -> MemberListBySeniorVo.builder()
@@ -59,6 +60,6 @@ public class GetSeniorServiceImpl implements GetSeniorService {
 				.memberPhoneNumber(memberSenior.getMember().getPhoneNumber())
 				.build())
 			.collect(Collectors.toList());
-		return GetSeniorDetailDto.toDto(senior, familyList);
+		return GetSeniorDetailDto.toDto(senior, emotionAvg, familyList);
 	}
 }

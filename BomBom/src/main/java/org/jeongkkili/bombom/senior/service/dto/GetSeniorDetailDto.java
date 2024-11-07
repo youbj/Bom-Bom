@@ -26,9 +26,10 @@ public class GetSeniorDetailDto {
 	private String gender;
 	private Integer age;
 	private Date birth;
+	private Double todayEmotion;
 	private List<MemberListBySeniorVo> familyList;
 
-	public static GetSeniorDetailDto toDto(Senior senior, List<MemberListBySeniorVo> familyList) {
+	public static GetSeniorDetailDto toDto(Senior senior, Double todayEmotion, List<MemberListBySeniorVo> familyList) {
 		return GetSeniorDetailDto.builder()
 			.seniorId(senior.getId())
 			.name(senior.getName())
@@ -38,6 +39,7 @@ public class GetSeniorDetailDto {
 			.gender(senior.getGender().toString())
 			.birth(senior.getBirth())
 			.age(calculateAge(senior.getBirth()))
+			.todayEmotion(todayEmotion)
 			.familyList(familyList)
 			.build();
 	}

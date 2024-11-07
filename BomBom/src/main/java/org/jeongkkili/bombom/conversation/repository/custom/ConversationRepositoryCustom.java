@@ -2,6 +2,9 @@ package org.jeongkkili.bombom.conversation.repository.custom;
 
 import static org.jeongkkili.bombom.conversation.domain.QConversation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.jeongkkili.bombom.conversation.service.dto.GetConvListDto;
@@ -28,5 +31,16 @@ public class ConversationRepositoryCustom {
 			.where(conversation.senior.eq(senior))
 			.orderBy(conversation.createdAt.desc())
 			.fetch();
+	}
+
+	public Double getTodayEmotionAvg(Senior senior) {
+		LocalDate today = LocalDate.now();
+		LocalDateTime startOfDay = today.atStartOfDay();
+		LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+		return queryFactory.select(conversation.emotion.avg())
+			.from(conversation)
+			.where(conversation.senior.eq(senior)
+				.and(conversation.createdAt.between(startOfDay, endOfDay)))
+			.fetchOne();
 	}
 }
