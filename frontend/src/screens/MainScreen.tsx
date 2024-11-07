@@ -11,6 +11,12 @@ import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { MainToEnrollNavigationProp } from '../../types/navigation.d';
 import instance, { localURL } from '../api/axios';
+import LogoutButton from '../components/LogoutButton';
+
+interface MainNavigatorProps {
+  userType: string | null;
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
 type Elder = {
   index: number;
@@ -20,7 +26,7 @@ type Elder = {
   gender: string;
 };
 
-const MainScreen = () => {
+const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Element => {
   const [type, setType] = useState<string>('');
   const [title, setTitle] = useState('');
   const [result, setResult] = useState('');
@@ -104,6 +110,7 @@ const MainScreen = () => {
         { alignItems: 'flex-start', paddingTop: 50 },
       ]}
     >
+      <LogoutButton setIsLoggedIn={setIsLoggedIn} />
       <CustomText style={MainStyle.title}>{title}</CustomText>
       <CustomTextInput
         style={{ ...defaultStyle.input, marginBottom: 5 }}

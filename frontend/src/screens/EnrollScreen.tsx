@@ -14,6 +14,10 @@ import BackButton from '../components/BackButton';
 import LogoutButton from '../components/LogoutButton';
 import instance, { localURL } from '../api/axios';
 
+interface EnrollNavigatorProps {
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
 type Person = {
   name: string;
   gender: string;
@@ -22,7 +26,7 @@ type Person = {
   phoneNumber: string;
 };
 
-const EnrollScreen = () => {
+const EnrollScreen =  ({ setIsLoggedIn }: EnrollNavigatorProps): JSX.Element =>{
   const navigation = useNavigation<EnrollToMainNavigationProp>();
 
   const [people, setPeople] = useState<Person[]>([]);
@@ -152,7 +156,7 @@ const EnrollScreen = () => {
         {paddingTop: 50, justifyContent: 'flex-start'},
       ]}>
       <BackButton />
-      <LogoutButton />
+      <LogoutButton setIsLoggedIn={setIsLoggedIn}/>
       <CustomText style={enrollStyle.title}>담당 어르신 등록</CustomText>
 
       <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>

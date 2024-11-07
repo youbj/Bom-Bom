@@ -9,15 +9,18 @@ type LogoutButtonProps = {
   color?: string;
   size?: number;
   style?: object;
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const LogoutButton = ({ onPress, color = "#000000", size = 30, style }: LogoutButtonProps): JSX.Element => {
+const LogoutButton = ({ onPress, color = "#000000", size = 30, style, setIsLoggedIn }: LogoutButtonProps): JSX.Element => {
   const handleLogout = async () => {
     try {
       await EncryptedStorage.removeItem('user_session');
 
       await CookieManager.clearAll();
       
+      setIsLoggedIn(false);
+
     } catch (error) {
       console.error('로그아웃 실패:', error);
     }
