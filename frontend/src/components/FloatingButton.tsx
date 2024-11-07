@@ -42,14 +42,17 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
 
   const handlePressVerify = async () => {
     toggleMenu();
+    const session = await EncryptedStorage.getItem('user_session');
+    const sessionData = session ? JSON.parse(session) : null;
+    const userType = sessionData?.type;
     // const userType = await EncryptedStorage.getItem('userType');
-    let userType = 'family';
     console.log(userType);
-    if (userType === 'family') {
+    if (userType === 'FAMILY') {
       navigation.navigate('FloatNavigator', {
         screen: 'FamilyVerifyRequestScreen',
       });
-    } else if (userType === 'socialWorker') {
+    } else if (userType === 'SOCIAL_WORKER') {
+      console.log("여기로 왔니")
       navigation.navigate('FloatNavigator', {
         screen: 'SocialWorkerApprovalScreen',
       });

@@ -15,9 +15,10 @@ const App = (): JSX.Element => {
 
   useEffect(() => {
     const fetchUserType = async () => {
-      // const storedUserType = await EncryptedStorage.getItem('userType');
-      // setUserType(storedUserType);
-      setUserType('family');
+      const session = await EncryptedStorage.getItem('user_session');
+      const sessionData = session ? JSON.parse(session) : null;
+      const type = sessionData?.type;
+      setUserType(type);
     };
     if (isLoggedIn) {
       fetchUserType();

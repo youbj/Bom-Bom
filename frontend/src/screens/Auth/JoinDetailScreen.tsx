@@ -54,7 +54,7 @@ const JoinDetailScreen = (): JSX.Element => {
       });
       const data = response.data;
 
-      if (data === false) {
+      if (data === true) {
         setIsLicenseVerified(true);
         Alert.alert('번호 확인', '자격번호가 유효합니다.');
       } else {

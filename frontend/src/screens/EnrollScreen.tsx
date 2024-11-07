@@ -12,13 +12,14 @@ import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import BackButton from '../components/BackButton';
 import LogoutButton from '../components/LogoutButton';
+import instance, { localURL } from '../api/axios';
 
 type Person = {
   name: string;
   gender: string;
-  birthDate: string;
+  birth: string;
   address: string;
-  phone: string;
+  phoneNumber: string;
 };
 
 const EnrollScreen = () => {
@@ -28,9 +29,9 @@ const EnrollScreen = () => {
   const [currentPerson, setCurrentPerson] = useState<Person>({
     name: '',
     gender: '',
-    birthDate: '',
+    birth: '',
     address: '',
-    phone: '',
+    phoneNumber: '',
   });
 
   const handleAddPersonToList = () => {
@@ -38,9 +39,9 @@ const EnrollScreen = () => {
     setCurrentPerson({
       name: '',
       gender: '',
-      birthDate: '',
+      birth: '',
       address: '',
-      phone: '',
+      phoneNumber: '',
     });
   };
 
@@ -50,7 +51,7 @@ const EnrollScreen = () => {
     setPeople(updatedPeople);
   };
 
-  const formatBirthDate = (input: string) => {
+  const formatbirth = (input: string) => {
     const births = input.replace(/[^\d]/g, '');
     const limitedBirths = births.slice(0, 8);
 
@@ -80,13 +81,13 @@ const EnrollScreen = () => {
     {
       label: '생년월일',
       placeholder: '- 없이 입력해주세요            ex) 19990123',
-      key: 'birthDate',
+      key: 'birth',
     },
     {label: '주소', placeholder: '주소', key: 'address'},
     {
       label: '핸드폰 번호',
       placeholder: '- 없이 입력해주세요',
-      key: 'phone',
+      key: 'phoneNumber',
     },
   ];
 
@@ -94,9 +95,9 @@ const EnrollScreen = () => {
     return (
       person.name.trim() !== '' &&
       person.gender.trim() !== '' &&
-      person.birthDate.trim() !== '' &&
+      person.birth.trim() !== '' &&
       person.address.trim() !== '' &&
-      person.phone.trim() !== ''
+      person.phoneNumber.trim() !== ''
     );
   };
 
@@ -110,23 +111,32 @@ const EnrollScreen = () => {
   };
 
   const handleFinalSave = async () => {
+    console.log(people);
     if (people.length > 0) {
       try {
-        Alert.alert(
-          '최종 저장 완료',
-          '모든 정보가 서버에 저장되었습니다.',
-          [
-            {
-              text: '확인',
-              onPress: () => navigation.navigate('Main'),
-            },
-          ],
-          {cancelable: false},
-        );
+        // 서버에 데이터를 전송하는 요청
+        const response = await instance.post(`${localURL}/seniors/regist`, people); // 여기에 서버의 URL을 설정하세요.
+  
+        if (response.status === 200) {
+          Alert.alert(
+            '최종 저장 완료',
+            '모든 정보가 서버에 저장되었습니다.',
+            [
+              {
+                text: '확인',
+                onPress: () => navigation.navigate('Main'),
+              },
+            ],
+            { cancelable: false }
+          );
+        } else {
+          throw new Error('Server Error');
+        }
       } catch (error) {
+        console.error('Error saving data:', error);
         Alert.alert(
           '저장 실패',
-          '서버에 데이터를 저장하는 중 오류가 발생했습니다.',
+          '서버에 데이터를 저장하는 중 오류가 발생했습니다.'
         );
       }
     } else {
@@ -204,15 +214,15 @@ const EnrollScreen = () => {
                 style={[defaultStyle.input, {marginBottom: 10}]}
                 value={currentPerson[field.key]}
                 onChangeText={text => {
-                  if (field.key === 'birthDate') {
+                  if (field.key === 'birth') {
                     setCurrentPerson({
                       ...currentPerson,
-                      birthDate: formatBirthDate(text),
+                      birth: formatbirth(text),
                     });
-                  } else if (field.key === 'phone') {
+                  } else if (field.key === 'phoneNumber') {
                     setCurrentPerson({
                       ...currentPerson,
-                      phone: formatPhoneNumber(text),
+                      phoneNumber: formatPhoneNumber(text),
                     });
                   } else {
                     setCurrentPerson({...currentPerson, [field.key]: text});
@@ -234,7 +244,7 @@ const EnrollScreen = () => {
             {people.map((person, index) => (
               <View key={index} style={enrollStyle.personListItem}>
                 <CustomText style={{fontWeight: '500'}}>
-                  {index + 1}. {person.name} {person.birthDate}
+                  {index + 1}. {person.name} {person.birth}
                 </CustomText>
                 <TouchableOpacity onPress={() => handleRemovePerson(index)}>
                   <Icon name="delete" size={30} color="#F4A488" />

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import axios from 'axios';
 import CustomText from '../components/CustomText';
 
 import defaultStyle from '../styles/DefaultStyle';
@@ -9,6 +10,7 @@ import MainStyle from '../styles/MainStyle';
 import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { MainToEnrollNavigationProp } from '../../types/navigation.d';
+import instance, { localURL } from '../api/axios';
 
 type Elder = {
   index: number;
@@ -26,19 +28,10 @@ const MainScreen = () => {
   const [nameCount, setNameCount] = useState(1);
   const [ageCount, setAgeCount] = useState(0);
   const enrollNavigation = useNavigation<MainToEnrollNavigationProp>();
-  const navigation = useNavigation();
 
   const onPressEnroll = () => {
-    enrollNavigation.navigate('Enroll')
+    enrollNavigation.navigate('Enroll');
   };
-
-  const elderList: Elder[] = [
-    { index: 1, name: '박정의', address: '서울시 강남구', age: 75, gender: '여' },
-    { index: 2, name: '유병주', address: '서울시 강서구', age: 77, gender: '남' },
-    { index: 3, name: '윤정섭', address: '서울시 강북구', age: 81, gender: '남' },
-    { index: 4, name: '이강현', address: '서울시 강동구', age: 73, gender: '여' },
-    { index: 5, name: '임동길', address: '서울시 종로구', age: 88, gender: '남' },
-  ];
 
   // EncryptedStorage에서 type 불러오기
   useEffect(() => {
@@ -55,27 +48,40 @@ const MainScreen = () => {
     fetchType();
   }, []);
 
+  // elderList 데이터 가져오기
+  useEffect(() => {
+    const fetchElderList = async () => {
+      try {
+        const response = await instance.get(`${localURL}/seniors/list`); // 실제 API 엔드포인트로 변경하세요.
+        setFilteredResult(response.data);
+      } catch (error) {
+        console.error('Failed to fetch elder list:', error);
+        Alert.alert('데이터를 불러오는 데 실패했습니다.');
+      }
+    };
+
+    fetchElderList();
+  }, []);
+
   // type에 따라 title 설정
   useEffect(() => {
     setTitle(type === 'SOCIAL_WORKER' ? '담당 독거 노인 목록' : '나의 가족 목록');
-    const sortedByName = [...elderList].sort((a, b) => a.name.localeCompare(b.name));
-    setFilteredResult(sortedByName);
   }, [type]);
 
   const handleSearch = () => {
     const filtered = result
-      ? elderList.filter(elder => elder.name.includes(result))
-      : elderList;
+      ? filteredResult.filter(elder => elder.name.includes(result))
+      : filteredResult;
     setFilteredResult(filtered);
   };
 
   const sortByName = () => {
     if (ageCount > 0) setAgeCount(0);
-    const updatedCount = (nameCount + 1) % 3 || 1; 
+    const updatedCount = (nameCount + 1) % 3 || 1;
     setNameCount(updatedCount);
 
     const sorted = updatedCount === 2
-      ? [...filteredResult].sort((a, b) => b.name.localeCompare(a.name)) 
+      ? [...filteredResult].sort((a, b) => b.name.localeCompare(a.name))
       : [...filteredResult].sort((a, b) => a.name.localeCompare(b.name));
     setFilteredResult(sorted);
   };
@@ -90,8 +96,6 @@ const MainScreen = () => {
       : [...filteredResult].sort((a, b) => b.age - a.age);
     setFilteredResult(sorted);
   };
-
-
 
   return (
     <View
