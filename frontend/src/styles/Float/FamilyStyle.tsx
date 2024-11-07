@@ -10,7 +10,7 @@ const FamilyStyle = StyleSheet.create({
       fontSize: 24,
       fontWeight: 'bold',
       textAlign: 'center',
-      marginVertical: 30,
+      marginBottom: 30,
     },
     inputContainer: {
       marginBottom: 15,

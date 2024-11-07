@@ -32,7 +32,9 @@ const MainNavigator = ({
       />
       <Stack.Screen
         name="Enroll"
-        component={EnrollScreen}
+        children={() => (
+          <EnrollScreen setIsLoggedIn={setIsLoggedIn} />
+        )}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

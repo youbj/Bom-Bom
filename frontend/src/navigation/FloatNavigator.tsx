@@ -15,13 +15,13 @@ const Stack = createNativeStackNavigator<FloatNavigatorParamList>();
 const FloatNavigator: React.FC<FloatNavigatorProps> = ({ userType }) => (
   <Stack.Navigator>
     <Stack.Screen name="MessageScreen" component={MessageScreen} options={{ headerShown:false }} />
-    {userType === 'family' ? (
+    {userType === 'FAMILY' ? (
       <Stack.Screen
         name="FamilyVerifyRequestScreen"
         component={FamilyVerifyRequestScreen}
         options={{ headerShown:false }}
       />
-    ) : userType === 'socialWorker' ? (
+    ) : userType === 'SOCIAL_WORKER' ? (
       <Stack.Screen
         name="SocialWorkerApprovalScreen"
         component={SocialWorkerApprovalScreen}
