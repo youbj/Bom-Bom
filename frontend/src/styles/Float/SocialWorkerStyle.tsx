@@ -9,7 +9,7 @@ const SocialWorkerStyle = StyleSheet.create({
     },
     title: {
       fontSize: 24,
-      fontWeight: 'bold',
+      fontWeight: '600',
       marginVertical: 20,
       textAlign: 'center',
     },
@@ -28,7 +28,7 @@ const SocialWorkerStyle = StyleSheet.create({
     },
     name: {
       fontSize: 18,
-      fontWeight: 'bold',
+      fontWeight: '500',
       marginBottom: 5,
     },
     info: {

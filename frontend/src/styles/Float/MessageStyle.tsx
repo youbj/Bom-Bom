@@ -9,7 +9,7 @@ const MessageStyle = StyleSheet.create({
     },
     title: {
       fontSize: 24,
-      fontWeight: 'bold',
+      fontWeight: '600',
       marginBottom: 20,
       textAlign: 'center',
     },
@@ -29,7 +29,7 @@ const MessageStyle = StyleSheet.create({
     buttonText: {
       color: '#000',
       fontSize: 16,
-      fontWeight: 'bold',
+      fontWeight: '600',
     },
   });
 

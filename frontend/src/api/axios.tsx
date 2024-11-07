@@ -2,7 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import CookieManager from '@react-native-cookies/cookies'; 
 import EncryptedStorage from 'react-native-encrypted-storage';
 
-export const localURL = 'http://10.0.2.2:8080/api/v1'
+export const localURL = 'http://k11a202.p.ssafy.io:8080/api/v1'
 
 const instance = axios.create({
   baseURL: localURL,

@@ -7,6 +7,7 @@ import defaultStyle from '../../styles/DefaultStyle';
 import joinStyle from '../../styles/Auth/JoinStyle';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {JoinScreenNavigationProp} from '../../../types/navigation.d';
+import BackButton from '../../components/BackButton';
 
 const JoinScreen = (): JSX.Element => {
   const navigation = useNavigation<JoinScreenNavigationProp>();
@@ -18,6 +19,7 @@ const JoinScreen = (): JSX.Element => {
 
   return (
     <View style={defaultStyle.container}>
+      <BackButton />
       <CustomText style={joinStyle.title}>회원 가입</CustomText>
       <View style={{height: 20}}></View>
       <CustomText style={{fontSize: 20, color: '#aaa'}}>

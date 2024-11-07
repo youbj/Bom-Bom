@@ -169,7 +169,7 @@ const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Elemen
               </View>
               <View style={[MainStyle.subList, { alignItems: 'flex-end' }]}>
                 <CustomText style={MainStyle.listText}>
-                  {elder.age} / {elder.gender}
+                  {elder.age} / {elder.gender === 'MALE' ? '남' : elder.gender === 'FEMALE' ? '여' : elder.gender}
                 </CustomText>
               </View>
             </TouchableOpacity>
