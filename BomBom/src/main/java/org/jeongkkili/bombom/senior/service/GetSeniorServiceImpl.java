@@ -1,6 +1,7 @@
 package org.jeongkkili.bombom.senior.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jeongkkili.bombom.member.domain.Member;
 import org.jeongkkili.bombom.member.service.MemberService;
@@ -10,6 +11,7 @@ import org.jeongkkili.bombom.senior.repository.SeniorRepository;
 import org.jeongkkili.bombom.senior.repository.custom.SeniorRepositoryCustom;
 import org.jeongkkili.bombom.senior.service.dto.GetSeniorDetailDto;
 import org.jeongkkili.bombom.senior.service.dto.GetSeniorListDto;
+import org.jeongkkili.bombom.senior.service.vo.MemberListBySeniorVo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +49,16 @@ public class GetSeniorServiceImpl implements GetSeniorService {
 	public GetSeniorDetailDto getSeniorDetail(Long memberId, Long seniorId) {
 		Member member = memberService.getMemberById(memberId);
 		Senior senior = seniorRepository.getOrThrow(seniorId);
+		System.out.println(member.getName());
+		System.out.println(senior.getName());
 		memberSeniorService.checkAssociation(member, senior);
-		return GetSeniorDetailDto.toDto(senior);
+		List<MemberListBySeniorVo> familyList = senior.getMemberSeniors().stream()
+			.filter(memberSenior -> !memberSenior.getIsSocialWorker())
+			.map(memberSenior -> MemberListBySeniorVo.builder()
+				.memberName(memberSenior.getMember().getName())
+				.memberPhoneNumber(memberSenior.getMember().getPhoneNumber())
+				.build())
+			.collect(Collectors.toList());
+		return GetSeniorDetailDto.toDto(senior, familyList);
 	}
 }

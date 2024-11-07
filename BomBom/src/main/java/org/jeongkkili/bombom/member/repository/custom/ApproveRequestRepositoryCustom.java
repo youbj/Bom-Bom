@@ -23,7 +23,7 @@ public class ApproveRequestRepositoryCustom {
 
 	public List<ApproveRequestDto> getRequestList(Member member) {
 		return queryFactory.select(Projections.constructor(ApproveRequestDto.class,
-			approveRequest.member.id,
+			approveRequest.id,
 			approveRequest.familyName,
 			approveRequest.familyPhoneNumber,
 			approveRequest.seniorName,

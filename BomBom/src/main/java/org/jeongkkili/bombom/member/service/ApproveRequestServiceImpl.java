@@ -74,7 +74,7 @@ public class ApproveRequestServiceImpl implements ApproveRequestService {
 		Member family = memberService.getMemberById(req.getFamilyId());
 		Senior senior = getSeniorService.getSeniorById(req.getSeniorId());
 		req.changeType(ApproveType.APPROVED);
-		memberSeniorService.addAssociation(member, senior);
+		memberSeniorService.addAssociation(family, senior);
 		// notificationService.notifyUser(family.getId(), "승인 완료", "보호자 승인 요청이 승인되었습니다.");
 	}
 
