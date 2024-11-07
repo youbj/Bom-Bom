@@ -21,7 +21,7 @@ public class GetConvController {
 
 	@RequireJwtoken
 	@GetMapping("/list")
-	public ResponseEntity<List<GetConvListDto>> getConvList(@RequestParam Long seniorId) {
+	public ResponseEntity<List<GetConvListDto>> getConvList(@RequestParam("senior-id") Long seniorId) {
 		Long memberId = MemberContext.getMemberId();
 		return ResponseEntity.ok(getConvService.getConvList(memberId, seniorId));
 	}

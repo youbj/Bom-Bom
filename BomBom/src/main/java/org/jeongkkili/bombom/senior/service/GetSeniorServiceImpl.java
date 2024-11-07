@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.jeongkkili.bombom.conversation.service.GetConvService;
+import org.jeongkkili.bombom.conversation.service.GetEmotionService;
 import org.jeongkkili.bombom.member.domain.Member;
 import org.jeongkkili.bombom.member.service.MemberService;
 import org.jeongkkili.bombom.member_senior.service.MemberSeniorService;
@@ -28,7 +29,7 @@ public class GetSeniorServiceImpl implements GetSeniorService {
 	private final SeniorRepository seniorRepository;
 	private final MemberService memberService;
 	private final MemberSeniorService memberSeniorService;
-	private final GetConvService getConvService;
+	private final GetEmotionService getEmotionService;
 	private final SeniorRepositoryCustom seniorRepositoryCustom;
 
 	@Override
@@ -52,7 +53,7 @@ public class GetSeniorServiceImpl implements GetSeniorService {
 		Member member = memberService.getMemberById(memberId);
 		Senior senior = seniorRepository.getOrThrow(seniorId);
 		memberSeniorService.checkAssociation(member, senior);
-		Double emotionAvg = getConvService.getTodayEmotion(senior);
+		Double emotionAvg = getEmotionService.getTodayEmotionAvg(senior);
 		List<MemberListBySeniorVo> familyList = senior.getMemberSeniors().stream()
 			.filter(memberSenior -> !memberSenior.getIsSocialWorker())
 			.map(memberSenior -> MemberListBySeniorVo.builder()
