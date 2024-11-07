@@ -32,8 +32,8 @@ class SpeakerType(str, Enum):
 class HealthMetrics(BaseModel):
     """건강 지표 모델"""
     status: HealthStatus
-    physical_health: Dict[str, float] = {}  # 신체 건강 지표
-    mental_health: Dict[str, float] = {}    # 정신 건강 지표
+    physical_health: Dict[str, float] = {}
+    mental_health: Dict[str, float] = {} 
     sleep_quality: Optional[float] = None
     appetite_level: Optional[float] = None
     

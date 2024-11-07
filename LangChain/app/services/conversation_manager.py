@@ -1,12 +1,10 @@
-
 from fastapi import Depends
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 import uuid
 import logging
 from datetime import datetime
 from app.services.gpt_service import GPTService
 from app.services.conversation_analyzer import ConversationAnalyzer
-from app.services.kafka_manager import KafkaManager
 from app.database.mysql_manager import MySQLManager
 from app.models.schema import SpeakerType, ConversationMessage
 
@@ -17,7 +15,6 @@ class ConversationManager:
         """대화 관리 시스템 초기화"""
         self.gpt_service = GPTService()
         self.analyzer = ConversationAnalyzer()
-        self.kafka_manager = KafkaManager()
         self.mysql_manager = MySQLManager()
         self.current_conversation_id = None
     
@@ -33,11 +30,7 @@ class ConversationManager:
                 self.current_conversation_id = self.start_conversation()
 
             # 최근 대화 컨텍스트 조회
-            try:
-                recent_contexts = self.kafka_manager.get_recent_conversations()
-            except Exception as e:
-                logger.warning(f"Kafka 연결 실패, 빈 컨텍스트 사용: {str(e)}")
-                recent_contexts = []
+            recent_contexts = []  # Kafka 제거, 빈 컨텍스트로 시작
         
             # 감정 분석
             sentiment_analysis = self.analyzer.analyze_sentiment(text)
@@ -51,7 +44,7 @@ class ConversationManager:
                 recent_context=[msg.get('text_content', '') for msg in recent_contexts]
             )
             
-            # 대화 저장 (Kafka & MySQL)
+            # 대화 저장 (MySQL만 유지)
             conversation_data = ConversationMessage(
                 conversation_id=self.current_conversation_id,
                 speaker_type=SpeakerType.USER,
@@ -60,7 +53,6 @@ class ConversationManager:
                 summary=text_summary
             )
             
-            self.kafka_manager.store_conversation(conversation_data.dict())
             self.mysql_manager.save_conversation(conversation_data.dict())
             
             return {
