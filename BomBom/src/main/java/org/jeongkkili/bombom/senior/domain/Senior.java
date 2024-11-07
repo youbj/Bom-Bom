@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.jeongkkili.bombom.conversation.domain.Conversation;
 import org.jeongkkili.bombom.entry.domain.EntryHistory;
 import org.jeongkkili.bombom.exit.domain.ExitHistory;
 import org.jeongkkili.bombom.member_senior.domain.MemberSenior;
@@ -75,6 +76,9 @@ public class Senior {
 
 	@OneToMany(mappedBy = "senior")
 	private List<Schedule> schedules = new ArrayList<>();
+
+	@OneToMany(mappedBy = "senior")
+	private List<Conversation> conversations = new ArrayList<>();
 
 	@Builder
 	public Senior(String name, String phoneNumber, String address, Gender gender, Date birth) {
