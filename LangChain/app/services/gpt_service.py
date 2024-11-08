@@ -87,7 +87,8 @@ class GPTService:
             verbose=True,
             max_iterations=3,
             early_stopping_method="force",
-            handle_parsing_errors=True
+            handle_parsing_errors=True,
+            return_intermediate_steps=True
         )
 
     async def _validate_response(self, response: str, context: str = "") -> Dict:
@@ -161,8 +162,8 @@ class GPTService:
             return {
                 "감정_상태": "중립적",
                 "감정_수치": {
-                    "긍정": 50,
-                    "부정": 50
+                    "긍정": 0.01,
+                    "부정": 0.01
                 },
                 "위험_수준": "없음",
                 "주요_키워드": [],
@@ -216,42 +217,49 @@ class GPTService:
             }
 
     async def generate_response(self,
-                            user_message: str,
-                            recent_context: Optional[List[str]] = None) -> Dict:
+                        user_message: str,
+                        recent_context: Optional[List[str]] = None) -> Dict:
         """GPT를 사용하여 응답 생성"""
         try:
             # 1. Agent로 응답 생성
             agent_response = await self.agent_executor.ainvoke({
                 "input": user_message
             })
-            
+
             response_text = agent_response["output"]
             logger.info(f"Agent response: {response_text}")
 
             # 2. 응답 검증
             validation = await self._validate_response(response_text)
             logger.info(f"Validation result: {validation}")
-            
-            # 3. 대화 분석
-            analysis = await self._analyze_conversation(user_message, response_text)
-            logger.info(f"Conversation analysis: {analysis}")
+
+            # 3. 먼저 사용자 메시지 분석
+            user_analysis = await self._analyze_single_message(user_message)
+            logger.info(f"User message analysis: {user_analysis}")
+
+            # 4. 전체 대화 분석
+            conversation_analysis = await self._analyze_conversation(user_message, response_text)
+            logger.info(f"Full conversation analysis: {conversation_analysis}")
 
             # Agent의 중간 단계 결과 로깅
             if "intermediate_steps" in agent_response:
                 logger.info(f"Intermediate steps: {agent_response['intermediate_steps']}")
-                
-            # Memory에 대화 저장 (이미 Agent의 Memory에도 저장되어 있음)
+
+            # Memory에 대화 저장
             self.memory.save_context(
                 {"input": user_message},
                 {"output": response_text}
             )
 
+            # 5. 모든 분석 결과를 포함하여 반환
             return {
                 "response_text": response_text,
                 "validation": validation,
-                "analysis": analysis
+                "user_analysis": user_analysis,
+                "conversation_analysis": conversation_analysis,
+                "intermediate_steps": agent_response.get("intermediate_steps", [])
             }
-            
+
         except Exception as e:
-            logger.error(f"GPT 응답 생성 실패: {str(e)}")
+            logger.error(f"GPT 응답 생성 실패: {str(e)}", exc_info=True)  # 상세한 에러 정보 로깅
             raise

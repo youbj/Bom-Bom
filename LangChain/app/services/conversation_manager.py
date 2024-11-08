@@ -59,7 +59,7 @@ class ConversationManager:
                 "text_response": gpt_response['response_text'],
                 "sentiment_analysis": sentiment_analysis,
                 "text_summary": text_summary,
-                "analysis": gpt_response['analysis']
+                "analysis": gpt_response.get('conversation_analysis', {})
             }
             
         except Exception as e:
