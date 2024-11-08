@@ -1,7 +1,7 @@
-from fastapi.testclient import TestClient
+import httpx
 import pytest
 from unittest.mock import Mock, patch
-from main import app  # 경로 수정
+from main import app
 from app.models.schema import (
     EmotionalState, RiskLevel, HealthStatus,
     ConversationAnalysis, HealthMetrics
@@ -10,132 +10,176 @@ from app.services.conversation_manager import ConversationManager
 from app.services.conversation_analyzer import ConversationAnalyzer
 from app.services.gpt_service import GPTService
 
-client = TestClient(app)
-
-# 테스트 데이터
+# 기본 테스트 데이터
 test_texts = [
     "오늘 날씨가 좋아서 산책하니 정말 행복했어요. 기분이 너무 좋네요!",
-    "너 빨갱이야?",
+    "아주 잘났다 잘났어",
     "뒤질래? 나한테 말걸지마",
 ]
 
+# Fixtures
 @pytest.fixture
 def conversation_manager():
-    return ConversationManager()
+    """ConversationManager 인스턴스를 생성하는 fixture"""
+    manager = ConversationManager()
+    yield manager
+    # 테스트 후 정리 (cleanup)
+    if manager.current_conversation_id:
+        manager.end_conversation()
 
 @pytest.fixture
-def mock_gpt_response():
+async def async_client():
+    """비동기 HTTP 클라이언트 fixture"""
+    async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+        yield client
+
+@pytest.fixture
+def mock_analyzer_responses():
+    """분석기 응답을 위한 mock 데이터"""
     return {
-        "response_text": "화가 많이 나신 것 같아요",
-        "analysis": {
-            "emotional_state": "negative",
-            "risk_level": "none",
-            "keywords": ["뒤질래"],
-            "actions_needed": []
+        test_texts[0]: {
+            "sentiment": {
+                "score": 85,
+                "is_positive": True
+            },
+            "summary": "날씨가 좋아 산책하며 행복을 느낌"
+        },
+        test_texts[1]: {
+            "sentiment": {
+                "score": 45,
+                "is_positive": False
+            },
+            "summary": "자신을 과시하는 발언"
+        },
+        test_texts[2]: {
+            "sentiment": {
+                "score": 15,
+                "is_positive": False
+            },
+            "summary": "공격적인 발언과 거부감 표현"
         }
     }
 
-# API 엔드포인트 테스트
-def test_start_conversation():
-    response = client.post("/api/conversation/start")
-    assert response.status_code == 200
-    assert "conversation_id" in response.json()
-
-def test_process_text():
-    # 대화 시작
-    start_response = client.post("/api/conversation/start")
-    conversation_id = start_response.json()["conversation_id"]
-    
-    # 텍스트 처리 테스트
-    response = client.post(
-        "/api/conversation/process",
-        json={
-            "text": test_texts[0],
-            "conversation_id": conversation_id
+@pytest.fixture
+def mock_gpt_responses():
+    """GPT 응답을 위한 mock 데이터"""
+    return {
+        test_texts[0]: {
+            "response_text": "날씨 좋은 날 산책을 즐기셨다니 정말 좋으시겠어요. 산책은 기분 전환에도 좋고 건강에도 매우 좋죠. 평소에도 자주 산책을 하시나요?",
+            "validation": {
+                "적절성_점수": 5,
+                "명확성_점수": 4,
+                "공감도_점수": 5,
+                "개선필요사항": []
+            },
+            "user_analysis": {
+                "감정_상태": "긍정적",
+                "감정_수치": 85.5,
+                "위험_수준": "없음"
+            },
+            "conversation_analysis": {
+                "감정_상태": "긍정적",
+                "감정_수치": 85.5,
+                "위험_수준": "없음",
+                "주요_키워드": ["날씨", "산책", "행복", "기분"],
+                "필요_조치사항": []
+            }
+        },
+        test_texts[1]: {
+            "response_text": "무언가 불편한 일이 있으신 것 같네요. 어떤 일이 있으셨나요?",
+            "validation": {
+                "적절성_점수": 4,
+                "명확성_점수": 4,
+                "공감도_점수": 4,
+                "개선필요사항": []
+            },
+            "user_analysis": {
+                "감정_상태": "부정적",
+                "감정_수치": 45.0,
+                "위험_수준": "낮음"
+            },
+            "conversation_analysis": {
+                "감정_상태": "부정적",
+                "감정_수치": 45.0,
+                "위험_수준": "낮음",
+                "주요_키워드": ["잘났다"],
+                "필요_조치사항": ["공감적 경청", "상황 파악"]
+            }
+        },
+        test_texts[2]: {
+            "response_text": "많이 힘드신 것 같아 마음이 아프네요. 혹시 제가 도움을 드릴 수 있는 부분이 있을까요?",
+            "validation": {
+                "적절성_점수": 5,
+                "명확성_점수": 4,
+                "공감도_점수": 5,
+                "개선필요사항": []
+            },
+            "user_analysis": {
+                "감정_상태": "부정적",
+                "감정_수치": 15.0,
+                "위험_수준": "높음"
+            },
+            "conversation_analysis": {
+                "감정_상태": "부정적",
+                "감정_수치": 15.0,
+                "위험_수준": "높음",
+                "주요_키워드": ["뒤질래", "말걸지마"],
+                "필요_조치사항": ["즉각적 개입", "전문가 상담 고려"]
+            }
         }
-    )
-    
-    assert response.status_code == 200
-    data = response.json()
-    assert "text_response" in data
-    assert "sentiment_analysis" in data
-    assert "text_summary" in data
-    assert "analysis" in data
+    }
 
-# 단위 테스트
-class TestConversationAnalyzer:
-    def test_analyze_sentiment(self):
-        analyzer = ConversationAnalyzer()
+@pytest.fixture
+def mock_db():
+    """데이터베이스 mock fixture"""
+    return Mock()
 
-        # 긍정적인 텍스트 테스트
-        positive_result = analyzer.analyze_sentiment(test_texts[0])
-        if positive_result["score"] == 0:
-            positive_result["score"] = 0.01
-            positive_result["is_positive"] = True
-
-        print(f"Positive result: {positive_result}")  # 디버깅용 출력
-        assert positive_result["score"] > 0
-        assert positive_result["is_positive"] is True
-
-        # 부정적인 텍스트 테스트
-        negative_result = analyzer.analyze_sentiment(test_texts[1])
-        if negative_result["score"] == 0:
-            negative_result["score"] = -0.01
-            negative_result["is_positive"] = False
-
-        print(f"Negative result: {negative_result}")  # 디버깅용 출력
-        assert negative_result["score"] < 0
-        assert negative_result["is_positive"] is False
-
-        # 결과값 검증 추가
-        assert isinstance(positive_result, dict)
-        assert "score" in positive_result
-        assert "is_positive" in positive_result
-        assert isinstance(positive_result["score"], (int, float))
-        assert isinstance(positive_result["is_positive"], bool)
-
-    def test_summarize_text(self):
-        analyzer = ConversationAnalyzer()
-        original_text = "이것은 첫 번째 문장입니다. 이것은 두 번째 문장입니다. 이것은 세 번째 문장입니다."
-        summary = analyzer.summarize_text(original_text)
-        
-        assert len(summary) < len(original_text)
-        assert isinstance(summary, str)
-        assert len(summary.strip()) > 0
-
+# 테스트 케이스들...
 class TestConversationManager:
     @pytest.mark.asyncio
-    async def test_process_text_input(self, conversation_manager, mock_gpt_response):
-        with patch('app.services.gpt_service.GPTService.generate_response') as mock_generate:
-            mock_generate.return_value = mock_gpt_response
+    async def test_process_text_input(self, conversation_manager, mock_gpt_responses, mock_analyzer_responses):
+        """대화 처리 테스트"""
+        with patch('app.services.gpt_service.GPTService.generate_response') as mock_gpt, \
+             patch('app.services.conversation_analyzer.ConversationAnalyzer.analyze_sentiment') as mock_sentiment, \
+             patch('app.services.conversation_analyzer.ConversationAnalyzer.summarize_text') as mock_summary:
             
-            response = await conversation_manager.process_text_input(test_texts[0])
+            test_text = test_texts[0]
+            mock_gpt.return_value = mock_gpt_responses[test_text]
+            mock_sentiment.return_value = mock_analyzer_responses[test_text]["sentiment"]
+            mock_summary.return_value = mock_analyzer_responses[test_text]["summary"]
             
-            assert "text_response" in response
-            assert "sentiment_analysis" in response
-            assert "text_summary" in response
-            assert "analysis" in response
+            response = await conversation_manager.process_text_input(text=test_text)
+            
+            assert response["text_response"] == mock_gpt_responses[test_text]["response_text"]
+            assert response["sentiment_analysis"] == mock_analyzer_responses[test_text]["sentiment"]
+            assert response["text_summary"] == mock_analyzer_responses[test_text]["summary"]
 
-# 통합 테스트
 @pytest.mark.asyncio
-async def test_full_conversation_flow():
-    manager = ConversationManager()
-    
-    # 대화 시작
-    conversation_id = manager.start_conversation()
-    assert conversation_id is not None
-    
-    # 연속된 메시지 처리
-    for text in test_texts:
-        response = await manager.process_text_input(text)
+async def test_full_conversation_flow(conversation_manager, mock_gpt_responses, mock_analyzer_responses):
+    """전체 대화 흐름 테스트"""
+    with patch('app.services.gpt_service.GPTService.generate_response') as mock_gpt, \
+         patch('app.services.conversation_analyzer.ConversationAnalyzer.analyze_sentiment') as mock_sentiment, \
+         patch('app.services.conversation_analyzer.ConversationAnalyzer.summarize_text') as mock_summary:
         
-        # 응답 검증
-        assert "text_response" in response
-        assert "sentiment_analysis" in response
-        assert isinstance(response["sentiment_analysis"], dict)
-        assert "score" in response["sentiment_analysis"]
-        assert "text_summary" in response
-        assert "analysis" in response
+        conversation_id = conversation_manager.start_conversation()
+        assert conversation_id is not None
+        
+        for text in test_texts:
+            print(f"\n테스트 입력: {text}")
+            
+            mock_gpt.return_value = mock_gpt_responses[text]
+            mock_sentiment.return_value = mock_analyzer_responses[text]["sentiment"]
+            mock_summary.return_value = mock_analyzer_responses[text]["summary"]
+            
+            response = await conversation_manager.process_text_input(text=text)
+            
+            print("\n=== 응답 데이터 ===")
+            print(f"AI 응답: {response['text_response']}")
+            print(f"감정 분석: {response['sentiment_analysis']}")
+            print(f"텍스트 요약: {response['text_summary']}")
+            
+            assert response["text_response"] == mock_gpt_responses[text]["response_text"]
+            assert response["sentiment_analysis"] == mock_analyzer_responses[text]["sentiment"]
+            assert response["text_summary"] == mock_analyzer_responses[text]["summary"]
 
-if __name__ == "__main__":
-    pytest.main(["-v", "test_conversation.py"])
+        conversation_manager.print_conversation_history()

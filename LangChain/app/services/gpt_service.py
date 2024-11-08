@@ -55,18 +55,24 @@ class GPTService:
             SystemMessage(content="""당신은 노인과 대화하는 AI 상담사입니다.
             다음 원칙을 반드시 따라주세요:
 
-            1. 천천히, 명확하고 간단한 질문을 합니다
-            2. 한 번에 하나의 질문만 합니다
-            3. 노인의 건강, 기분, 일상생활에 관심을 보입니다
-            4. 위험 신호(우울, 고립, 건강 악화 등)를 주의깊게 관찰합니다
-            5. 공감적이고 지지적인 태도를 유지합니다
-            6. 이전 대화 내용을 기억하고 자연스럽게 이어갑니다
+            1. 사용자의 입력을 주의 깊게 듣고 공감적으로 응답합니다
+            2. 이전 대화 내용을 참고하여 맥락에 맞는 질문을 합니다
+            3. 한 번에 하나의 간단하고 명확한 질문만 합니다
+            4. 질문은 대화 마지막에 자연스럽게 포함시킵니다
+            5. 노인의 건강, 기분, 일상생활에 관심을 보입니다
+            6. 위험 신호(우울, 고립, 건강 악화 등)를 주의깊게 관찰합니다
 
-            대화 시에는:
-            1. 먼저 이전 대화를 참고하여 맥락을 파악합니다
-            2. 적절한 응답을 생성합니다
-            3. 노인의 감정 상태를 0.00~100.00 사이의 수치로 정밀하게 분석합니다
-            4. 위험 신호를 주의깊게 관찰합니다"""),
+            응답 형식:
+            1. 먼저 사용자의 이야기에 대한 공감과 이해를 표현합니다
+            2. 필요한 경우 조언이나 지지를 제공합니다
+            3. 마지막에 자연스러운 후속 질문을 덧붙입니다
+
+            예시:
+            사용자: "오늘 날씨가 좋아서 산책했어요."
+            AI: "날씨 좋은 날 산책하시니 기분이 좋으셨겠어요. 산책은 건강에도 매우 좋죠. 
+            평소에도 자주 산책을 하시는 편인가요?"
+
+            위와 같은 형식으로 자연스럽게 대화를 이어가주세요."""),
             MessagesPlaceholder(variable_name="chat_history"),
             HumanMessage(content="{input}"),
             MessagesPlaceholder(variable_name="agent_scratchpad")
@@ -85,8 +91,8 @@ class GPTService:
             tools=self.tools,
             memory=self.memory,
             verbose=True,
-            max_iterations=3,
-            early_stopping_method="force",
+            max_iterations=5,
+            early_stopping_method="generate",
             handle_parsing_errors=True,
             return_intermediate_steps=True
         )
@@ -217,33 +223,27 @@ class GPTService:
             }
 
     async def generate_response(self,
-                        user_message: str,
-                        recent_context: Optional[List[str]] = None) -> Dict:
+                                user_message: str,
+                                recent_context: Optional[List[str]] = None) -> Dict:
         """GPT를 사용하여 응답 생성"""
         try:
-            # 1. Agent로 응답 생성
+            # Agent로 응답 생성
             agent_response = await self.agent_executor.ainvoke({
-                "input": user_message
+                "input": user_message,
+                "context": recent_context or []
             })
 
             response_text = agent_response["output"]
             logger.info(f"Agent response: {response_text}")
 
-            # 2. 응답 검증
+            # 응답 검증
             validation = await self._validate_response(response_text)
-            logger.info(f"Validation result: {validation}")
 
-            # 3. 먼저 사용자 메시지 분석
+            # 사용자 메시지 분석
             user_analysis = await self._analyze_single_message(user_message)
-            logger.info(f"User message analysis: {user_analysis}")
 
-            # 4. 전체 대화 분석
+            # 전체 대화 분석
             conversation_analysis = await self._analyze_conversation(user_message, response_text)
-            logger.info(f"Full conversation analysis: {conversation_analysis}")
-
-            # Agent의 중간 단계 결과 로깅
-            if "intermediate_steps" in agent_response:
-                logger.info(f"Intermediate steps: {agent_response['intermediate_steps']}")
 
             # Memory에 대화 저장
             self.memory.save_context(
@@ -251,7 +251,6 @@ class GPTService:
                 {"output": response_text}
             )
 
-            # 5. 모든 분석 결과를 포함하여 반환
             return {
                 "response_text": response_text,
                 "validation": validation,
@@ -261,5 +260,5 @@ class GPTService:
             }
 
         except Exception as e:
-            logger.error(f"GPT 응답 생성 실패: {str(e)}", exc_info=True)  # 상세한 에러 정보 로깅
+            logger.error(f"GPT 응답 생성 실패: {str(e)}", exc_info=True)
             raise
