@@ -9,7 +9,7 @@ import defaultStyle from '../styles/DefaultStyle';
 import MainStyle from '../styles/MainStyle';
 import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { MainToEnrollNavigationProp, MainScreenRouteProp } from '../../types/navigation.d';
+import { MainToEnrollNavigationProp, MainScreenRouteProp, MainToDetailNavigationProp } from '../../types/navigation.d';
 import instance, { localURL } from '../api/axios';
 import LogoutButton from '../components/LogoutButton';
 
@@ -20,6 +20,7 @@ interface MainNavigatorProps {
 
 type Elder = {
   index: number;
+  seniorId: number;
   name: string;
   address: string;
   age: number;
@@ -34,10 +35,16 @@ const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Elemen
   const [nameCount, setNameCount] = useState(1);
   const [ageCount, setAgeCount] = useState(0);
   const enrollNavigation = useNavigation<MainToEnrollNavigationProp>();
+  const detailNavigation = useNavigation<MainToDetailNavigationProp>();
 
   const onPressEnroll = () => {
     enrollNavigation.navigate('Enroll');
   };
+
+  const onPressDetail = (seniorId: number) => {
+    detailNavigation.navigate('Detail', { seniorId });
+  };
+  
 
   // EncryptedStorage에서 type 불러오기
   useEffect(() => {
@@ -163,7 +170,7 @@ const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Elemen
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         {filteredResult.map((elder, index) => (
           <View key={index}>
-            <TouchableOpacity style={MainStyle.list}>
+            <TouchableOpacity style={MainStyle.list} onPress={() => onPressDetail(elder.seniorId)}>
               <View style={[MainStyle.subList, { alignItems: 'flex-start' }]}>
                 <CustomText style={MainStyle.listText}>{elder.name}</CustomText>
                 <CustomText style={MainStyle.addText}>

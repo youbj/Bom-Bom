@@ -1,6 +1,7 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import MainScreen from '../screens/MainScreen';
+import DetailScreen from '../screens/DetailScreen';
 import FloatNavigator from './FloatNavigator';
 import {MainNavigatorParamList} from '../../types/navigation.d';
 import EnrollScreen from '../screens/EnrollScreen';
@@ -32,9 +33,12 @@ const MainNavigator = ({
       />
       <Stack.Screen
         name="Enroll"
-        children={() => (
-          <EnrollScreen setIsLoggedIn={setIsLoggedIn} />
-        )}
+        children={() => <EnrollScreen setIsLoggedIn={setIsLoggedIn} />}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Detail"
+        component={DetailScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>
