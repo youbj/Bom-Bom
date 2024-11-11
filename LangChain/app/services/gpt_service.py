@@ -223,42 +223,59 @@ class GPTService:
             }
 
     async def generate_response(self,
-                                user_message: str,
-                                recent_context: Optional[List[str]] = None) -> Dict:
+                            user_message: str,
+                            is_initial: bool = False) -> Dict:
         """GPT를 사용하여 응답 생성"""
         try:
-            # Agent로 응답 생성
-            agent_response = await self.agent_executor.ainvoke({
-                "input": user_message,
-                "context": recent_context or []
-            })
-
-            response_text = agent_response["output"]
-            logger.info(f"Agent response: {response_text}")
-
+            if is_initial:
+                # 초기 인사 메시지 템플릿
+                greetings = [
+                    "안녕하세요! 오늘은 어떤 이야기를 나누고 싶으신가요?",
+                    "반갑습니다! 오늘은 무슨 일이 있으셨나요?",
+                    "안녕하세요! 좋은 하루네요. 오늘 하루는 어떠셨나요?"
+                ]
+                import random
+                response_text = random.choice(greetings)
+            else:
+                # 일반 대화 응답 생성
+                agent_response = await self.agent_executor.ainvoke({
+                    "input": user_message
+                })
+                response_text = agent_response["output"]
+    
+            logger.info(f"Generated response: {response_text}")
+    
             # 응답 검증
             validation = await self._validate_response(response_text)
-
-            # 사용자 메시지 분석
-            user_analysis = await self._analyze_single_message(user_message)
-
+    
+            # 사용자 메시지 분석 (초기 메시지가 아닌 경우에만)
+            user_analysis = await self._analyze_single_message(user_message) if not is_initial else {
+                "감정_상태": "중립적",
+                "감정_수치": 50.00,
+                "위험_수준": "없음",
+                "주요_키워드": [],
+                "필요_조치사항": []
+            }
+    
             # 전체 대화 분석
-            conversation_analysis = await self._analyze_conversation(user_message, response_text)
-
+            conversation_analysis = await self._analyze_conversation(
+                user_message if not is_initial else "",
+                response_text
+            )
+    
             # Memory에 대화 저장
             self.memory.save_context(
-                {"input": user_message},
+                {"input": user_message if not is_initial else ""},
                 {"output": response_text}
             )
-
+    
             return {
                 "response_text": response_text,
                 "validation": validation,
                 "user_analysis": user_analysis,
-                "conversation_analysis": conversation_analysis,
-                "intermediate_steps": agent_response.get("intermediate_steps", [])
+                "conversation_analysis": conversation_analysis
             }
-
+    
         except Exception as e:
             logger.error(f"GPT 응답 생성 실패: {str(e)}", exc_info=True)
             raise

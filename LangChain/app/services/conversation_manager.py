@@ -27,49 +27,25 @@ class ConversationManager:
         print(f"\n=== 새로운 대화 시작 (ID: {self.current_conversation_id}) ===\n")
         return self.current_conversation_id
 
-    def end_conversation(self):
-        """대화 종료 및 정리"""
-        try:
-            if self.current_conversation_id:
-                # 메시지 히스토리 출력
-                self.print_conversation_history()
-                
-                # 메모리 정리
-                self.messages = []
-                self.current_conversation_id = None
-                
-                print("\n=== 대화가 종료되었습니다 ===\n")
-                logger.info("Conversation ended successfully")
-        except Exception as e:
-            logger.error(f"대화 종료 중 오류 발생: {str(e)}")
-            raise
-
-    def get_conversation_history(self) -> List[Dict]:
-        """저장된 대화 내용 반환"""
-        return self.messages
-        
-    def print_conversation_history(self):
-        """대화 내용 출력"""
-        if not self.messages:
-            print("\n=== 대화 내용이 없습니다 ===")
-            return
-            
-        print("\n=== 대화 내용 요약 ===")
-        for msg in self.messages:
-            print(f"\n메시지 #{msg['number']} ({msg['timestamp']})")
-            print(f"사용자: {msg['user_input']}")
-            print(f"AI: {msg['ai_response']}")
-            print(f"감정 점수: {msg['sentiment_score']}")
-            print(f"요약: {msg['summary']}")
-            print("-" * 30)
-    
-    async def process_text_input(self, text: str) -> Dict:
+    async def process_text_input(self, text: str, is_initial: bool = False) -> Dict:
         """텍스트 입력 처리"""
         try:
+            # conversation_id가 없으면 새로 생성
             if not self.current_conversation_id:
                 self.current_conversation_id = self.start_conversation()
             
-            # 카운터 증가 및 사용자 입력 출력
+            if is_initial:
+                # 초기 인사 메시지 생성
+                gpt_response = await self.gpt_service.generate_response(
+                    user_message="",
+                    is_initial=True
+                )
+                return {
+                    "conversation_id": self.current_conversation_id,
+                    "response_text": gpt_response['response_text']
+                }
+            
+            # 일반 대화 처리
             ConversationManager.message_counter += 1
             print(f"\n[사용자 입력 #{ConversationManager.message_counter}]")
             print(f"내용: {text}")
@@ -89,7 +65,7 @@ class ConversationManager:
             print("\n[응답 생성 중...]")
             gpt_response = await self.gpt_service.generate_response(
                 user_message=text,
-                recent_context=[]
+                is_initial=False
             )
             
             # 응답 출력
@@ -116,13 +92,21 @@ class ConversationManager:
                 sentiment_score=sentiment_analysis['score'],
                 summary=text_summary
             )
-            
             self.mysql_manager.save_conversation(conversation_data.dict())
             
-            # 구분선 출력
+            ai_message_data = ConversationMessage(
+                conversation_id=self.current_conversation_id,
+                speaker_type=SpeakerType.AI,
+                text_content=response_text,
+                sentiment_score=None,  # AI 응답은 감정 점수 불필요
+                summary=None  # AI 응답은 요약 불필요
+            )
+            self.mysql_manager.save_conversation(ai_message_data.dict())
+            
             print("\n" + "="*50 + "\n")
             
             return {
+                "conversation_id": self.current_conversation_id,
                 "text_response": response_text,
                 "sentiment_analysis": sentiment_analysis,
                 "text_summary": text_summary,
@@ -133,4 +117,21 @@ class ConversationManager:
         except Exception as e:
             print(f"\n[오류 발생] {str(e)}")
             logger.error(f"텍스트 입력 처리 실패: {str(e)}", exc_info=True)
+            raise
+    
+    def end_conversation(self):
+        """대화 종료 및 정리"""
+        try:
+            if self.current_conversation_id:
+                # 메시지 히스토리 출력
+                self.print_conversation_history()
+                
+                # 메모리 정리
+                self.messages = []
+                self.current_conversation_id = None
+                
+                print("\n=== 대화가 종료되었습니다 ===\n")
+                logger.info("Conversation ended successfully")
+        except Exception as e:
+            logger.error(f"대화 종료 중 오류 발생: {str(e)}")
             raise

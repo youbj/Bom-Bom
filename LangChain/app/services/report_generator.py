@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 class ReportGenerator:
     def generate_pdf_report(self, 
-                          analyses: List[ConversationAnalysis],
-                          start_date: datetime,
-                          end_date: datetime) -> str:
+                            analyses: List[ConversationAnalysis],
+                            start_date: datetime,
+                            end_date: datetime) -> str:
         """PDF 보고서 생성"""
         pdf = FPDF()
         pdf.add_page()

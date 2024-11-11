@@ -28,6 +28,7 @@ class SpeakerType(str, Enum):
     """화자 타입 Enum"""
     USER = "user"
     SYSTEM = "system"
+    AI = "AI"
 
 class HealthMetrics(BaseModel):
     """건강 지표 모델"""
@@ -56,8 +57,8 @@ class ConversationMessage(BaseModel):
     conversation_id: str
     speaker_type: SpeakerType
     text_content: str
-    sentiment_score: float
-    summary: str
+    sentiment_score: Optional[float]
+    summary: Optional[str]
 
 class ConversationAnalysis(BaseModel):
     """대화 분석 결과 모델"""
