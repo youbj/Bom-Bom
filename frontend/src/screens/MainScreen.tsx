@@ -9,7 +9,7 @@ import defaultStyle from '../styles/DefaultStyle';
 import MainStyle from '../styles/MainStyle';
 import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { MainToEnrollNavigationProp, MainScreenRouteProp } from '../../types/navigation.d';
+import { MainToEnrollNavigationProp } from '../../types/navigation.d';
 import instance, { localURL } from '../api/axios';
 import LogoutButton from '../components/LogoutButton';
 
@@ -33,10 +33,42 @@ const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Elemen
   const [filteredResult, setFilteredResult] = useState<Elder[]>([]);
   const [nameCount, setNameCount] = useState(1);
   const [ageCount, setAgeCount] = useState(0);
+  const [deleteMode, setDeleteMode] = useState(false); // Delete mode toggle
+  const [markedForDeletion, setMarkedForDeletion] = useState<Set<number>>(new Set()); // IDs marked for deletion
+
   const enrollNavigation = useNavigation<MainToEnrollNavigationProp>();
 
   const onPressEnroll = () => {
     enrollNavigation.navigate('Enroll');
+  };
+
+  // Toggle delete mode
+  const toggleDeleteMode = () => {
+    setDeleteMode(!deleteMode);
+    setMarkedForDeletion(new Set()); // Reset marked items when toggling
+  };
+
+  const markForDeletion = (index: number) => {
+    setMarkedForDeletion((prev) => {
+      const updated = new Set(prev);
+      if (updated.has(index)) {
+        updated.delete(index); // 이미 선택된 경우 선택 해제
+      } else {
+        updated.add(index); // 삭제하려는 항목 선택
+      }
+      return updated;
+    });
+  
+    // 삭제 모드일 때 화면에서 항목을 임시로 제거
+    setFilteredResult((prev) => prev.filter((_, i) => i !== index));
+  };
+  
+
+  const saveDeletions = () => {
+    const updatedResult = filteredResult.filter((_, index) => !markedForDeletion.has(index));
+    setFilteredResult(updatedResult);
+    setDeleteMode(false); // Exit delete mode
+    setMarkedForDeletion(new Set()); // Reset marked items
   };
 
   // EncryptedStorage에서 type 불러오기
@@ -139,7 +171,7 @@ const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Elemen
             </CustomText>
           </TouchableOpacity>
           <View style={{ width: 10 }} />
-          <TouchableOpacity onPress={sortByAge} style={{flexDirection: 'row'}}>
+          <TouchableOpacity onPress={sortByAge} style={{ flexDirection: 'row' }}>
             <CustomText
               style={{
                 ...MainStyle.arrText,
@@ -152,12 +184,15 @@ const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Elemen
               name={ageCount === 2 ? 'arrow-down-thin' : 'arrow-up-thin'}
               color={ageCount > 0 ? '#FF8A80' : '#000000'}
               size={25}
-              style={{marginTop: -1, marginLeft: -3}}
+              style={{ marginTop: -1, marginLeft: -3 }}
             />
           </TouchableOpacity>
         </View>
         <TouchableOpacity style={{ paddingRight: 3 }} onPress={onPressEnroll}>
           <Icon name="account-plus" size={30} />
+        </TouchableOpacity>
+        <TouchableOpacity style={{ paddingRight: 3 }} onPress={toggleDeleteMode}>
+          <Icon name="account-minus" size={30} />
         </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -174,12 +209,22 @@ const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Elemen
                 <CustomText style={MainStyle.listText}>
                   {elder.age} / {elder.gender === 'MALE' ? '남' : elder.gender === 'FEMALE' ? '여' : elder.gender}
                 </CustomText>
+                {deleteMode && (
+                  <TouchableOpacity onPress={() => markForDeletion(index)}>
+                    <Icon name="close" size={20} color={'red'} />
+                  </TouchableOpacity>
+                )}
               </View>
             </TouchableOpacity>
             <View style={{ height: 10 }} />
           </View>
         ))}
       </ScrollView>
+      {deleteMode && (
+        <TouchableOpacity style={MainStyle.button} onPress={saveDeletions}>
+          <CustomText style={MainStyle.buttonText}>저장</CustomText>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

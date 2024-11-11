@@ -49,6 +49,19 @@ const MainStyle = StyleSheet.create({
     color: '#555555',
     fontWeight: '400',
   },
+  button: {
+    marginTop: -18,
+    width: 80,
+    padding: 10,
+    marginLeft: 10,
+    backgroundColor: '#FED7C3',
+    borderRadius: 12,
+    elevation: 2,
+  },
+  buttonText: {
+    textAlign: 'center',
+    fontWeight: '500',
+  },
 });
 
 export default MainStyle;
