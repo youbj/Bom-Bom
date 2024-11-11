@@ -1,7 +1,10 @@
 import React, {useEffect, useRef} from 'react';
 import {View, Image, Animated} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {SplashScreenNavigationProp, SplashScreenProps} from '../../../types/navigation.d';
+import {
+  SplashScreenNavigationProp,
+  SplashScreenProps,
+} from '../../../types/navigation.d';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import CookieManager from '@react-native-cookies/cookies';
 
@@ -20,12 +23,12 @@ const SplashScreen = ({setIsLoggedIn}: SplashScreenProps): JSX.Element => {
       const sessionData = session ? JSON.parse(session) : null;
       const accessToken = sessionData?.accessToken;
       const type = sessionData?.type;
-  
+
       const cookies = await CookieManager.get('http://10.0.2.2');
       const refreshToken = cookies.refreshToken?.value;
-      
-      console.log(accessToken, type, refreshToken)
-      
+
+      console.log(accessToken, type, refreshToken);
+
       if (accessToken && refreshToken && type) {
         setIsLoggedIn(true);
       } else {
@@ -36,7 +39,6 @@ const SplashScreen = ({setIsLoggedIn}: SplashScreenProps): JSX.Element => {
       navigation.navigate('Login');
     }
   };
-  
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

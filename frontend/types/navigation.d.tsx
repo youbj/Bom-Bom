@@ -50,5 +50,12 @@ export type MainStackParamList = {
   Enroll: undefined;
 }
 
+export type EnrollStackParamList = {
+  Main: { reload: boolean } | undefined;
+  Enroll: undefined;
+
+}
+
 export type MainToEnrollNavigationProp = NativeStackNavigationProp<MainStackParamList, 'Main'>;
 export type EnrollToMainNavigationProp = NativeStackNavigationProp<MainStackParamList, 'Enroll'>
+export type MainScreenRouteProp = RouteProp<EnrollStackParamList, 'Main'>;
