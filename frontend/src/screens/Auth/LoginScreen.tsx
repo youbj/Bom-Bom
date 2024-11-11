@@ -6,15 +6,16 @@ import {
   LoginScreenProps,
 } from '../../../types/navigation.d';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import CookieManager from '@react-native-cookies/cookies'; // 쿠키 관리 라이브러리
-import axios, {AxiosError} from 'axios';
-
+import CookieManager from '@react-native-cookies/cookies';
+import axios from 'axios';
 import defaultStyle from '../../styles/DefaultStyle';
 import loginStyle from '../../styles/Auth/LoginStyle';
 import CustomText from '../../components/CustomText';
 import CustomTextInput from '../../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {localURL} from '../../api/axios';
+import instance, {localURL} from '../../api/axios';
+import messaging from '@react-native-firebase/messaging';
+import {PermissionsAndroid, Platform} from 'react-native';
 
 const LoginScreen = ({setIsLoggedIn}: LoginScreenProps): JSX.Element => {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -27,7 +28,10 @@ const LoginScreen = ({setIsLoggedIn}: LoginScreenProps): JSX.Element => {
   };
 
   // EncryptedStorage에 accessToken과 type 저장
-  const storeDataInEncryptedStorage = async (accessToken: string, type: string) => {
+  const storeDataInEncryptedStorage = async (
+    accessToken: string,
+    type: string,
+  ) => {
     try {
       await EncryptedStorage.setItem(
         'user_session',
@@ -59,6 +63,42 @@ const LoginScreen = ({setIsLoggedIn}: LoginScreenProps): JSX.Element => {
     }
   };
 
+  // Android 13 이상 알림 권한 요청
+  const requestNotificationPermission = async () => {
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    }
+    return true;
+  };
+
+  // 로그인 이후 FCM 토큰을 백엔드로 전송
+  const sendFcmToken = async () => {
+    try {
+      const permissionGranted = await requestNotificationPermission();
+      if (!permissionGranted) {
+        console.log('알림 권한이 거부되었습니다.');
+        return;
+      }
+
+      await messaging().registerDeviceForRemoteMessages();
+      const fcmToken = await messaging().getToken();
+
+      // FCM 토큰을 포함한 요청을 보낼 때 accessToken을 header에 포함
+      const fcmResponse = await instance.post(`${localURL}/members/fcmtoken`, {
+        fcmToken,
+      });
+      if (fcmResponse.status === 200) {
+        console.log('FCM 토큰 전송 성공');
+      }
+    } catch (error) {
+      console.error('FCM 등록 중 오류 발생:', error);
+    }
+  };
+
+  // 로그인 요청 및 FCM 토큰 전송
   const onLogin = async () => {
     try {
       const response = await axios.post(`${localURL}/members/login`, {
@@ -77,12 +117,14 @@ const LoginScreen = ({setIsLoggedIn}: LoginScreenProps): JSX.Element => {
         // refreshToken을 쿠키에 저장
         await storeRefreshTokenInCookie(refreshToken);
 
-        // 로그인 상태 업데이트
+        // accessToken을 포함해 FCM 토큰을 백엔드로 전송
+        await sendFcmToken();
+
         setIsLoggedIn(true);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        if (error.response?.status === 500) {
+        if (error.response?.status === 401) {
           Alert.alert('아이디 혹은 비밀번호를 확인해주세요.');
         } else {
           Alert.alert('로그인 중 오류가 발생했습니다.');

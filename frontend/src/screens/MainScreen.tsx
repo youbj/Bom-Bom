@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import axios from 'axios';
 import CustomText from '../components/CustomText';
@@ -9,7 +9,7 @@ import defaultStyle from '../styles/DefaultStyle';
 import MainStyle from '../styles/MainStyle';
 import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { MainToEnrollNavigationProp } from '../../types/navigation.d';
+import { MainToEnrollNavigationProp, MainScreenRouteProp } from '../../types/navigation.d';
 import instance, { localURL } from '../api/axios';
 import LogoutButton from '../components/LogoutButton';
 
@@ -55,24 +55,27 @@ const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Elemen
   }, []);
 
   // elderList 데이터 가져오기
-  useEffect(() => {
-    const fetchElderList = async () => {
-      try {
-        const response = await instance.get(`${localURL}/seniors/list`); // 실제 API 엔드포인트로 변경하세요.
-        setFilteredResult(response.data);
-      } catch (error) {
-        console.error('Failed to fetch elder list:', error);
-        Alert.alert('데이터를 불러오는 데 실패했습니다.');
-      }
-    };
-
-    fetchElderList();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchElderList = async () => {
+        try {
+          const response = await instance.get(`${localURL}/seniors/list`); // 실제 API 엔드포인트로 변경하세요.
+          setFilteredResult(response.data);
+        } catch (error) {
+          console.error('Failed to fetch elder list:', error);
+          Alert.alert('데이터를 불러오는 데 실패했습니다.');
+        }
+      };
+  
+      fetchElderList();
+    }, [])
+  );
 
   // type에 따라 title 설정
   useEffect(() => {
     setTitle(type === 'SOCIAL_WORKER' ? '담당 독거 노인 목록' : '나의 가족 목록');
   }, [type]);
+
 
   const handleSearch = () => {
     const filtered = result

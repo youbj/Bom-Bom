@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1033941201729",
+    "project_id": "bombom-80bf9",
+    "storage_bucket": "bombom-80bf9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1033941201729:android:3db1384d279f9a8d47a7c0",
+        "android_client_info": {
+          "package_name": "com.bombom"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmIeO_xS_YmztQFa9LReDvZMA90sbA0lE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

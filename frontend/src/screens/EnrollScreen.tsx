@@ -12,7 +12,7 @@ import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import BackButton from '../components/BackButton';
 import LogoutButton from '../components/LogoutButton';
-import instance, { localURL } from '../api/axios';
+import instance, {localURL} from '../api/axios';
 
 interface EnrollNavigatorProps {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -26,7 +26,7 @@ type Person = {
   phoneNumber: string;
 };
 
-const EnrollScreen =  ({ setIsLoggedIn }: EnrollNavigatorProps): JSX.Element =>{
+const EnrollScreen = ({setIsLoggedIn}: EnrollNavigatorProps): JSX.Element => {
   const navigation = useNavigation<EnrollToMainNavigationProp>();
 
   const [people, setPeople] = useState<Person[]>([]);
@@ -119,19 +119,22 @@ const EnrollScreen =  ({ setIsLoggedIn }: EnrollNavigatorProps): JSX.Element =>{
     if (people.length > 0) {
       try {
         // 서버에 데이터를 전송하는 요청
-        const response = await instance.post(`${localURL}/seniors/regist`, people); // 여기에 서버의 URL을 설정하세요.
-  
+        const response = await instance.post(
+          `${localURL}/seniors/regist`,
+          people,
+        ); // 여기에 서버의 URL을 설정하세요.
+
         if (response.status === 200) {
           Alert.alert(
             '최종 저장 완료',
-            '모든 정보가 서버에 저장되었습니다.',
+            '모든 정보가 저장되었습니다.',
             [
               {
                 text: '확인',
                 onPress: () => navigation.navigate('Main'),
               },
             ],
-            { cancelable: false }
+            {cancelable: false},
           );
         } else {
           throw new Error('Server Error');
@@ -140,14 +143,13 @@ const EnrollScreen =  ({ setIsLoggedIn }: EnrollNavigatorProps): JSX.Element =>{
         console.error('Error saving data:', error);
         Alert.alert(
           '저장 실패',
-          '서버에 데이터를 저장하는 중 오류가 발생했습니다.'
+          '서버에 데이터를 저장하는 중 오류가 발생했습니다.',
         );
       }
     } else {
       Alert.alert('저장 실패', '저장된 사람이 없습니다.');
     }
   };
-
 
   return (
     <View
@@ -156,7 +158,7 @@ const EnrollScreen =  ({ setIsLoggedIn }: EnrollNavigatorProps): JSX.Element =>{
         {paddingTop: 50, justifyContent: 'flex-start'},
       ]}>
       <BackButton />
-      <LogoutButton setIsLoggedIn={setIsLoggedIn}/>
+      <LogoutButton setIsLoggedIn={setIsLoggedIn} />
       <CustomText style={enrollStyle.title}>담당 어르신 등록</CustomText>
 
       <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>
