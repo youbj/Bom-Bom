@@ -8,6 +8,7 @@ from langchain.tools import StructuredTool
 from pydantic import BaseModel, Field
 import json
 import logging
+import asyncio
 from typing import Dict, List, Optional
 from app.config import settings
 from app.models.schema import EmotionalState, RiskLevel
@@ -26,33 +27,18 @@ class GPTService:
         self.client = OpenAI(api_key=settings.gpt.api_key)
         self.llm = ChatOpenAI(temperature=0.7, model=settings.gpt.model_name)
         
-        # Memory 초기화
+        # 1. Memory 초기화 수정
         self.memory = ConversationBufferMemory(
             memory_key="chat_history",
-            return_messages=True
+            return_messages=True,
+            input_key="input",  # 입력 키 명시
+            output_key="output"  # 출력 키 명시
         )
 
-        # 도구 정의 -> StructuredTool로 변경하여 비동기 지원
-        self.tools = [
-            StructuredTool(
-                name="validate_response",
-                func=self._validate_response,
-                coroutine=self._validate_response,  # 비동기 함수 지정
-                description="생성된 응답의 적절성을 검증합니다",
-                args_schema=ValidateResponseArgs
-            ),
-            StructuredTool(
-                name="analyze_conversation",
-                func=self._analyze_single_message,
-                coroutine=self._analyze_single_message,  # 비동기 함수 지정
-                description="사용자의 메시지를 분석하고 감정 상태와 위험도를 평가합니다",
-                args_schema=AnalyzeConversationArgs
-            )
-        ]
-        
         # 프롬프트 템플릿
         self.prompt = ChatPromptTemplate.from_messages([
             SystemMessage(content="""당신은 노인과 대화하는 AI 상담사입니다.
+            
             다음 원칙을 반드시 따라주세요:
 
             1. 사용자의 입력을 주의 깊게 듣고 공감적으로 응답합니다
@@ -65,7 +51,7 @@ class GPTService:
             응답 형식:
             1. 먼저 사용자의 이야기에 대한 공감과 이해를 표현합니다
             2. 필요한 경우 조언이나 지지를 제공합니다
-            3. 마지막에 자연스러운 후속 질문을 덧붙입니다
+            3. 마지막에 반드시 이전 대화 맥락을 고려하여 자연스러운 후속 질문을 덧붙입니다
 
             예시:
             사용자: "오늘 날씨가 좋아서 산책했어요."
@@ -74,29 +60,47 @@ class GPTService:
 
             위와 같은 형식으로 자연스럽게 대화를 이어가주세요."""),
             MessagesPlaceholder(variable_name="chat_history"),
-            HumanMessage(content="{input}"),
+            HumanMessage(content="{text}"),
             MessagesPlaceholder(variable_name="agent_scratchpad")
         ])
+        
+        # 3. 도구 정의는 동일하게 유지
+        self.tools = [
+            StructuredTool(
+                name="validate_response",
+                func=self._validate_response,
+                coroutine=self._validate_response,
+                description="생성된 응답의 적절성을 검증합니다",
+                args_schema=ValidateResponseArgs
+            ),
+            StructuredTool(
+                name="analyze_conversation",
+                func=self._analyze_single_message,
+                coroutine=self._analyze_single_message,
+                description="사용자의 메시지를 분석하고 감정 상태와 위험도를 평가합니다",
+                args_schema=AnalyzeConversationArgs
+            )
+        ]
 
-        # 에이전트 생성
+        # 4. 에이전트 설정
         self.agent = create_openai_functions_agent(
             llm=self.llm,
             tools=self.tools,
             prompt=self.prompt
         )
         
-        # 에이전트 실행기 초기화
+        # 5. AgentExecutor 설정
         self.agent_executor = AgentExecutor(
             agent=self.agent,
             tools=self.tools,
             memory=self.memory,
             verbose=True,
-            max_iterations=5,
+            max_iterations=3,
             early_stopping_method="generate",
             handle_parsing_errors=True,
-            return_intermediate_steps=True
+            return_intermediate_steps=False  # 중간 단계 반환 비활성화
         )
-
+        
     async def _validate_response(self, response: str, context: str = "") -> Dict:
         """응답의 적절성 검증"""
         try:
@@ -121,6 +125,7 @@ class GPTService:
             )
             logger.info(f"Analysis result: {validation_response.choices[0].message.content}")
             return json.loads(validation_response.choices[0].message.content)
+        
         except Exception as e:
             logger.error(f"응답 검증 실패: {str(e)}")
             return {
@@ -129,6 +134,7 @@ class GPTService:
                 "공감도_점수": 3,
                 "개선필요사항": []
             }
+            
     async def _analyze_single_message(self, message: str) -> Dict:
         """단일 메시지 분석용 래퍼 함수"""
         try:
@@ -222,60 +228,69 @@ class GPTService:
                 "필요_조치사항": []
             }
 
-    async def generate_response(self,
-                            user_message: str,
-                            is_initial: bool = False) -> Dict:
-        """GPT를 사용하여 응답 생성"""
+    async def generate_response(self, user_message: str, is_initial: bool = False) -> Dict:
         try:
             if is_initial:
-                # 초기 인사 메시지 템플릿
-                greetings = [
-                    "안녕하세요! 오늘은 어떤 이야기를 나누고 싶으신가요?",
-                    "반갑습니다! 오늘은 무슨 일이 있으셨나요?",
-                    "안녕하세요! 좋은 하루네요. 오늘 하루는 어떠셨나요?"
-                ]
-                import random
-                response_text = random.choice(greetings)
+                response_text = "안녕하세요! 오늘 하루는 어떻게 보내고 계신가요?"
             else:
-                # 일반 대화 응답 생성
-                agent_response = await self.agent_executor.ainvoke({
-                    "input": user_message
-                })
-                response_text = agent_response["output"]
-    
-            logger.info(f"Generated response: {response_text}")
-    
-            # 응답 검증
-            validation = await self._validate_response(response_text)
-    
-            # 사용자 메시지 분석 (초기 메시지가 아닌 경우에만)
-            user_analysis = await self._analyze_single_message(user_message) if not is_initial else {
-                "감정_상태": "중립적",
-                "감정_수치": 50.00,
-                "위험_수준": "없음",
-                "주요_키워드": [],
-                "필요_조치사항": []
-            }
-    
-            # 전체 대화 분석
-            conversation_analysis = await self._analyze_conversation(
-                user_message if not is_initial else "",
-                response_text
-            )
-    
-            # Memory에 대화 저장
-            self.memory.save_context(
-                {"input": user_message if not is_initial else ""},
-                {"output": response_text}
-            )
-    
+                # 메모리에서 이전 대화 내용 로드
+                chat_history = self.memory.load_memory_variables({}).get("chat_history", [])
+                logger.info(f"Loaded chat history: {chat_history}")
+
+                # 대화 히스토리를 GPT 메시지 형식으로 변환
+                chat_messages = [
+                    {"role": "system", "content": self.prompt.messages[0].content}
+                ]
+
+                # 이전 대화 내용 추가
+                for message in chat_history:
+                    if isinstance(message, HumanMessage):
+                        chat_messages.append({"role": "user", "content": message.content})
+                    else:
+                        chat_messages.append({"role": "assistant", "content": message.content})
+
+                # 현재 사용자 메시지 추가
+                chat_messages.append({"role": "user", "content": user_message})
+
+                # GPT 응답 생성
+                response = self.client.chat.completions.create(
+                    model=settings.gpt.model_name,
+                    messages=chat_messages,
+                    temperature=0.7,
+                    max_tokens=150
+                )
+
+                response_text = response.choices[0].message.content.strip()
+                logger.info(f"Generated response: {response_text}")
+
+                # Memory 저장
+                self.memory.save_context(
+                    {"input": user_message},
+                    {"output": response_text}
+                )
+
+            # 나머지 분석 작업...
+            tasks = [
+                self._validate_response(response_text),
+                self._analyze_single_message(user_message) if not is_initial else None,
+                self._analyze_conversation(user_message if not is_initial else "", response_text)
+            ]
+
+            results = await asyncio.gather(*[task for task in tasks if task is not None])
+
             return {
                 "response_text": response_text,
-                "validation": validation,
-                "user_analysis": user_analysis,
-                "conversation_analysis": conversation_analysis
+                "validation": results[0],
+                "user_analysis": results[1] if not is_initial else {
+                    "감정_상태": "중립적",
+                    "감정_수치": 50.00,
+                    "위험_수준": "없음",
+                    "주요_키워드": [],
+                    "필요_조치사항": []
+                },
+                "conversation_analysis": results[-1]
             }
-    
+
         except Exception as e:
-            logger.error(f"GPT 응답 생성 실패: {str(e)}", exc_info=True)
+            logger.error(f"Response generation failed: {str(e)}", exc_info=True)
             raise
