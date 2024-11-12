@@ -22,7 +22,7 @@ const FamilyVerifyRequestScreen: React.FC = () => {
     console.log(accessToken);
     try{
       const response = await instance.post(
-        `${localURL}/members/approve/request`,
+        `/members/approve/request`,
         { seniorName, seniorPhoneNumber }
       );
       console.log(response);

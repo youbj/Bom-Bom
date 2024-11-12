@@ -1,12 +1,17 @@
+// LoginScreen.tsx
 import React, {useState} from 'react';
-import {View, Image, TouchableOpacity, Alert} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
 import {
-  LoginScreenNavigationProp,
-  LoginScreenProps,
-} from '../../../types/navigation.d';
+  View,
+  Image,
+  TouchableOpacity,
+  Alert,
+  Platform,
+  PermissionsAndroid,
+} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import CookieManager from '@react-native-cookies/cookies';
+import {LoginScreenNavigationProp} from '../../../types/navigation.d';
 import axios from 'axios';
 import defaultStyle from '../../styles/DefaultStyle';
 import loginStyle from '../../styles/Auth/LoginStyle';
@@ -15,9 +20,10 @@ import CustomTextInput from '../../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import instance, {localURL} from '../../api/axios';
 import messaging from '@react-native-firebase/messaging';
-import {PermissionsAndroid, Platform} from 'react-native';
+import useAuthStore from '../../stores/useAuthStore';
 
-const LoginScreen = ({setIsLoggedIn}: LoginScreenProps): JSX.Element => {
+const LoginScreen = (): JSX.Element => {
+  const setIsLoggedIn = useAuthStore(state => state.setIsLoggedIn);
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
   const [loginId, setLoginId] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -87,7 +93,7 @@ const LoginScreen = ({setIsLoggedIn}: LoginScreenProps): JSX.Element => {
       const fcmToken = await messaging().getToken();
 
       // FCM 토큰을 포함한 요청을 보낼 때 accessToken을 header에 포함
-      const fcmResponse = await instance.post(`${localURL}/members/fcmtoken`, {
+      const fcmResponse = await instance.post(`/members/fcmtoken`, {
         fcmToken,
       });
       if (fcmResponse.status === 200) {
@@ -120,7 +126,7 @@ const LoginScreen = ({setIsLoggedIn}: LoginScreenProps): JSX.Element => {
         // accessToken을 포함해 FCM 토큰을 백엔드로 전송
         await sendFcmToken();
 
-        setIsLoggedIn(true);
+        setIsLoggedIn(true); // 상태 관리 스토어에서 로그인 상태를 true로 설정
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {

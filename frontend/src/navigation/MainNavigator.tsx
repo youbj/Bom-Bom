@@ -8,7 +8,7 @@ import EnrollScreen from '../screens/EnrollScreen';
 
 interface MainNavigatorProps {
   userType: string | null;
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsLoggedIn: (loggedIn: boolean) => void;
 }
 
 const Stack = createNativeStackNavigator<MainNavigatorParamList>();
@@ -22,7 +22,7 @@ const MainNavigator = ({
       <Stack.Screen
         name="Main"
         children={() => (
-          <MainScreen userType={userType} setIsLoggedIn={setIsLoggedIn} />
+          <MainScreen />
         )} // userType 추가 전달
         options={{headerShown: false}}
       />
@@ -33,7 +33,7 @@ const MainNavigator = ({
       />
       <Stack.Screen
         name="Enroll"
-        children={() => <EnrollScreen setIsLoggedIn={setIsLoggedIn} />}
+        children={() => <EnrollScreen />}
         options={{headerShown: false}}
       />
       <Stack.Screen

@@ -9,14 +9,9 @@ import defaultStyle from '../styles/DefaultStyle';
 import MainStyle from '../styles/MainStyle';
 import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { MainToEnrollNavigationProp, MainScreenRouteProp, MainToDetailNavigationProp } from '../../types/navigation.d';
+import { MainToEnrollNavigationProp, MainToDetailNavigationProp } from '../../types/navigation.d';
 import instance, { localURL } from '../api/axios';
 import LogoutButton from '../components/LogoutButton';
-
-interface MainNavigatorProps {
-  userType: string | null;
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-}
 
 type Elder = {
   index: number;
@@ -27,7 +22,7 @@ type Elder = {
   gender: string;
 };
 
-const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Element => {
+const MainScreen = (): JSX.Element => {
   const [type, setType] = useState<string>('');
   const [title, setTitle] = useState('');
   const [result, setResult] = useState('');
@@ -66,7 +61,7 @@ const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Elemen
     useCallback(() => {
       const fetchElderList = async () => {
         try {
-          const response = await instance.get(`${localURL}/seniors/list`); // 실제 API 엔드포인트로 변경하세요.
+          const response = await instance.get(`/seniors/list`); // 실제 API 엔드포인트로 변경하세요.
           setFilteredResult(response.data);
         } catch (error) {
           console.error('Failed to fetch elder list:', error);
@@ -120,7 +115,7 @@ const MainScreen = ({ userType, setIsLoggedIn }: MainNavigatorProps): JSX.Elemen
         { alignItems: 'flex-start', paddingTop: 50 },
       ]}
     >
-      <LogoutButton setIsLoggedIn={setIsLoggedIn} />
+      <LogoutButton />
       <CustomText style={MainStyle.title}>{title}</CustomText>
       <CustomTextInput
         style={{ ...defaultStyle.input, marginBottom: 5 }}

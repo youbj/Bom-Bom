@@ -1,16 +1,24 @@
 // src/components/FloatingButton.tsx
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+  Dimensions,
+} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import { MainNavigatorProp } from '../../types/navigation.d'
+import {MainNavigatorProp} from '../../types/navigation.d';
 import FloatingButtonStyle from '../styles/Float/FloatingButtonStyle';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface FloatingButtonProps {
   toggleOverlay: () => void;
 }
 
-const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
+const FloatingButton: React.FC<FloatingButtonProps> = ({toggleOverlay}) => {
   const [isOpen, setIsOpen] = useState(false);
   const animation = useState(new Animated.Value(0))[0];
   const navigation = useNavigation<MainNavigatorProp>();
@@ -52,13 +60,12 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
         screen: 'FamilyVerifyRequestScreen',
       });
     } else if (userType === 'SOCIAL_WORKER') {
-      console.log("여기로 왔니")
+      console.log('여기로 왔니');
       navigation.navigate('FloatNavigator', {
         screen: 'SocialWorkerApprovalScreen',
       });
     }
   };
-  
 
   const handlePressMessage = () => {
     toggleMenu(); // 메뉴 닫기
@@ -74,21 +81,30 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
       {/* Secondary Buttons */}
       {isOpen && (
         <>
-          <Animated.View style={[FloatingButtonStyle.secondaryButton, buttonStyle(-70)]}>
-            <TouchableOpacity style={FloatingButtonStyle.button} onPress={handlePress('Home')}>
-              <Text style={FloatingButtonStyle.label}>Home</Text>
+          <Animated.View
+            style={[FloatingButtonStyle.secondaryButton, buttonStyle(-70)]}>
+            <TouchableOpacity
+              style={FloatingButtonStyle.button}
+              onPress={handlePress('Home')}>
+              <Icon name="home" style={FloatingButtonStyle.label} />
             </TouchableOpacity>
           </Animated.View>
 
-          <Animated.View style={[FloatingButtonStyle.secondaryButton, buttonStyle(-140)]}>
-            <TouchableOpacity style={FloatingButtonStyle.button} onPress={handlePressMessage}>
-              <Text style={FloatingButtonStyle.label}>Message</Text>
+          <Animated.View
+            style={[FloatingButtonStyle.secondaryButton, buttonStyle(-140)]}>
+            <TouchableOpacity
+              style={FloatingButtonStyle.button}
+              onPress={handlePressMessage}>
+              <Icon name="email" style={FloatingButtonStyle.label} />
             </TouchableOpacity>
           </Animated.View>
 
-          <Animated.View style={[FloatingButtonStyle.secondaryButton, buttonStyle(-210)]}>
-            <TouchableOpacity style={FloatingButtonStyle.button} onPress={handlePressVerify}>
-              <Text style={FloatingButtonStyle.label}>Verify</Text>
+          <Animated.View
+            style={[FloatingButtonStyle.secondaryButton, buttonStyle(-210)]}>
+            <TouchableOpacity
+              style={FloatingButtonStyle.button}
+              onPress={handlePressVerify}>
+              <Icon name="account-check" style={FloatingButtonStyle.label} />
             </TouchableOpacity>
           </Animated.View>
         </>
@@ -96,11 +112,13 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
 
       {/* Main Floating Button */}
       <TouchableOpacity onPress={toggleMenu} style={FloatingButtonStyle.fab}>
-      <Text style={FloatingButtonStyle.fabText}>{isOpen ? 'X' : '+'}</Text>
+        <Icon
+          name={isOpen ? 'close-thick' : 'plus-thick'}
+          style={FloatingButtonStyle.fabText}
+        />
       </TouchableOpacity>
     </View>
   );
 };
 
 export default FloatingButton;
-
