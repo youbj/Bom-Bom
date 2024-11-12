@@ -18,7 +18,7 @@ const FloatingButtonStyle = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 5,
-    zIndex: 1001, // Floating button above overlay
+    zIndex: 1001,
   },
   fabText: {
     color: 'white',

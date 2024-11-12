@@ -1,5 +1,6 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
+import CustomText from './CustomText';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
 const DonutChart = ({progress}: {progress: number}) => {
@@ -15,7 +16,9 @@ const DonutChart = ({progress}: {progress: number}) => {
         lineCap="round" // 끝부분을 둥글게 설정
       >
         {fill => (
-          <Text style={styles.progressText}>{`${Math.round(fill)}%`}</Text>
+          <CustomText style={styles.progressText}>{`${Math.round(
+            fill,
+          )}%`}</CustomText>
         )}
       </AnimatedCircularProgress>
     </View>
@@ -29,7 +32,7 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#333',
   },
 });

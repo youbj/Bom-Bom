@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Alert, Button, Image, TouchableOpacity} from 'react-native';
+import {View, Alert, Image, TouchableOpacity, StyleSheet} from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import instance, {localURL} from '../api/axios';
 import BackButton from '../components/BackButton';
@@ -11,6 +11,7 @@ import {RouteProp, useRoute} from '@react-navigation/native';
 import {MainStackParamList} from '../../types/navigation.d';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import DonutChart from '../components/DonutChart';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type DetailScreenRouteProp = RouteProp<MainStackParamList, 'Detail'>;
 
@@ -149,26 +150,58 @@ const DetailScreen = (): JSX.Element => {
           />
         )}
       </View>
-
-      <TouchableOpacity
-        onPress={isImageSelected ? saveImage : ShowPicker}
-        style={detailStyle.button}>
-        <CustomText style={{fontWeight: '600'}}>
-          {isImageSelected ? '저장' : '이미지 업로드'}
-        </CustomText>
-      </TouchableOpacity>
+      {type === 'SOCIAL_WORKER' ? (
+        <TouchableOpacity
+          onPress={isImageSelected ? saveImage : ShowPicker}
+          style={detailStyle.button}>
+          <CustomText style={{fontWeight: '600'}}>
+            {isImageSelected ? '저장' : '이미지 업로드'}
+          </CustomText>
+        </TouchableOpacity>
+      ) : (
+        <View style={{marginTop: 20, marginBottom: 5}}>
+          <Icon name="heart" color="red" size={40} />
+        </View>
+      )}
 
       <CustomText style={detailStyle.title}>{detail.name}</CustomText>
       <CustomText>
-        {detail.age}세 / {detail.gender}
+        {detail.age}세 / {detail.gender === 'MALE' ? '남' : '여'}
       </CustomText>
       <View style={{flex: 1}}>
         <View style={detailStyle.bottomContainer}>
           <View style={detailStyle.subContainer}>
             <DonutChart progress={progress} />
+            <CustomText style={detailStyle.graphTitle}>
+              오늘의 행복지수
+            </CustomText>
+            <TouchableOpacity>
+              <CustomText
+                style={StyleSheet.flatten([
+                  detailStyle.graphTitle,
+                  {color: '#FF6F61', marginTop: 5},
+                ])}>
+                전체 행복지수 보기 <Icon name="heart" size={20} />
+              </CustomText>
+            </TouchableOpacity>
           </View>
           <View style={detailStyle.subContainer}>
-            <CustomText>주소</CustomText>
+            <View style={detailStyle.info}>
+              <CustomText style={detailStyle.subTitle}>주소</CustomText>
+              <CustomText>{detail.address}</CustomText>
+            </View>
+            <View style={detailStyle.info}>
+              <CustomText style={detailStyle.subTitle}>핸드폰</CustomText>
+              <CustomText>{detail.phoneNumber}</CustomText>
+            </View>
+            <View style={[detailStyle.info, {borderBottomWidth: 0}]}>
+              <CustomText style={detailStyle.subTitle}>가족</CustomText>
+              {detail.familyList.map((member, index) => (
+                <CustomText key={index}>
+                  {member.memberName} {member.memberPhoneNumber}
+                </CustomText>
+              ))}
+            </View>
           </View>
         </View>
       </View>

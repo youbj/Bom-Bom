@@ -7,9 +7,9 @@ const detailStyle = StyleSheet.create({
     backgroundColor: 'white',
     borderColor: 'black',
     borderWidth: 2,
-    height: 180,
-    width: 144,
-    marginTop: 100,
+    height: 160,
+    width: 128,
+    marginTop: 120,
   },
   button: {
     backgroundColor: '#FED7C3',
@@ -29,13 +29,31 @@ const detailStyle = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#FED7C3',
     width: '100%',
-    marginTop: 30,
+    marginTop: 50,
     paddingVertical: 10,
   },
   subContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  graphTitle: {
+    marginTop: 20,
+    fontWeight: '600',
+    fontSize: 18,
+    color: '#000',
+  },
+  subTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    paddingBottom: 5,
+  },
+  info: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomColor: '#000',
+    borderBottomWidth: 2,
   },
 });
 

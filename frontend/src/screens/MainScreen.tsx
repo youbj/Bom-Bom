@@ -1,16 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {View, ScrollView, TouchableOpacity, Alert} from 'react-native';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import axios from 'axios';
 import CustomText from '../components/CustomText';
 
 import defaultStyle from '../styles/DefaultStyle';
 import MainStyle from '../styles/MainStyle';
 import CustomTextInput from '../components/CustomTextInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { MainToEnrollNavigationProp, MainToDetailNavigationProp } from '../../types/navigation.d';
-import instance, { localURL } from '../api/axios';
+import {
+  MainToEnrollNavigationProp,
+  MainToDetailNavigationProp,
+} from '../../types/navigation.d';
+import instance, {localURL} from '../api/axios';
 import LogoutButton from '../components/LogoutButton';
 
 type Elder = {
@@ -37,9 +39,8 @@ const MainScreen = (): JSX.Element => {
   };
 
   const onPressDetail = (seniorId: number) => {
-    detailNavigation.navigate('Detail', { seniorId });
+    detailNavigation.navigate('Detail', {seniorId});
   };
-  
 
   // EncryptedStorage에서 type 불러오기
   useEffect(() => {
@@ -61,23 +62,24 @@ const MainScreen = (): JSX.Element => {
     useCallback(() => {
       const fetchElderList = async () => {
         try {
-          const response = await instance.get(`/seniors/list`); // 실제 API 엔드포인트로 변경하세요.
+          const response = await instance.get(`/seniors/list`);
           setFilteredResult(response.data);
         } catch (error) {
           console.error('Failed to fetch elder list:', error);
           Alert.alert('데이터를 불러오는 데 실패했습니다.');
         }
       };
-  
+
       fetchElderList();
-    }, [])
+    }, []),
   );
 
   // type에 따라 title 설정
   useEffect(() => {
-    setTitle(type === 'SOCIAL_WORKER' ? '담당 독거 노인 목록' : '나의 가족 목록');
+    setTitle(
+      type === 'SOCIAL_WORKER' ? '담당 독거 노인 목록' : '나의 가족 목록',
+    );
   }, [type]);
-
 
   const handleSearch = () => {
     const filtered = result
@@ -91,9 +93,10 @@ const MainScreen = (): JSX.Element => {
     const updatedCount = (nameCount + 1) % 3 || 1;
     setNameCount(updatedCount);
 
-    const sorted = updatedCount === 2
-      ? [...filteredResult].sort((a, b) => b.name.localeCompare(a.name))
-      : [...filteredResult].sort((a, b) => a.name.localeCompare(b.name));
+    const sorted =
+      updatedCount === 2
+        ? [...filteredResult].sort((a, b) => b.name.localeCompare(a.name))
+        : [...filteredResult].sort((a, b) => a.name.localeCompare(b.name));
     setFilteredResult(sorted);
   };
 
@@ -102,9 +105,10 @@ const MainScreen = (): JSX.Element => {
     const updatedCount = (ageCount + 1) % 3 || 1;
     setAgeCount(updatedCount);
 
-    const sorted = updatedCount === 2
-      ? [...filteredResult].sort((a, b) => a.age - b.age)
-      : [...filteredResult].sort((a, b) => b.age - a.age);
+    const sorted =
+      updatedCount === 2
+        ? [...filteredResult].sort((a, b) => a.age - b.age)
+        : [...filteredResult].sort((a, b) => b.age - a.age);
     setFilteredResult(sorted);
   };
 
@@ -112,13 +116,12 @@ const MainScreen = (): JSX.Element => {
     <View
       style={[
         defaultStyle.container,
-        { alignItems: 'flex-start', paddingTop: 50 },
-      ]}
-    >
+        {alignItems: 'flex-start', paddingTop: 50},
+      ]}>
       <LogoutButton />
       <CustomText style={MainStyle.title}>{title}</CustomText>
       <CustomTextInput
-        style={{ ...defaultStyle.input, marginBottom: 5 }}
+        style={{...defaultStyle.input, marginBottom: 5}}
         placeholder="이름으로 검색하세요"
         right={
           <TouchableOpacity onPress={handleSearch}>
@@ -135,19 +138,17 @@ const MainScreen = (): JSX.Element => {
               style={{
                 ...MainStyle.arrText,
                 color: nameCount > 0 ? '#FF8A80' : '#000000',
-              }}
-            >
+              }}>
               이름 순 {nameCount === 2 ? '(ㅎ)' : '(ㄱ)'}
             </CustomText>
           </TouchableOpacity>
-          <View style={{ width: 10 }} />
+          <View style={{width: 10}} />
           <TouchableOpacity onPress={sortByAge} style={{flexDirection: 'row'}}>
             <CustomText
               style={{
                 ...MainStyle.arrText,
                 color: ageCount > 0 ? '#FF8A80' : '#000000',
-              }}
-            >
+              }}>
               나이 순
             </CustomText>
             <Icon
@@ -158,27 +159,36 @@ const MainScreen = (): JSX.Element => {
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={{ paddingRight: 3 }} onPress={onPressEnroll}>
-          <Icon name="account-plus" size={30} />
-        </TouchableOpacity>
+        {type === 'SOCIAL_WORKER' && (
+          <TouchableOpacity style={{paddingRight: 3}} onPress={onPressEnroll}>
+            <Icon name="account-plus" size={30} />
+          </TouchableOpacity>
+        )}
       </View>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <ScrollView contentContainerStyle={{flexGrow: 1}}>
         {filteredResult.map((elder, index) => (
           <View key={index}>
-            <TouchableOpacity style={MainStyle.list} onPress={() => onPressDetail(elder.seniorId)}>
-              <View style={[MainStyle.subList, { alignItems: 'flex-start' }]}>
+            <TouchableOpacity
+              style={MainStyle.list}
+              onPress={() => onPressDetail(elder.seniorId)}>
+              <View style={[MainStyle.subList, {alignItems: 'flex-start'}]}>
                 <CustomText style={MainStyle.listText}>{elder.name}</CustomText>
                 <CustomText style={MainStyle.addText}>
                   {elder.address}
                 </CustomText>
               </View>
-              <View style={[MainStyle.subList, { alignItems: 'flex-end' }]}>
+              <View style={[MainStyle.subList, {alignItems: 'flex-end'}]}>
                 <CustomText style={MainStyle.listText}>
-                  {elder.age} / {elder.gender === 'MALE' ? '남' : elder.gender === 'FEMALE' ? '여' : elder.gender}
+                  {elder.age} /{' '}
+                  {elder.gender === 'MALE'
+                    ? '남'
+                    : elder.gender === 'FEMALE'
+                    ? '여'
+                    : elder.gender}
                 </CustomText>
               </View>
             </TouchableOpacity>
-            <View style={{ height: 10 }} />
+            <View style={{height: 10}} />
           </View>
         ))}
       </ScrollView>
