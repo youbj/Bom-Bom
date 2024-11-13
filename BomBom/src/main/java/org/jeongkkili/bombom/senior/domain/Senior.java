@@ -14,6 +14,7 @@ import org.jeongkkili.bombom.member_senior.domain.MemberSenior;
 import org.jeongkkili.bombom.schedule.domain.Schedule;
 import org.jeongkkili.bombom.speaker.domain.Speaker;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -70,7 +71,7 @@ public class Senior {
 	@OneToOne(mappedBy = "senior")
 	private Speaker speaker;
 
-	@OneToMany(mappedBy = "senior")
+	@OneToMany(mappedBy = "senior", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<MemberSenior> memberSeniors = new ArrayList<>();
 
 	@OneToMany(mappedBy = "senior")
