@@ -12,8 +12,9 @@ import {
   MainToEnrollNavigationProp,
   MainToDetailNavigationProp,
 } from '../../types/navigation.d';
-import instance, {localURL} from '../api/axios';
+import instance from '../api/axios';
 import LogoutButton from '../components/LogoutButton';
+import {Dimensions} from 'react-native';
 
 type Elder = {
   index: number;
@@ -28,63 +29,101 @@ const MainScreen = (): JSX.Element => {
   const [type, setType] = useState<string>('');
   const [title, setTitle] = useState('');
   const [result, setResult] = useState('');
+  const [elderList, setElderList] = useState<Elder[]>([]);
   const [filteredResult, setFilteredResult] = useState<Elder[]>([]);
   const [nameCount, setNameCount] = useState(1);
   const [ageCount, setAgeCount] = useState(0);
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [markedForDeletion, setMarkedForDeletion] = useState<Set<number>>(
+    new Set(),
+  );
+  const screenWidth = Dimensions.get('window').width;
+
   const enrollNavigation = useNavigation<MainToEnrollNavigationProp>();
   const detailNavigation = useNavigation<MainToDetailNavigationProp>();
 
-  const onPressEnroll = () => {
-    enrollNavigation.navigate('Enroll');
+  const onPressEnroll = () => enrollNavigation.navigate('Enroll');
+
+  const toggleDeleteMode = () => {
+    setDeleteMode(!deleteMode);
+    setMarkedForDeletion(new Set());
   };
 
-  const onPressDetail = (seniorId: number) => {
+  const toggleSelection = (seniorId: number) => {
+    setMarkedForDeletion(prev => {
+      const updated = new Set(prev);
+      if (updated.has(seniorId)) {
+        updated.delete(seniorId);
+      } else {
+        updated.add(seniorId);
+      }
+      return updated;
+    });
+  };
+
+  const saveDeletions = async () => {
+    try {
+      // 각 seniorId에 대해 delete 요청을 보냄
+      await Promise.all(
+        Array.from(markedForDeletion).map(seniorId =>
+          instance.delete(`/seniors/delete?senior-id=${seniorId}`),
+        ),
+      );
+      setDeleteMode(false);
+      setMarkedForDeletion(new Set());
+      Alert.alert('삭제 완료', '선택한 항목이 삭제되었습니다.');
+
+      // 삭제 완료 후 최신 데이터를 다시 조회
+      fetchElderList();
+    } catch (error) {
+      Alert.alert('삭제 실패', '항목을 삭제하는 데 실패했습니다.');
+      console.error('삭제 오류:', error);
+    }
+  };
+
+  const fetchElderList = async () => {
+    try {
+      const response = await instance.get(`/seniors/list`);
+      setElderList(response.data);
+      setFilteredResult(response.data);
+    } catch (error) {
+      Alert.alert('데이터를 불러오는 데 실패했습니다.');
+    }
+  };
+
+  const onPressDetail = (seniorId: number) =>
     detailNavigation.navigate('Detail', {seniorId});
-  };
 
-  // EncryptedStorage에서 type 불러오기
   useEffect(() => {
     const fetchType = async () => {
       try {
         const session = await EncryptedStorage.getItem('user_session');
-        const storedType = session ? JSON.parse(session).type : '';
-        setType(storedType);
+        setType(session ? JSON.parse(session).type : '');
       } catch (error) {
         console.error('type 가져오기 오류:', error);
       }
     };
-
     fetchType();
   }, []);
 
-  // elderList 데이터 가져오기
   useFocusEffect(
     useCallback(() => {
-      const fetchElderList = async () => {
-        try {
-          const response = await instance.get(`/seniors/list`);
-          setFilteredResult(response.data);
-        } catch (error) {
-          console.error('Failed to fetch elder list:', error);
-          Alert.alert('데이터를 불러오는 데 실패했습니다.');
-        }
-      };
-
       fetchElderList();
+      setDeleteMode(false);
     }, []),
   );
 
-  // type에 따라 title 설정
   useEffect(() => {
     setTitle(
       type === 'SOCIAL_WORKER' ? '담당 독거 노인 목록' : '나의 가족 목록',
     );
   }, [type]);
 
-  const handleSearch = () => {
-    const filtered = result
-      ? filteredResult.filter(elder => elder.name.includes(result))
-      : filteredResult;
+  const handleSearch = (text: string) => {
+    setResult(text);
+    const filtered = text
+      ? elderList.filter(elder => elder.name.includes(text))
+      : elderList;
     setFilteredResult(filtered);
   };
 
@@ -123,13 +162,15 @@ const MainScreen = (): JSX.Element => {
       <CustomTextInput
         style={{...defaultStyle.input, marginBottom: 5}}
         placeholder="이름으로 검색하세요"
+        autoCorrect={false}
+        autoCapitalize="none"
         right={
-          <TouchableOpacity onPress={handleSearch}>
+          <TouchableOpacity onPress={() => handleSearch(result)}>
             <Icon name="account-search-outline" size={20} color={'black'} />
           </TouchableOpacity>
         }
-        onChangeText={text => setResult(text)}
-        onSubmitEditing={handleSearch}
+        onChangeText={handleSearch}
+        onSubmitEditing={() => handleSearch(result)}
       />
       <View style={MainStyle.menu}>
         <View style={MainStyle.arr}>
@@ -160,16 +201,51 @@ const MainScreen = (): JSX.Element => {
           </TouchableOpacity>
         </View>
         {type === 'SOCIAL_WORKER' && (
-          <TouchableOpacity style={{paddingRight: 3}} onPress={onPressEnroll}>
-            <Icon name="account-plus" size={30} />
-          </TouchableOpacity>
+          <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity style={{paddingRight: 3}} onPress={onPressEnroll}>
+              <Icon name="account-plus" size={30} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={toggleDeleteMode}
+              style={{paddingHorizontal: 3}}>
+              <Icon
+                name={deleteMode ? 'close' : 'delete'}
+                size={30}
+                color="black"
+              />
+            </TouchableOpacity>
+          </View>
         )}
       </View>
-      <ScrollView contentContainerStyle={{flexGrow: 1}}>
+      <ScrollView
+        contentContainerStyle={{flexGrow: 1}}
+        showsVerticalScrollIndicator={false}>
         {filteredResult.map((elder, index) => (
-          <View key={index}>
+          <View
+            key={index}
+            style={{flexDirection: 'row', alignItems: 'center', width: '100%'}}>
+            {deleteMode && (
+              <TouchableOpacity
+                onPress={() => toggleSelection(elder.seniorId)}
+                style={{marginRight: 10}}>
+                <Icon
+                  name={
+                    markedForDeletion.has(elder.seniorId)
+                      ? 'checkbox-marked'
+                      : 'checkbox-blank-outline'
+                  }
+                  size={24}
+                  color="black"
+                />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
-              style={MainStyle.list}
+              style={[
+                MainStyle.list,
+                {
+                  width: deleteMode ? screenWidth - 74 : '100%',
+                },
+              ]}
               onPress={() => onPressDetail(elder.seniorId)}>
               <View style={[MainStyle.subList, {alignItems: 'flex-start'}]}>
                 <CustomText style={MainStyle.listText}>{elder.name}</CustomText>
@@ -188,9 +264,20 @@ const MainScreen = (): JSX.Element => {
                 </CustomText>
               </View>
             </TouchableOpacity>
-            <View style={{height: 10}} />
           </View>
         ))}
+        {deleteMode && (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              marginTop: 10,
+            }}>
+            <TouchableOpacity style={MainStyle.button} onPress={saveDeletions}>
+              <CustomText style={MainStyle.buttonText}>삭제</CustomText>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </View>
   );

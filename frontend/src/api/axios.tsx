@@ -1,20 +1,22 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import CookieManager from '@react-native-cookies/cookies'; 
+import axios, {AxiosError, InternalAxiosRequestConfig} from 'axios';
+import CookieManager from '@react-native-cookies/cookies';
 import EncryptedStorage from 'react-native-encrypted-storage';
 
-export const localURL = 'http://k11a202.p.ssafy.io:8080/api/v1'
+export const localURL = 'http://10.0.2.2:8080/api/v1';
+// 'http://k11a202.p.ssafy.io:8080/api/v1'
+// 'http://10.0.2.2:8080/api/v1'
 
 const instance = axios.create({
   baseURL: localURL,
   timeout: 1000,
   headers: {
-    "Content-Type": "application/json"
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
 // Request Interceptor - 요청마다 access token을 추가
 instance.interceptors.request.use(
-  async (config) => {
+  async config => {
     const session = await EncryptedStorage.getItem('user_session');
     const sessionData = session ? JSON.parse(session) : null;
     const accessToken = sessionData?.accessToken;
@@ -23,37 +25,37 @@ instance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  error => Promise.reject(error),
 );
 
 instance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  response => response,
+  async error => {
     const originalRequest = error.config;
     console.log(error);
     if (error.response?.status === 401 && !originalRequest._retry) {
-      console.log('?')
+      console.log('?');
       originalRequest._retry = true;
 
       try {
         // 쿠키에서 refresh token 가져오기
-        const cookies = await CookieManager.get("http://10.0.2.2");
+        const cookies = await CookieManager.get('http://10.0.2.2');
         const refreshToken = cookies?.refreshToken?.value;
-        console.log(refreshToken)
+        console.log(refreshToken);
         if (refreshToken) {
           // 새 access token 요청
-          const { data } = await axios.post(`${localURL}/members/reissue`, {
+          const {data} = await axios.post(`${localURL}/members/reissue`, {
             refreshToken,
           });
 
           const newAccessToken = data.accessToken;
           const type = data.type;
-          console.log(newAccessToken)
+          console.log(newAccessToken);
           await EncryptedStorage.setItem(
             'user_session',
             JSON.stringify({
               newAccessToken,
-              type
+              type,
             }),
           );
 
@@ -67,7 +69,7 @@ instance.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default instance;
@@ -76,7 +78,7 @@ export default instance;
 //   async (config: InternalAxiosRequestConfig) => {
 
 //     const cookies = await CookieManager.get('https://localhost:8080');
-//     let accessToken = cookies.accessToken; 
+//     let accessToken = cookies.accessToken;
 
 //     if (!accessToken) {
 //       try {
@@ -88,10 +90,10 @@ export default instance;
 //       config.headers.Authorization = `${accessToken}`;
 //     }
 
-//     return config; 
+//     return config;
 //   },
 //   (error: AxiosError) => {
-//     return Promise.reject(error); 
+//     return Promise.reject(error);
 //   }
 // );
 

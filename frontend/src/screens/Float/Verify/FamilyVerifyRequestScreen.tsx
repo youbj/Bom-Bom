@@ -5,9 +5,9 @@ import CustomText from '../../../components/CustomText';
 import CustomTextInput from '../../../components/CustomTextInput';
 import FamilyStyle from '../../../styles/Float/FamilyStyle';
 import BackButton from '../../../components/BackButton';
-import axios from 'axios';
 import instance, {localURL} from '../../../api/axios';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import {formatPhoneNumber} from '../../../utils/Format';
 
 const FamilyVerifyRequestScreen: React.FC = () => {
   const [socialWorkerName, setSocialWorkerName] = useState('');
@@ -33,15 +33,6 @@ const FamilyVerifyRequestScreen: React.FC = () => {
     } catch (error) {
       Alert.alert('인증 요청에 실패했습니다.');
     }
-  };
-
-  const formatPhoneNumber = (input: string) => {
-    const numbers = input.replace(/[^\d]/g, '').slice(0, 11);
-
-    if (numbers.length < 4) return numbers;
-    if (numbers.length < 8)
-      return `${numbers.slice(0, 3)} - ${numbers.slice(3)}`;
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
   };
 
   const handlePhoneNumberChange = (text: string) => {

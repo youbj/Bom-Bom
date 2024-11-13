@@ -3,6 +3,7 @@ import {useNavigation} from '@react-navigation/native';
 import {EnrollToMainNavigationProp} from '../../types/navigation.d';
 import {View, TouchableOpacity, ScrollView, Alert} from 'react-native';
 import {StyleSheet} from 'react-native';
+import {formatBirth, formatPhoneNumber} from '../utils/Format';
 
 import enrollStyle from '../styles/EnrollStyle';
 import defaultStyle from '../styles/DefaultStyle';
@@ -51,32 +52,6 @@ const EnrollScreen = (): JSX.Element => {
     setPeople(updatedPeople);
   };
 
-  const formatbirth = (input: string) => {
-    const births = input.replace(/[^\d]/g, '');
-    const limitedBirths = births.slice(0, 8);
-
-    if (limitedBirths.length < 5) return births;
-    if (limitedBirths.length < 7)
-      return `${limitedBirths.slice(0, 4)}-${limitedBirths.slice(4)}`;
-    return `${limitedBirths.slice(0, 4)}-${limitedBirths.slice(
-      4,
-      6,
-    )}-${limitedBirths.slice(6)}`;
-  };
-
-  const formatPhoneNumber = (input: string) => {
-    const numbers = input.replace(/[^\d]/g, '');
-    const limitedNumbers = numbers.slice(0, 11);
-
-    if (limitedNumbers.length < 4) return limitedNumbers;
-    if (limitedNumbers.length < 8)
-      return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3)}`;
-    return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(
-      3,
-      7,
-    )}-${limitedNumbers.slice(7)}`;
-  };
-
   const fields: {label: string; placeholder: string; key: keyof Person}[] = [
     {
       label: '생년월일',
@@ -115,10 +90,7 @@ const EnrollScreen = (): JSX.Element => {
     if (people.length > 0) {
       try {
         // 서버에 데이터를 전송하는 요청
-        const response = await instance.post(
-          `/seniors/regist`,
-          people,
-        ); // 여기에 서버의 URL을 설정하세요.
+        const response = await instance.post(`/seniors/regist`, people); // 여기에 서버의 URL을 설정하세요.
 
         if (response.status === 200) {
           Alert.alert(
@@ -219,7 +191,7 @@ const EnrollScreen = (): JSX.Element => {
                   if (field.key === 'birth') {
                     setCurrentPerson({
                       ...currentPerson,
-                      birth: formatbirth(text),
+                      birth: formatBirth(text),
                     });
                   } else if (field.key === 'phoneNumber') {
                     setCurrentPerson({
