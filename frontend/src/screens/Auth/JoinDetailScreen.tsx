@@ -96,6 +96,7 @@ const JoinDetailScreen = (): JSX.Element => {
       });
 
       if (response.status === 200) {
+        Alert.alert('회원가입에 성공하셨습니다.');
         navigation.navigate('Login');
       }
     } catch (error) {
