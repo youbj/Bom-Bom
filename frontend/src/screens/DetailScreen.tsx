@@ -7,7 +7,12 @@ import LogoutButton from '../components/LogoutButton';
 import CustomText from '../components/CustomText';
 import defaultStyle from '../styles/DefaultStyle';
 import detailStyle from '../styles/DetailStyle';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
+import {
+  RouteProp,
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from '@react-navigation/native';
 import {
   DetailToReviseNavigationProp,
   MainStackParamList,
@@ -71,7 +76,7 @@ const DetailScreen = (): JSX.Element => {
       const data = response.data;
       if (response.status === 200) {
         setDetail(data);
-        setImageUri(data.profileImgUrl); // 기존 이미지를 설정
+        setImageUri(data.profileImgUrl);
       }
     } catch {
       Alert.alert('어르신 정보 불러오기에 실패했습니다.');
@@ -86,7 +91,8 @@ const DetailScreen = (): JSX.Element => {
     launchImageLibrary(options, res => {
       if (res.assets && res.assets[0]) {
         const uri = res.assets[0].uri ?? '';
-        Alert.alert('이미지 선택됨', uri);
+        console.log(uri);
+        Alert.alert('이미지', '선택 완료');
 
         // 이미지 URI를 상태에 반영
         setImageUri(uri);
@@ -133,16 +139,12 @@ const DetailScreen = (): JSX.Element => {
     reviseNavigation.navigate('Revise', {detail});
   };
 
-  useEffect(
+  useFocusEffect(
     useCallback(() => {
       fetchType();
       fetchDetailList();
     }, []),
   );
-
-  useEffect(() => {
-    console.log('Updated imageUri:', imageUri);
-  }, [imageUri]);
 
   return (
     <View
