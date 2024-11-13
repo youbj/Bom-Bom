@@ -6,6 +6,7 @@ import org.jeongkkili.bombom.schedule.controller.request.UpdateScheduleReq;
 import org.jeongkkili.bombom.schedule.service.UpdateScheduleService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,7 +20,7 @@ public class UpdateScheduleController extends ScheduleController {
 
 	@RequireJwtoken
 	@PatchMapping("/update")
-	public ResponseEntity<Void> updateSchedule(@RequestParam("schedule-id") Long scheduleId, UpdateScheduleReq req) {
+	public ResponseEntity<Void> updateSchedule(@RequestParam("schedule-id") Long scheduleId, @RequestBody UpdateScheduleReq req) {
 		Long memberId = MemberContext.getMemberId();
 		updateScheduleService.updateSchedule(scheduleId, memberId, req);
 		return ResponseEntity.ok().build();
