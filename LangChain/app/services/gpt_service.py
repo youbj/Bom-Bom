@@ -1,143 +1,57 @@
-from openai import OpenAI
-from langchain.agents import Tool, create_openai_functions_agent, AgentExecutor
-from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.messages import SystemMessage, HumanMessage
+from openai import AsyncOpenAI
 from langchain.memory import ConversationBufferMemory
-from langchain.tools import StructuredTool
-from pydantic import BaseModel, Field
+from confluent_kafka import Producer
+import asyncio
 import json
 import logging
-import asyncio
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 from datetime import datetime
 from app.config import settings
-from app.models.schema import (
-    EmotionalState, RiskLevel, HealthStatus,
-    SentimentAnalysis, RiskAssessment, HealthMetrics
-)
 
 logger = logging.getLogger(__name__)
 
-class ValidateResponseArgs(BaseModel):
-    response: str = Field(..., description="검증할 응답 텍스트")
-    context: str = Field(default="", description="대화 맥락 (선택사항)")
-    elderly_state: Dict = Field(default_factory=dict, description="노인의 현재 상태 정보")
-
-class AnalyzeMessageArgs(BaseModel):
-    message: str = Field(..., description="분석할 메시지")
-    conversation_history: List[Dict] = Field(default_factory=list, description="이전 대화 기록")
-    
-# Pydantic 모델 정의
-class AnalysisOutput(BaseModel):
-    emotional_analysis: dict = Field(..., description="감정 상태 분석")
-    risk_assessment: dict = Field(..., description="위험 수준 평가")
-    health_indicators: dict = Field(..., description="건강 지표")
-    social_relationships: List[str] = Field(..., description="사회적 관계")
-    daily_activities: List[str] = Field(..., description="일상 활동")
-    main_concerns: List[str] = Field(..., description="주요 관심사")
-    keywords: List[str] = Field(..., description="키워드")
-
-class ResponseOutput(BaseModel):
-    response: str = Field(..., description="실제 응답 텍스트")
-    intent: str = Field(..., description="응답의 의도")
-    focus_areas: List[str] = Field(..., description="주의 깊게 본 영역들")
-    suggested_actions: List[str] = Field(..., description="제안된 행동이나 조치들")
-    next_topics: List[str] = Field(..., description="다음에 다룰만한 주제들")
-
-class ValidationOutput(BaseModel):
-    scores: dict = Field(..., description="평가 점수")
-    average_score: float = Field(..., description="평균 점수")
-    improvements_needed: List[str] = Field(..., description="개선 필요 사항")
-    strengths: List[str] = Field(..., description="강점")
-    
-
 class GPTService:
     def __init__(self):
-        """GPT 서비스 초기화"""
-        self.llm = ChatOpenAI(
-            temperature=0.7, 
-            model=settings.gpt.model_name,
-            api_key=settings.gpt.api_key
-        )
-        
-        # Memory 초기화
+        self.client = AsyncOpenAI(api_key=settings.gpt.api_key)
         self.memory = ConversationBufferMemory(
             memory_key="chat_history",
             return_messages=True,
             input_key="input",
             output_key="output"
         )
-
-        self.system_prompt = """"당신은 노인과 대화하는 AI 상담사입니다.
+        
+        # System Prompt 정의
+        self.system_prompt = """당신은 노인과 대화하는 AI 상담사입니다.
             
             다음 원칙을 반드시 따라주세요:
-
             1. 사용자의 입력을 주의 깊게 듣고 공감적으로 응답합니다
             2. 이전 대화 내용을 참고하여 맥락에 맞는 질문을 합니다
             3. 한 번에 하나의 간단하고 명확한 질문만 합니다
             4. 질문은 대화 마지막에 자연스럽게 포함시킵니다
             5. 노인의 건강, 기분, 일상생활에 관심을 보입니다
             6. 위험 신호(우울, 고립, 건강 악화 등)를 주의깊게 관찰합니다
-
-            응답 형식:
-            1. 먼저 사용자의 이야기에 대한 공감과 이해를 표현합니다
-            2. 필요한 경우 조언이나 지지를 제공합니다
-            3. 마지막에 반드시 이전 대화 맥락을 고려하여 자연스러운 후속 질문을 덧붙입니다
-
-            예시:
-            사용자: "오늘 날씨가 좋아서 산책했어요."
-            AI: "날씨 좋은 날 산책하시니 기분이 좋으셨겠어요. 산책은 건강에도 매우 좋죠. 
-            평소에도 자주 산책을 하시는 편인가요?"
-
-            위와 같은 형식으로 자연스럽게 대화를 이어가주세요.
-        """
-
-        # 프롬프트 템플릿 수정
-        self.prompt = ChatPromptTemplate.from_messages([
-            SystemMessage(content=self.system_prompt),
-            MessagesPlaceholder(variable_name="chat_history"),
-            HumanMessage(content="{text}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad")
-        ])
+            7. 대화가 8번 이상 이어진 경우, 다음 규칙을 따릅니다:
+                - 이전 대화 내용을 간단히 요약합니다
+                - 긍정적인 마무리 멘트를 합니다
+                - 다음에 또 이야기 나누자는 따뜻한 인사로 마무리합니다
+                - 더 이상 질문은 하지 않습니다"""
         
-        # 도구 정의 업데이트
-        self.tools = [
-            StructuredTool(
-                name="validate_response",
-                func=self._validate_response,
-                coroutine=self._validate_response,
-                description="생성된 응답의 적절성을 검증합니다",
-                args_schema=ValidateResponseArgs
-            ),
-            StructuredTool(
-                name="analyze_message",
-                func=self._analyze_message,
-                coroutine=self._analyze_message,
-                description="사용자의 메시지를 분석하고 상태를 평가합니다",
-                args_schema=AnalyzeMessageArgs
-            )
-        ]
+        # Kafka 설정
+        self.kafka_config = {
+            'bootstrap.servers': settings.kafka.bootstrap_servers,
+            'client.id': 'gpt_service_producer'
+        }
+        self.producer = Producer(self.kafka_config)
+        self.response_topic = 'ai_responses'
 
-        # 에이전트 설정
-        self.agent = create_openai_functions_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=self.prompt
-        )
-        
-        # AgentExecutor 설정
-        self.agent_executor = AgentExecutor(
-            agent=self.agent,
-            tools=self.tools,
-            memory=self.memory,
-            verbose=True,
-            max_iterations=3,
-            early_stopping_method="generate",
-            handle_parsing_errors=True
-        )
+    def delivery_report(self, err, msg):
+        """Kafka 전송 결과 콜백"""
+        if err is not None:
+            logger.error(f'Message delivery failed: {err}')
+        else:
+            logger.info(f'Message delivered to {msg.topic()} [{msg.partition()}]')
 
-    async def _validate_response(self, response: str, context: str = "", elderly_state: Dict = None) -> Dict:
+    async def validate_response(self, response: str, context: str = "", elderly_state: Dict = None) -> Dict:
         """응답의 적절성 검증"""
         try:
             validation_prompt = fr"""다음 응답의 적절성을 검증하여 JSON 형식으로 응답해주세요:
@@ -151,31 +65,24 @@ class GPTService:
             2. 명확성: 이해하기 쉽고 간단한 언어를 사용했는가
             3. 적절성: 노인의 현재 상태와 맥락에 맞는 응답인가
             4. 안전성: 위험 신호에 적절히 대응했는가
-            5. 유용성: 실질적인 도움이나 의미 있는 대화를 제공하는가
+            5. 유용성: 실질적인 도움이나 의미 있는 대화를 제공하는가"""
+
+            completion = await self.client.chat.completions.create(
+                model=settings.gpt.model_name,
+                messages=[
+                    {"role": "system", "content": "응답 검증 전문가입니다."},
+                    {"role": "user", "content": validation_prompt}
+                ],
+                temperature=0.3,
+                response_format={"type": "json_object"}
+            )
+
+            validation_result = json.loads(completion.choices[0].message.content)
+            logger.info(f"Response validation result: {validation_result}")
+            return validation_result
             
-            다음 형식으로 응답하세요:
-            {{
-                "scores": {{
-                    "empathy": "1-5 사이의 점수",
-                    "clarity": "1-5 사이의 점수",
-                    "appropriateness": "1-5 사이의 점수",
-                    "safety": "1-5 사이의 점수",
-                    "usefulness": "1-5 사이의 점수"
-                }},
-                "average_score": "평균 점수",
-                "improvements_needed": ["개선필요사항1", "개선필요사항2"],
-                "strengths": ["강점1", "강점2"]
-            }}
-            """
-            
-            validation_response = await self.llm.ainvoke(validation_prompt)
-            result = json.loads(validation_response.content)
-            
-            logger.info(f"Response validation result: {result}")
-            return result
-        
         except Exception as e:
-            logger.error(f"Response validation failed: {str(e)}")
+            logger.error(f"Validation failed: {str(e)}")
             return {
                 "scores": {
                     "empathy": 3,
@@ -189,169 +96,152 @@ class GPTService:
                 "strengths": []
             }
 
-    async def _analyze_message(self, message: str, conversation_history: List[Dict] = None) -> Dict:
-        """메시지 분석"""
+    async def send_response_to_kafka(self, response_data: Dict) -> bool:
+        """Kafka로 응답 전송"""
         try:
-            analysis_prompt = fr"""다음 메시지와 대화 맥락을 분석해 JSON 형식으로 응답해주세요:
+            self.producer.produce(
+                self.response_topic,
+                value=json.dumps(response_data).encode('utf-8'),
+                callback=self.delivery_report
+            )
+            self.producer.flush(timeout=5)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to send message to Kafka: {str(e)}")
+            return False
 
-                메시지: "{message}"
-                대화 기록: {json.dumps(conversation_history, ensure_ascii=False) if conversation_history else "없음"}
+    async def analyze_conversation(self, user_message: str, response_text: str) -> Dict:
+        """대화 분석 수행"""
+        try:
+            analysis_prompt = f"""다음 대화를 분석해주세요:
+            사용자: {user_message}
+            AI: {response_text}
+            
+            다음 형식으로 JSON 응답을 제공해주세요:
+            {{
+                "summary": "대화 요약",
+                "positivity_score": 0-100 사이의 감정 점수,
+                "keywords": ["주요 키워드들"],
+                "response_plan": ["대처 방안들"]
+            }}"""
 
-                다음을 포함하여 분석해주세요:
-                1. 감정 상태와 강도
-                2. 위험 신호와 수준
-                3. 건강 관련 언급
-                4. 사회적 관계 관련 내용
-                5. 일상생활 활동
-                6. 주요 관심사나 걱정거리
-
-                다음 형식으로 응답하세요:
-                {{
-                    "emotional_analysis": {{
-                        "state": "감정 상태",
-                        "intensity": "0-100 사이의 수치",
-                        "description": "상세 설명"
-                    }},
-                    "risk_assessment": {{
-                        "level": "NONE/LOW/MEDIUM/HIGH",
-                        "factors": ["위험요소1", "위험요소2"],
-                        "needed_actions": ["필요조치1", "필요조치2"]
-                    }},
-                    "health_indicators": {{
-                        "physical": ["신체건강 관련 내용"],
-                        "mental": ["정신건강 관련 내용"],
-                        "sleep": ["수면 관련 내용"],
-                        "appetite": ["식욕 관련 내용"]
-                    }},
-                    "social_relationships": ["관계1", "관계2"],
-                    "daily_activities": ["활동1", "활동2"],
-                    "main_concerns": ["걱정거리1", "걱정거리2"],
-                    "keywords": ["키워드1", "키워드2"]
-                }}"""
-
-            # LangChain ChatOpenAI 대신 직접 OpenAI API 호출
-            response = await self.llm.ainvoke(
-                [
-                    SystemMessage(content="노인 대화 분석 전문가입니다."),
-                    HumanMessage(content=analysis_prompt)
-                ]
+            completion = await self.client.chat.completions.create(
+                model=settings.gpt.model_name,
+                messages=[
+                    {"role": "system", "content": "대화 분석 전문가입니다."},
+                    {"role": "user", "content": analysis_prompt}
+                ],
+                temperature=0.3,
+                response_format={"type": "json_object"}
             )
             
-            result = json.loads(response.content)
-            logger.info(f"Message analysis result: {result}")
-
-            return result
-
+            return json.loads(completion.choices[0].message.content)
         except Exception as e:
-            logger.error(f"Message analysis failed: {str(e)}")
+            logger.error(f"Analysis failed: {str(e)}")
             return {
-                "emotional_analysis": {
-                    "state": "NEUTRAL",
-                    "intensity": 50,
-                    "description": "분석 실패"
-                },
-                "risk_assessment": {
-                    "level": "NONE",
-                    "factors": [],
-                    "needed_actions": []
-                },
-                "health_indicators": {
-                    "physical": [],
-                    "mental": [],
-                    "sleep": [],
-                    "appetite": []
-                },
-                "social_relationships": [],
-                "daily_activities": [],
-                "main_concerns": [],
-                "keywords": []
+                "summary": "",
+                "positivity_score": 50,
+                "keywords": [],
+                "response_plan": []
             }
 
-    async def generate_response(self, user_message: str, is_initial: bool = False) -> Dict:
-        """응답 생성"""
+    async def generate_response(
+        self, 
+        user_message: str, 
+        conversation_id: int,
+        memory_id: int,
+        is_initial: bool = False
+    ) -> Dict:
+        """응답 생성 및 처리"""
         try:
+            # 1. 응답 생성
             if is_initial:
-                initial_response = {
-                    "response_text": "안녕하세요! 오늘 하루는 어떻게 보내고 계신가요?",
-                    "response_data": {
-                        "intent": "greeting",
-                        "focus_areas": ["일상생활", "기분"],
-                        "suggested_actions": ["경청", "공감"],
-                        "next_topics": ["하루 일과", "건강 상태"]
-                    }
-                }
-                return initial_response
+                response_text = "안녕하세요! 오늘 하루는 어떻게 보내고 계신가요?"
+            else:
+                chat_history = self.memory.load_memory_variables({}).get("chat_history", [])
+                recent_history = chat_history[-3:] if len(chat_history) > 3 else chat_history
+                
+                context = "\n".join([
+                    f"{'User' if msg.type == 'human' else 'Assistant'}: {msg.content}"
+                    for msg in recent_history
+                ])
+                
+                response = await self.client.chat.completions.create(
+                    model=settings.gpt.model_name,
+                    messages=[
+                        {"role": "system", "content": self.system_prompt},
+                        {"role": "user", "content": f"이전 대화:\n{context}\n\n사용자: {user_message}"}
+                    ],
+                    temperature=0.7
+                )
+                response_text = response.choices[0].message.content
 
-            # 이전 대화 내용 로드
-            chat_history = self.memory.load_memory_variables({}).get("chat_history", [])
-            
-            # 메시지 분석
-            analysis_result = await self._analyze_message(
-                user_message,
-                [{"role": m.type, "content": m.content} for m in chat_history]
+            # 2. 응답 검증
+            validation_task = asyncio.create_task(
+                self.validate_response(response_text, user_message)
             )
-            
-            # GPT에 전달할 프롬프트 구성
-            response_prompt = fr"""이전 대화와 분석 결과를 고려하여 응답을 생성해주세요:
 
-            사용자 메시지: {user_message}
-            
-            분석 결과: {json.dumps(analysis_result, ensure_ascii=False)}
-            
-            다음 사항을 고려하여 응답해주세요:
-            1. 감정 상태에 맞는 공감적 반응
-            2. 위험 수준에 따른 적절한 대응
-            3. 건강 상태에 대한 관심
-            4. 사회적 관계 지원
-            5. 일상활동 격려
-            
-            응답은 다음 형식의 JSON으로 작성해주세요:
-            {{
-                "response": "실제 응답 텍스트",
-                "intent": "응답의 의도",
-                "focus_areas": ["주의 깊게 본 영역들"],
-                "suggested_actions": ["제안된 행동이나 조치들"],
-                "next_topics": ["다음에 다룰만한 주제들"]
-            }}
-            """
-
-            response = await self.llm.ainvoke(response_prompt)
-            response_data = json.loads(response.content)
-            
-            # 응답 검증
-            validation_result = await self._validate_response(
-                response_data['response'],
-                context=user_message,
-                elderly_state=analysis_result
+            # 3. Kafka로 응답 전송
+            response_data = {
+                "response_text": response_text,
+                "conversation_id": conversation_id,
+                "memory_id": memory_id,
+                "timestamp": datetime.now().isoformat()
+            }
+            kafka_task = asyncio.create_task(
+                self.send_response_to_kafka(response_data)
             )
-            
-            # Memory 업데이트
+
+            # 4. 대화 분석 수행
+            analysis_task = asyncio.create_task(
+                self.analyze_conversation(user_message, response_text)
+            )
+
+            # 5. 모든 작업 완료 대기
+            validation_result = await validation_task
+            await kafka_task
+            analysis_result = await analysis_task
+
+            # 6. Memory 컨텍스트 업데이트
             self.memory.save_context(
                 {"input": user_message},
-                {"output": response_data['response']}
+                {"output": response_text}
             )
-            
+
+            # 7. 최종 응답 데이터 구성
             return {
-                "response_text": response_data['response'],
-                "response_data": response_data,
-                "analysis": analysis_result,
-                "validation": validation_result
+                "response_text": response_text,
+                "conversation_id": conversation_id,
+                "memory_id": memory_id,
+                "validation": validation_result,
+                "analysis": analysis_result
             }
 
         except Exception as e:
-            logger.error(f"Response generation failed: {str(e)}", exc_info=True)
+            logger.error(f"Response generation failed: {str(e)}")
             return {
-                "response_text": "죄송합니다. 잠시 문제가 발생했습니다. 다시 한 번 말씀해 주시겠어요?",
-                "response_data": {
-                    "intent": "error_handling",
-                    "focus_areas": [],
-                    "suggested_actions": ["재시도"],
-                    "next_topics": []
+                "response_text": "죄송합니다. 일시적인 오류가 발생했습니다. 다시 말씀해 주시겠어요?",
+                "conversation_id": conversation_id,
+                "memory_id": memory_id,
+                "validation": {
+                    "scores": {"empathy": 3, "clarity": 3, "appropriateness": 3, "safety": 3, "usefulness": 3},
+                    "average_score": 3.0,
+                    "improvements_needed": [],
+                    "strengths": []
                 },
-                "analysis": {},
-                "validation": {}
+                "analysis": {
+                    "summary": "",
+                    "positivity_score": 50,
+                    "keywords": [],
+                    "response_plan": []
+                }
             }
 
     def reset_memory(self):
-        """대화 기록 초기화"""
+        """메모리 초기화"""
         self.memory.clear()
+
+    def __del__(self):
+        """소멸자: Kafka Producer 정리"""
+        if hasattr(self, 'producer'):
+            self.producer.flush()

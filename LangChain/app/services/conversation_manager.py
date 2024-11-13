@@ -1,215 +1,182 @@
-from fastapi import Depends
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 import uuid
 import logging
 from datetime import datetime
 from app.services.gpt_service import GPTService
-from app.services.conversation_analyzer import ConversationAnalyzer
 from app.database.mysql_manager import MySQLManager
-from app.models.schema import (
-    SpeakerType, ConversationSession, Message,
-    SentimentAnalysis, RiskAssessment, HealthMetrics
-)
+from app.config import settings
+from app.models.schema import SpeakerType
 
 logger = logging.getLogger(__name__)
 
 class ConversationManager:
-    message_counter = 0
-    
-    def __init__(self):
+    def __init__(self, mysql_manager: MySQLManager, gpt_service: GPTService):
         """대화 관리 시스템 초기화"""
-        self.gpt_service = GPTService()
-        self.analyzer = ConversationAnalyzer()
-        self.mysql_manager = MySQLManager()
+        self.gpt_service = gpt_service
+        self.mysql_manager = mysql_manager
         self.current_conversation_id = None
-        self.messages = []
-    
-    def start_conversation(self) -> str:
+        self.memory_id = None
+        
+        # 대화 설정
+        self.max_turns = settings.max_conversation_turns
+        self.warning_threshold = settings.warning_threshold
+        self.current_turn = 0
+
+    async def start_conversation(self, senior_id: int = 1) -> Dict:
         """새로운 대화 시작"""
         try:
-            self.current_conversation_id = str(uuid.uuid4())
-            self.message_counter = 0
+            # Memory ID 생성
+            self.memory_id = uuid.uuid4().int >> 64  # 64비트 정수로 변환
             
-            # 데이터베이스에 새 대화 세션 생성
-            success = self.mysql_manager.start_conversation(self.current_conversation_id)
-            if not success:
+            # DB에 대화 세션 생성
+            self.current_conversation_id = self.mysql_manager.start_conversation(
+                memory_id=self.memory_id,
+                senior_id=senior_id
+            )
+            
+            if not self.current_conversation_id:
                 raise Exception("Failed to create conversation session")
+
+            # 초기 응답 생성
+            initial_response = await self.gpt_service.generate_response(
+                user_message="",
+                conversation_id=self.current_conversation_id,
+                memory_id=self.memory_id,
+                is_initial=True
+            )
+            
+            # AI 응답 저장
+            await self.mysql_manager.save_memory({
+                'memory_id': self.memory_id,
+                'conversation_id': self.current_conversation_id,
+                'speaker': SpeakerType.AI,
+                'content': initial_response['response_text']
+            })
             
             logger.info(f"Started new conversation: {self.current_conversation_id}")
-            return self.current_conversation_id
+            return {
+                "conversation_id": self.current_conversation_id,
+                "memory_id": self.memory_id,
+                "response": initial_response
+            }
             
         except Exception as e:
             logger.error(f"Failed to start conversation: {str(e)}")
             raise
 
-    async def process_text_input(self, text: str, is_initial: bool = False) -> Dict:
-        """텍스트 입력 처리"""
+    async def process_message(self, text: str) -> Dict:
+        """메시지 처리"""
         try:
-            # conversation_id가 없으면 새로 생성
             if not self.current_conversation_id:
-                self.current_conversation_id = self.start_conversation()
-                self.mysql_manager.start_conversation(self.current_conversation_id)
-                
-            if is_initial:
-                # 초기 인사 메시지 생성
-                gpt_response = await self.gpt_service.generate_response(
-                    user_message="",
-                    is_initial=True
+                raise Exception("No active conversation")
+
+            self.current_turn += 1
+            
+            # 대화 턴 수 체크
+            if self.current_turn >= self.max_turns:
+                return await self.end_conversation(
+                    final_message="대화를 마무리할 시간이 되었네요. 오늘도 즐거운 대화 나눌 수 있어서 좋았습니다."
                 )
-                return {
-                    "conversation_id": self.current_conversation_id,
-                    "response_text": gpt_response['response_text']
-                }
-    
-            # 일반 대화 처리
-            self.message_counter += 1
-            logger.info(f"Processing message #{self.message_counter} for conversation {self.current_conversation_id}")
-            
-            # 대화 분석
-            analysis_result = await self.analyzer.analyze_conversation(text)  # await 추가
-            
-            # GPT 응답 생성
+
+            # 사용자 메시지 저장
+            await self.mysql_manager.save_memory({
+                'memory_id': self.memory_id,
+                'conversation_id': self.current_conversation_id,
+                'speaker': SpeakerType.USER,
+                'content': text
+            })
+
+            # GPT 응답 생성 (Kafka 전송 및 분석 포함)
             gpt_response = await self.gpt_service.generate_response(
                 user_message=text,
-                is_initial=False
+                conversation_id=self.current_conversation_id,
+                memory_id=self.memory_id
             )
-            
-            # 사용자 메시지 저장
-            user_message_data = {
-                'conversation_id': self.current_conversation_id,
-                'speaker_type': 'USER',
-                'text_content': text,
-                'message_number': self.message_counter,
-                'sentiment_analysis': analysis_result['sentiment_analysis'],
-                'risk_assessment': analysis_result['risk_assessment'],
-                'summary': analysis_result['summary'],
-                'keywords': analysis_result['keywords']
-            }
-            
-            user_message_id = self.mysql_manager.save_message(user_message_data)
-            
-            if not user_message_id:
-                raise Exception("Failed to save user message")
-            
+
             # AI 응답 저장
-            self.message_counter += 1
-            ai_message_data = {
+            await self.mysql_manager.save_memory({
+                'memory_id': self.memory_id,
                 'conversation_id': self.current_conversation_id,
-                'speaker_type': 'AI',
-                'text_content': gpt_response['response_text'],
-                'message_number': self.message_counter
-            }
-            
-            ai_message_id = self.mysql_manager.save_message(ai_message_data)
-            
-            if not ai_message_id:
-                raise Exception("Failed to save AI response")
-            
-            return {
+                'speaker': SpeakerType.AI,
+                'content': gpt_response['response_text'],
+                'summary': gpt_response['analysis'].get('summary'),
+                'positivity_score': gpt_response['analysis'].get('positivity_score'),
+                'keywords': gpt_response['analysis'].get('keywords'),
+                'response_plan': gpt_response['analysis'].get('response_plan')
+            })
+
+            # 응답 데이터 구성
+            response_data = {
                 "conversation_id": self.current_conversation_id,
-                "text_response": gpt_response['response_text'],
-                "message_number": self.message_counter,
-                "analysis": {
-                    "sentiment": analysis_result['sentiment_analysis'],
-                    "risk_level": analysis_result['risk_assessment']['risk_level'],
-                    "health_status": analysis_result.get('health_metrics', {}).get('status', 'UNKNOWN'),
-                    "keywords": analysis_result['keywords'],
-                    "summary": analysis_result['summary']
-                }
+                "memory_id": self.memory_id,
+                "response": gpt_response,
+                "current_turn": self.current_turn,
+                "remaining_turns": self.max_turns - self.current_turn,
+                "should_warn": self.current_turn >= self.warning_threshold
             }
-            
+
+            return response_data
+
         except Exception as e:
-            logger.error(f"Failed to process text input: {str(e)}", exc_info=True)
+            logger.error(f"Failed to process message: {str(e)}")
             raise
 
-    def end_conversation(self) -> bool:
-        """대화 종료 및 정리"""
+    async def end_conversation(self, final_message: Optional[str] = None) -> Dict:
+        """대화 종료"""
         try:
-            if self.current_conversation_id:
-                # 대화 세션 종료 처리
-                success = self.mysql_manager.end_conversation(self.current_conversation_id)
-                if not success:
-                    raise Exception("Failed to end conversation in database")
-                
-                # 대화 히스토리 출력
-                conversation_history = self.mysql_manager.get_conversation_history(
-                    self.current_conversation_id
-                )
-                
-                # 메모리 정리
-                self.messages = []
-                self.current_conversation_id = None
-                self.message_counter = 0
-                
-                logger.info(f"Conversation ended successfully: {len(conversation_history)} messages processed")
-                return True
-            
-            return False
-            
+            if not self.current_conversation_id:
+                raise Exception("No active conversation to end")
+
+            # 최종 메시지가 있는 경우 저장
+            if final_message:
+                await self.mysql_manager.save_memory({
+                    'memory_id': self.memory_id,
+                    'conversation_id': self.current_conversation_id,
+                    'speaker': SpeakerType.AI,
+                    'content': final_message
+                })
+
+            # 대화 세션 종료
+            success = await self.mysql_manager.end_conversation(self.current_conversation_id)
+            if not success:
+                raise Exception("Failed to end conversation in database")
+
+            # GPT 서비스 메모리 초기화
+            self.gpt_service.reset_memory()
+
+            # 대화 상태 초기화
+            final_status = {
+                "conversation_id": self.current_conversation_id,
+                "memory_id": self.memory_id,
+                "total_turns": self.current_turn,
+                "end_time": datetime.now().isoformat(),
+                "final_message": final_message if final_message else "대화가 종료되었습니다."
+            }
+
+            self.current_conversation_id = None
+            self.memory_id = None
+            self.current_turn = 0
+
+            return final_status
+
         except Exception as e:
             logger.error(f"Failed to end conversation: {str(e)}")
-            return False
+            raise
 
-    def get_conversation_summary(self, conversation_id: str) -> Dict:
-        """대화 요약 정보 조회"""
-        try:
-            conversation_history = self.mysql_manager.get_conversation_history(conversation_id)
-            
-            if not conversation_history:
-                return {
-                    "status": "not_found",
-                    "message": "Conversation not found"
-                }
-            
-            # 대화 통계 계산
-            total_messages = len(conversation_history)
-            user_messages = sum(1 for msg in conversation_history if msg['speaker_type'] == SpeakerType.USER)
-            ai_messages = total_messages - user_messages
-            
-            # 감정 분석 통계
-            sentiment_scores = [
-                msg.get('sentiment_score', 0) 
-                for msg in conversation_history 
-                if msg.get('sentiment_score') is not None
-            ]
-            
-            avg_sentiment = sum(sentiment_scores) / len(sentiment_scores) if sentiment_scores else 0
-            
-            # 위험 수준 추적
-            risk_levels = [
-                msg.get('risk_level') 
-                for msg in conversation_history 
-                if msg.get('risk_level')
-            ]
-            
-            highest_risk = max(risk_levels, default='NONE')
-            
-            # 주요 키워드 집계
-            keywords = {}
-            for msg in conversation_history:
-                if msg.get('keywords'):
-                    for keyword in msg['keywords']:
-                        keywords[keyword] = keywords.get(keyword, 0) + 1
-            
-            top_keywords = sorted(keywords.items(), key=lambda x: x[1], reverse=True)[:5]
-            
-            return {
-                "status": "success",
-                "summary": {
-                    "total_messages": total_messages,
-                    "user_messages": user_messages,
-                    "ai_messages": ai_messages,
-                    "average_sentiment": avg_sentiment,
-                    "highest_risk_level": highest_risk,
-                    "top_keywords": top_keywords,
-                    "start_time": conversation_history[0]['created_at'],
-                    "end_time": conversation_history[-1]['created_at']
-                }
-            }
-            
-        except Exception as e:
-            logger.error(f"Failed to get conversation summary: {str(e)}")
-            return {
-                "status": "error",
-                "message": str(e)
-            }
+    async def get_conversation_status(self) -> Dict:
+        """현재 대화 상태 조회"""
+        if not self.current_conversation_id:
+            return {"status": "no_active_conversation"}
+
+        conversation_status = await self.mysql_manager.get_conversation_status(
+            self.current_conversation_id
+        )
+
+        return {
+            "conversation_id": self.current_conversation_id,
+            "memory_id": self.memory_id,
+            "current_turn": self.current_turn,
+            "remaining_turns": self.max_turns - self.current_turn,
+            "should_warn": self.current_turn >= self.warning_threshold,
+            **conversation_status
+        }

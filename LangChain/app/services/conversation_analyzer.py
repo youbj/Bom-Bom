@@ -40,15 +40,16 @@ class ConversationAnalyzer:
     }}"""
     
             # GPT API 호출
-            completion = await self.client.chat.completions.create(
-                model=settings.gpt.model_name,
-                messages=[
-                    {"role": "system", "content": "노인 대화 분석 전문가입니다."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3,
-                response_format={"type": "json_object"}
-            )
+            async with self.client as client:
+                completion = await client.chat.completions.create(
+                    model=settings.gpt.model_name,
+                    messages=[
+                        {"role": "system", "content": "노인 대화 분석 전문가입니다."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.3,
+                    response_format={"type": "json_object"}
+                )
     
             # 응답 파싱
             analysis = json.loads(completion.choices[0].message.content)

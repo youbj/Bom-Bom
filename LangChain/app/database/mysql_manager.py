@@ -1,264 +1,135 @@
+import mysql.connector
 from mysql.connector import pooling
-from typing import Dict, List, Optional, Tuple
-from datetime import datetime
 import logging
-import json
+from typing import Dict, List, Optional
+from datetime import datetime
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
 class MySQLManager:
     def __init__(self):
-        """데이터베이스 연결 풀 초기화"""
-        self.dbconfig = {
-            "host": settings.mysql.host,
-            "port": settings.mysql.port,
-            "database": settings.mysql.database,
-            "user": settings.mysql.user,
-            "password": settings.mysql.password
-        }
-        
+        """데이터베이스 매니저 초기화"""
         try:
-            self.connection_pool = pooling.MySQLConnectionPool(
-                pool_name="mypool",
-                pool_size=5,
-                **self.dbconfig
-            )
-            logger.info("MySQL connection pool initialized successfully")
+            # config 먼저 설정
+            self.config = {
+                "host": settings.mysql.host,
+                "port": settings.mysql.port,
+                "database": settings.mysql.database,
+                "user": settings.mysql.user,
+                "password": settings.mysql.password,
+                "charset": settings.mysql.charset
+            }
+            
+            # 연결 생성
+            self.connection = mysql.connector.connect(**self.config)
+            logger.info("MySQL connection established")
+            
         except Exception as e:
-            logger.error(f"Failed to initialize MySQL connection pool: {str(e)}")
+            logger.error(f"Failed to initialize MySQL connection: {str(e)}")
             raise
 
-    def get_connection(self):
-        """커넥션 풀에서 연결 가져오기"""
-        return self.connection_pool.get_connection()
-
-    def start_conversation(self, conversation_id: str) -> bool:
-        """새로운 대화 세션 시작"""
-        query = """
-        INSERT INTO conversation_sessions (conversation_id)
-        VALUES (%s)
-        """
-        
+    def reconnect_if_needed(self):
+        """필요한 경우 재연결"""
         try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(query, (conversation_id,))
-                    conn.commit()
-                    return True
+            if not self.connection.is_connected():
+                self.connection = mysql.connector.connect(**self.config)
+                logger.info("MySQL connection re-established")
+        except Exception as e:
+            logger.error(f"Failed to reconnect: {str(e)}")
+            raise
+
+    def close(self):
+        """연결 종료"""
+        try:
+            if hasattr(self, 'connection') and self.connection.is_connected():
+                self.connection.close()
+                logger.info("MySQL connection closed")
+        except Exception as e:
+            logger.error(f"Error closing connection: {str(e)}")
+
+    def start_conversation(self, memory_id: int, senior_id: int = 1) -> Optional[int]:
+        """새로운 대화 세션 시작"""
+        self.reconnect_if_needed()
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute("""
+                INSERT INTO Conversation (memory_id, senior_id, start_date)
+                VALUES (%s, %s, NOW())
+            """, (memory_id, senior_id))
+            self.connection.commit()
+            return cursor.lastrowid
         except Exception as e:
             logger.error(f"Failed to start conversation: {str(e)}")
-            return False
+            return None
+        finally:
+            cursor.close()
 
-    def end_conversation(self, conversation_id: str) -> bool:
+    def end_conversation(self, conversation_id: int) -> bool:
         """대화 세션 종료"""
-        query = """
-        UPDATE conversation_sessions 
-        SET end_time = CURRENT_TIMESTAMP
-        WHERE conversation_id = %s
-        """
-        
+        self.reconnect_if_needed()
+        cursor = self.connection.cursor()
         try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(query, (conversation_id,))
-                    conn.commit()
-                    return True
+            cursor.execute("""
+                UPDATE Conversation 
+                SET end_time = CURRENT_TIME()
+                WHERE conversation_id = %s
+            """, (conversation_id,))
+            self.connection.commit()
+            return True
         except Exception as e:
             logger.error(f"Failed to end conversation: {str(e)}")
             return False
+        finally:
+            cursor.close()
 
-    def save_message(self, message_data: Dict) -> Optional[int]:
-        """메시지 저장 및 message_id 반환"""
-        message_query = """
-        INSERT INTO messages (conversation_id, speaker_type, text_content, message_number)
-        VALUES (%s, %s, %s, %s)
-        """
-        
+    def get_conversation_status(self, conversation_id: int) -> Optional[Dict]:
+        """대화 상태 조회"""
+        self.reconnect_if_needed()
+        cursor = self.connection.cursor(dictionary=True)
         try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cursor:
-                    # 메시지 저장
-                    cursor.execute(message_query, (
-                        message_data['conversation_id'],
-                        message_data['speaker_type'],
-                        message_data['text_content'],
-                        message_data['message_number']
-                    ))
-                    
-                    message_id = cursor.lastrowid
-                    conn.commit()
-                    
-                    # 감정 분석 결과 저장
-                    if 'sentiment_analysis' in message_data:
-                        self._save_sentiment_analysis(message_id, message_data['sentiment_analysis'])
-                    
-                    # 위험 평가 저장
-                    if 'risk_assessment' in message_data:
-                        self._save_risk_assessment(message_id, message_data['risk_assessment'])
-                    
-                    # 요약 저장
-                    if 'summary' in message_data:
-                        self._save_summary(message_id, message_data['summary'])
-                    
-                    # 키워드 저장
-                    if 'keywords' in message_data:
-                        self._save_keywords(message_id, message_data['keywords'])
-                    
-                    return message_id
-                    
+            cursor.execute("""
+                SELECT c.*, COUNT(m.id) as message_count
+                FROM Conversation c
+                LEFT JOIN Memory m ON c.conversation_id = m.conversation_id
+                WHERE c.conversation_id = %s
+                GROUP BY c.conversation_id
+            """, (conversation_id,))
+            return cursor.fetchone()
         except Exception as e:
-            logger.error(f"Failed to save message: {str(e)}")
+            logger.error(f"Failed to get conversation status: {str(e)}")
             return None
+        finally:
+            cursor.close()
 
-    def _save_sentiment_analysis(self, message_id: int, sentiment_data: Dict) -> bool:
-        """감정 분석 결과 저장"""
-        query = """
-        INSERT INTO sentiment_analysis (
-            message_id, sentiment_score, is_positive, confidence,
-            emotional_state, emotion_score, emotion_description
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """
-        
+    def save_memory(self, data: Dict) -> Optional[int]:
+        """메모리 저장"""
+        self.reconnect_if_needed()
+        cursor = self.connection.cursor()
         try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(query, (
-                        message_id,
-                        sentiment_data.get('score'),
-                        sentiment_data.get('is_positive'),
-                        sentiment_data.get('confidence'),
-                        sentiment_data.get('emotional_state'),
-                        sentiment_data.get('emotion_score'),
-                        sentiment_data.get('emotion_description')
-                    ))
-                    conn.commit()
-                    return True
+            cursor.execute("""
+                INSERT INTO Memory (
+                    memory_id, conversation_id, speaker, content, 
+                    summary, positivity_score, keywords, response_plan
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                data['memory_id'],
+                data['conversation_id'],
+                data['speaker'],
+                data['content'],
+                data.get('summary'),
+                data.get('positivity_score', 50),
+                data.get('keywords', '[]'),
+                data.get('response_plan', '[]')
+            ))
+            self.connection.commit()
+            return cursor.lastrowid
         except Exception as e:
-            logger.error(f"Failed to save sentiment analysis: {str(e)}")
-            return False
+            logger.error(f"Failed to save memory: {str(e)}")
+            return None
+        finally:
+            cursor.close()
 
-    def _save_risk_assessment(self, message_id: int, risk_data: Dict) -> bool:
-        """위험 평가 결과 저장"""
-        query = """
-        INSERT INTO risk_assessments (
-            message_id, risk_level, risk_factors, needed_actions
-        ) VALUES (%s, %s, %s, %s)
-        """
-        
-        try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(query, (
-                        message_id,
-                        risk_data.get('risk_level'),
-                        json.dumps(risk_data.get('risk_factors', [])),
-                        json.dumps(risk_data.get('needed_actions', []))
-                    ))
-                    conn.commit()
-                    return True
-        except Exception as e:
-            logger.error(f"Failed to save risk assessment: {str(e)}")
-            return False
-
-    def _save_summary(self, message_id: int, summary_text: str) -> bool:
-        """메시지 요약 저장"""
-        query = """
-        INSERT INTO message_summaries (message_id, summary_text)
-        VALUES (%s, %s)
-        """
-        
-        try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(query, (message_id, summary_text))
-                    conn.commit()
-                    return True
-        except Exception as e:
-            logger.error(f"Failed to save summary: {str(e)}")
-            return False
-
-    def _save_keywords(self, message_id: int, keywords: List[str]) -> bool:
-        """키워드 저장 및 메시지와 연결"""
-        try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cursor:
-                    for keyword in keywords:
-                        # 키워드 저장 (이미 있으면 무시)
-                        cursor.execute("""
-                            INSERT IGNORE INTO keywords (keyword)
-                            VALUES (%s)
-                        """, (keyword,))
-                        
-                        # 키워드 ID 가져오기
-                        cursor.execute("""
-                            SELECT id FROM keywords WHERE keyword = %s
-                        """, (keyword,))
-                        keyword_id = cursor.fetchone()[0]
-                        
-                        # 메시지-키워드 연결
-                        cursor.execute("""
-                            INSERT IGNORE INTO message_keywords (message_id, keyword_id)
-                            VALUES (%s, %s)
-                        """, (message_id, keyword_id))
-                    
-                    conn.commit()
-                    return True
-        except Exception as e:
-            logger.error(f"Failed to save keywords: {str(e)}")
-            return False
-
-    def save_health_monitoring(self, health_data: Dict) -> bool:
-        """건강 상태 모니터링 데이터 저장"""
-        query = """
-        INSERT INTO health_monitoring (
-            conversation_id, health_status, physical_health_score,
-            mental_health_score, sleep_quality_score, appetite_level_score
-        ) VALUES (%s, %s, %s, %s, %s, %s)
-        """
-        
-        try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(query, (
-                        health_data['conversation_id'],
-                        health_data.get('health_status'),
-                        health_data.get('physical_health_score'),
-                        health_data.get('mental_health_score'),
-                        health_data.get('sleep_quality_score'),
-                        health_data.get('appetite_level_score')
-                    ))
-                    conn.commit()
-                    return True
-        except Exception as e:
-            logger.error(f"Failed to save health monitoring data: {str(e)}")
-            return False
-
-    def get_conversation_history(self, conversation_id: str) -> List[Dict]:
-        """대화 히스토리 조회"""
-        query = """
-        SELECT m.*, 
-               sa.sentiment_score, sa.emotional_state,
-               ra.risk_level, ra.risk_factors,
-               ms.summary_text
-        FROM messages m
-        LEFT JOIN sentiment_analysis sa ON m.id = sa.message_id
-        LEFT JOIN risk_assessments ra ON m.id = ra.message_id
-        LEFT JOIN message_summaries ms ON m.id = ms.message_id
-        WHERE m.conversation_id = %s
-        ORDER BY m.message_number
-        """
-        
-        try:
-            with self.get_connection() as conn:
-                with conn.cursor(dictionary=True) as cursor:
-                    cursor.execute(query, (conversation_id,))
-                    return cursor.fetchall()
-        except Exception as e:
-            logger.error(f"Failed to get conversation history: {str(e)}")
-            return []
-
-    def close(self):
-        """연결 풀 정리"""
-        # connection pool will be automatically closed
-        pass
+    def __del__(self):
+        """소멸자"""
+        self.close()
