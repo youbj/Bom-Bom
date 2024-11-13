@@ -30,7 +30,7 @@ public class Speaker {
 	@JoinColumn(name = "senior_id")
 	private Senior senior;
 
-	@Column(name = "serial_num", nullable = false)
+	@Column(name = "serial_num", nullable = false, unique = true)
 	private String serialNum;
 
 	@Builder
