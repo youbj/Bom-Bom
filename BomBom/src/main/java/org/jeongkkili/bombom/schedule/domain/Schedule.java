@@ -27,6 +27,7 @@ public class Schedule {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "schedule_id")
 	private Long scheduleId;
 
 	@Column(name = "schedule_at", nullable = false)
@@ -36,8 +37,8 @@ public class Schedule {
 	private String memo;
 
 	@CreationTimestamp
-	@Column(name = "create_at", nullable = false)
-	private LocalDateTime createAt;
+	@Column(name = "created_at", nullable = false)
+	private LocalDateTime createdAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "senior_id")
@@ -48,6 +49,11 @@ public class Schedule {
 		this.scheduleAt = scheduleAt;
 		this.memo = memo;
 		addSenior(senior);
+	}
+
+	public void updateSchedule(LocalDateTime scheduleAt, String memo) {
+		this.scheduleAt = scheduleAt;
+		this.memo = memo;
 	}
 
 	private void addSenior(Senior senior) {
