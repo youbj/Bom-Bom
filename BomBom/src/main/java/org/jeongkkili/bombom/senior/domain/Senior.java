@@ -12,6 +12,7 @@ import org.jeongkkili.bombom.entry.domain.EntryHistory;
 import org.jeongkkili.bombom.exit.domain.ExitHistory;
 import org.jeongkkili.bombom.member_senior.domain.MemberSenior;
 import org.jeongkkili.bombom.schedule.domain.Schedule;
+import org.jeongkkili.bombom.speaker.domain.Speaker;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,6 +22,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -64,6 +66,9 @@ public class Senior {
 	@UpdateTimestamp
 	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
+
+	@OneToOne(mappedBy = "senior")
+	private Speaker speaker;
 
 	@OneToMany(mappedBy = "senior")
 	private List<MemberSenior> memberSeniors = new ArrayList<>();
