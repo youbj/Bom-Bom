@@ -94,5 +94,13 @@ public class Senior {
 		this.birth = birth;
 	}
 
+	public void updateInfo(String name, String phoneNumber, String address, Gender gender, Date birth) {
+		this.name = name;
+		this.phoneNumber = phoneNumber;
+		this.address = address;
+		this.gender = gender;
+		this.birth = birth;
+	}
+
 	public void updateProfileImg(String profileImg) { this.profileImg = profileImg; }
 }
