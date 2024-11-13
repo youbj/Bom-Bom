@@ -14,10 +14,6 @@ import BackButton from '../components/BackButton';
 import LogoutButton from '../components/LogoutButton';
 import instance, {localURL} from '../api/axios';
 
-interface EnrollNavigatorProps {
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
 type Person = {
   name: string;
   gender: string;
@@ -26,7 +22,7 @@ type Person = {
   phoneNumber: string;
 };
 
-const EnrollScreen = ({setIsLoggedIn}: EnrollNavigatorProps): JSX.Element => {
+const EnrollScreen = (): JSX.Element => {
   const navigation = useNavigation<EnrollToMainNavigationProp>();
 
   const [people, setPeople] = useState<Person[]>([]);
@@ -120,7 +116,7 @@ const EnrollScreen = ({setIsLoggedIn}: EnrollNavigatorProps): JSX.Element => {
       try {
         // 서버에 데이터를 전송하는 요청
         const response = await instance.post(
-          `${localURL}/seniors/regist`,
+          `/seniors/regist`,
           people,
         ); // 여기에 서버의 URL을 설정하세요.
 
@@ -158,7 +154,7 @@ const EnrollScreen = ({setIsLoggedIn}: EnrollNavigatorProps): JSX.Element => {
         {paddingTop: 50, justifyContent: 'flex-start'},
       ]}>
       <BackButton />
-      <LogoutButton setIsLoggedIn={setIsLoggedIn} />
+      <LogoutButton />
       <CustomText style={enrollStyle.title}>담당 어르신 등록</CustomText>
 
       <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>

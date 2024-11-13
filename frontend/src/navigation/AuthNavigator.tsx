@@ -4,25 +4,22 @@ import SplashScreen from '../screens/Auth/SplashScreen';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import JoinScreen from '../screens/Auth/JoinScreen';
 import JoinDetailScreen from '../screens/Auth/JoinDetailScreen';
-import { AuthNavigatorProps } from '../../types/navigation.d';
 
 const Stack = createNativeStackNavigator();
 
-const AuthNavigator = ({ setIsLoggedIn }: AuthNavigatorProps) => {
+const AuthNavigator = () => {
   return (
     <Stack.Navigator initialRouteName="Splash">
       <Stack.Screen
         name="Splash"
+        component={SplashScreen}
         options={{ headerShown: false }}
-      >
-        {props => <SplashScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
-      </Stack.Screen>
+      />
       <Stack.Screen
         name="Login"
+        component={LoginScreen}
         options={{ headerShown: false }}
-      >
-        {props => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
-      </Stack.Screen>
+      />
       <Stack.Screen
         name="Join"
         component={JoinScreen}

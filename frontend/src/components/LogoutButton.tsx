@@ -1,40 +1,44 @@
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import {TouchableOpacity, StyleSheet} from 'react-native';
+import useAuthStore from '../stores/useAuthStore';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import CookieManager from '@react-native-cookies/cookies';
 
-type LogoutButtonProps = {
-  onPress?: () => void;
-  color?: string;
-  size?: number;
-  style?: object;
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-};
+const LogoutButton = (): JSX.Element => {
+  const setIsLoggedIn = useAuthStore(state => state.setIsLoggedIn);
 
-const LogoutButton = ({ onPress, color = "#000000", size = 30, style, setIsLoggedIn }: LogoutButtonProps): JSX.Element => {
   const handleLogout = async () => {
     try {
       await EncryptedStorage.removeItem('user_session');
 
       await CookieManager.clearAll();
-      
-      setIsLoggedIn(false);
 
+      setIsLoggedIn(false);
     } catch (error) {
       console.error('로그아웃 실패:', error);
-    }
-
-    if (onPress) {
-      onPress();
     }
   };
 
   return (
-    <TouchableOpacity style={[{ position: 'absolute', top: 10, right: 10, padding: 10 }, style]} onPress={handleLogout}>
-      <Icon name="logout" color={color} size={size} />
+    <TouchableOpacity onPress={handleLogout} style={styles.button}>
+      <Icon name="logout" style={styles.iconStyle} />
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  button: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 10,
+  },
+
+  iconStyle: {
+    color: '#000000',
+    fontSize: 30,
+  },
+});
 
 export default LogoutButton;
