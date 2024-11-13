@@ -3,6 +3,7 @@ import {useNavigation} from '@react-navigation/native';
 import {EnrollToMainNavigationProp} from '../../types/navigation.d';
 import {View, TouchableOpacity, ScrollView, Alert} from 'react-native';
 import {StyleSheet} from 'react-native';
+import {formatBirth, formatPhoneNumber} from '../utils/Format';
 
 import enrollStyle from '../styles/EnrollStyle';
 import defaultStyle from '../styles/DefaultStyle';
@@ -14,10 +15,6 @@ import BackButton from '../components/BackButton';
 import LogoutButton from '../components/LogoutButton';
 import instance, {localURL} from '../api/axios';
 
-interface EnrollNavigatorProps {
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
 type Person = {
   name: string;
   gender: string;
@@ -26,7 +23,7 @@ type Person = {
   phoneNumber: string;
 };
 
-const EnrollScreen = ({setIsLoggedIn}: EnrollNavigatorProps): JSX.Element => {
+const EnrollScreen = (): JSX.Element => {
   const navigation = useNavigation<EnrollToMainNavigationProp>();
 
   const [people, setPeople] = useState<Person[]>([]);
@@ -53,32 +50,6 @@ const EnrollScreen = ({setIsLoggedIn}: EnrollNavigatorProps): JSX.Element => {
     const updatedPeople = [...people];
     updatedPeople.splice(index, 1);
     setPeople(updatedPeople);
-  };
-
-  const formatbirth = (input: string) => {
-    const births = input.replace(/[^\d]/g, '');
-    const limitedBirths = births.slice(0, 8);
-
-    if (limitedBirths.length < 5) return births;
-    if (limitedBirths.length < 7)
-      return `${limitedBirths.slice(0, 4)}-${limitedBirths.slice(4)}`;
-    return `${limitedBirths.slice(0, 4)}-${limitedBirths.slice(
-      4,
-      6,
-    )}-${limitedBirths.slice(6)}`;
-  };
-
-  const formatPhoneNumber = (input: string) => {
-    const numbers = input.replace(/[^\d]/g, '');
-    const limitedNumbers = numbers.slice(0, 11);
-
-    if (limitedNumbers.length < 4) return limitedNumbers;
-    if (limitedNumbers.length < 8)
-      return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3)}`;
-    return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(
-      3,
-      7,
-    )}-${limitedNumbers.slice(7)}`;
   };
 
   const fields: {label: string; placeholder: string; key: keyof Person}[] = [
@@ -119,10 +90,7 @@ const EnrollScreen = ({setIsLoggedIn}: EnrollNavigatorProps): JSX.Element => {
     if (people.length > 0) {
       try {
         // 서버에 데이터를 전송하는 요청
-        const response = await instance.post(
-          `${localURL}/seniors/regist`,
-          people,
-        ); // 여기에 서버의 URL을 설정하세요.
+        const response = await instance.post(`/seniors/regist`, people); // 여기에 서버의 URL을 설정하세요.
 
         if (response.status === 200) {
           Alert.alert(
@@ -158,7 +126,7 @@ const EnrollScreen = ({setIsLoggedIn}: EnrollNavigatorProps): JSX.Element => {
         {paddingTop: 50, justifyContent: 'flex-start'},
       ]}>
       <BackButton />
-      <LogoutButton setIsLoggedIn={setIsLoggedIn} />
+      <LogoutButton />
       <CustomText style={enrollStyle.title}>담당 어르신 등록</CustomText>
 
       <ScrollView style={{width: '100%'}} showsVerticalScrollIndicator={false}>
@@ -223,7 +191,7 @@ const EnrollScreen = ({setIsLoggedIn}: EnrollNavigatorProps): JSX.Element => {
                   if (field.key === 'birth') {
                     setCurrentPerson({
                       ...currentPerson,
-                      birth: formatbirth(text),
+                      birth: formatBirth(text),
                     });
                   } else if (field.key === 'phoneNumber') {
                     setCurrentPerson({

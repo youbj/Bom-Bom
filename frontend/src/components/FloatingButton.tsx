@@ -1,31 +1,51 @@
-// src/components/FloatingButton.tsx
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, {useState, useEffect} from 'react';
+import {View, TouchableOpacity, Animated} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import { MainNavigatorProp } from '../../types/navigation.d'
+import {MainNavigatorProp} from '../../types/navigation.d';
 import FloatingButtonStyle from '../styles/Float/FloatingButtonStyle';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Overlay from './Overlay';
+import {useUserType} from '../navigation/MainNavigator';
 
 interface FloatingButtonProps {
   toggleOverlay: () => void;
+  isDetailScreen: boolean;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
 }
 
-const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
+const FloatingButton: React.FC<FloatingButtonProps> = ({isDetailScreen}) => {
   const [isOpen, setIsOpen] = useState(false);
   const animation = useState(new Animated.Value(0))[0];
   const navigation = useNavigation<MainNavigatorProp>();
+  const userType = useUserType();
+
+  useEffect(() => {
+    Animated.timing(animation, {
+      toValue: isDetailScreen ? 0.5 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [isDetailScreen]);
 
   const toggleMenu = () => {
     const toValue = isOpen ? 0 : 1;
-
     Animated.timing(animation, {
       toValue,
       duration: 300,
       useNativeDriver: true,
     }).start();
-
     setIsOpen(!isOpen);
-    toggleOverlay();
+  };
+
+  const closeMenu = () => {
+    Animated.timing(animation, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+    setIsOpen(false);
   };
 
   const buttonStyle = (position: number) => ({
@@ -40,67 +60,78 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ toggleOverlay }) => {
     opacity: animation,
   });
 
-  const handlePressVerify = async () => {
+  const handlePressVerify = () => {
     toggleMenu();
-    const session = await EncryptedStorage.getItem('user_session');
-    const sessionData = session ? JSON.parse(session) : null;
-    const userType = sessionData?.type;
-    // const userType = await EncryptedStorage.getItem('userType');
-    console.log(userType);
     if (userType === 'FAMILY') {
       navigation.navigate('FloatNavigator', {
         screen: 'FamilyVerifyRequestScreen',
       });
     } else if (userType === 'SOCIAL_WORKER') {
-      console.log("여기로 왔니")
       navigation.navigate('FloatNavigator', {
         screen: 'SocialWorkerApprovalScreen',
       });
     }
   };
-  
 
   const handlePressMessage = () => {
-    toggleMenu(); // 메뉴 닫기
+    closeMenu();
     navigation.navigate('FloatNavigator', {screen: 'MessageScreen'});
   };
 
-  const handlePress = (message: string) => () => {
-    console.log(message);
+  const handlePressMain = () => {
+    closeMenu();
+    navigation.navigate('Main');
   };
 
   return (
-    <View style={FloatingButtonStyle.container}>
-      {/* Secondary Buttons */}
-      {isOpen && (
-        <>
-          <Animated.View style={[FloatingButtonStyle.secondaryButton, buttonStyle(-70)]}>
-            <TouchableOpacity style={FloatingButtonStyle.button} onPress={handlePress('Home')}>
-              <Text style={FloatingButtonStyle.label}>Home</Text>
-            </TouchableOpacity>
-          </Animated.View>
+    <>
+      {isOpen && <Overlay onClose={closeMenu} />}
 
-          <Animated.View style={[FloatingButtonStyle.secondaryButton, buttonStyle(-140)]}>
-            <TouchableOpacity style={FloatingButtonStyle.button} onPress={handlePressMessage}>
-              <Text style={FloatingButtonStyle.label}>Message</Text>
-            </TouchableOpacity>
-          </Animated.View>
+      <View
+        style={[
+          FloatingButtonStyle.container,
+          isDetailScreen && {bottom: '42%'},
+        ]}>
+        {isOpen && (
+          <>
+            <Animated.View
+              style={[FloatingButtonStyle.secondaryButton, buttonStyle(-70)]}>
+              <TouchableOpacity
+                style={FloatingButtonStyle.button}
+                onPress={handlePressMain}>
+                <Icon name="home" style={FloatingButtonStyle.label} />
+              </TouchableOpacity>
+            </Animated.View>
 
-          <Animated.View style={[FloatingButtonStyle.secondaryButton, buttonStyle(-210)]}>
-            <TouchableOpacity style={FloatingButtonStyle.button} onPress={handlePressVerify}>
-              <Text style={FloatingButtonStyle.label}>Verify</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </>
-      )}
+            <Animated.View
+              style={[FloatingButtonStyle.secondaryButton, buttonStyle(-140)]}>
+              <TouchableOpacity
+                style={FloatingButtonStyle.button}
+                onPress={handlePressMessage}>
+                <Icon name="email" style={FloatingButtonStyle.label} />
+              </TouchableOpacity>
+            </Animated.View>
 
-      {/* Main Floating Button */}
-      <TouchableOpacity onPress={toggleMenu} style={FloatingButtonStyle.fab}>
-      <Text style={FloatingButtonStyle.fabText}>{isOpen ? 'X' : '+'}</Text>
-      </TouchableOpacity>
-    </View>
+            <Animated.View
+              style={[FloatingButtonStyle.secondaryButton, buttonStyle(-210)]}>
+              <TouchableOpacity
+                style={FloatingButtonStyle.button}
+                onPress={handlePressVerify}>
+                <Icon name="account-check" style={FloatingButtonStyle.label} />
+              </TouchableOpacity>
+            </Animated.View>
+          </>
+        )}
+
+        <TouchableOpacity onPress={toggleMenu} style={FloatingButtonStyle.fab}>
+          <Icon
+            name={isOpen ? 'close-thick' : 'plus-thick'}
+            style={FloatingButtonStyle.fabText}
+          />
+        </TouchableOpacity>
+      </View>
+    </>
   );
 };
 
 export default FloatingButton;
-
