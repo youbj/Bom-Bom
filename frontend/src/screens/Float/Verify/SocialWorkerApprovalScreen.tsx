@@ -1,10 +1,10 @@
 // src/screens/Verify/SocialWorkerApprovalScreen.tsx
-import React, { useEffect, useState } from 'react';
-import { View, Button, FlatList, Alert } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Button, FlatList, Alert} from 'react-native';
 import CustomText from '../../../components/CustomText';
 import SocialWorkerStyle from '../../../styles/Float/SocialWorkerStyle';
 import BackButton from '../../../components/BackButton';
-import instance, { localURL } from '../../../api/axios';
+import instance, {localURL} from '../../../api/axios';
 
 interface Request {
   id: number;
@@ -21,7 +21,7 @@ const SocialWorkerApprovalScreen: React.FC = () => {
   // 데이터 가져오기 함수
   const fetchRequests = async () => {
     try {
-      const response = await instance.get(`${localURL}/members/approve/list`);
+      const response = await instance.get(`/members/approve/list`);
       setRequests(response.data);
     } catch (error) {
       console.error('Failed to fetch requests:', error);
@@ -35,7 +35,7 @@ const SocialWorkerApprovalScreen: React.FC = () => {
 
   const handleApprove = async (id: number) => {
     try {
-      const response = await instance.post(`${localURL}/members/approve`, { id });
+      const response = await instance.post(`/members/approve`, {id});
       if (response.status === 200) {
         Alert.alert('승인 완료', '요청이 승인되었습니다.');
         fetchRequests(); // 승인 후 리스트를 새로 고침
@@ -48,7 +48,7 @@ const SocialWorkerApprovalScreen: React.FC = () => {
 
   const handleReject = async (id: number) => {
     try {
-      const response = await instance.post(`${localURL}/members/reject`, { id });
+      const response = await instance.post(`/members/reject`, {id});
       if (response.status === 200) {
         Alert.alert('거절 완료', '요청이 거절되었습니다.');
         fetchRequests(); // 거절 후 리스트를 새로 고침
@@ -59,15 +59,27 @@ const SocialWorkerApprovalScreen: React.FC = () => {
     }
   };
 
-  const renderRequest = ({ item }: { item: Request }) => (
+  const renderRequest = ({item}: {item: Request}) => (
     <View style={SocialWorkerStyle.requestItem}>
       <View style={SocialWorkerStyle.textContainer}>
-        <CustomText style={SocialWorkerStyle.name}>{item.seniorName} / {item.seniorAge} / {item.seniorPhoneNumber}</CustomText>
-        <CustomText style={SocialWorkerStyle.info}>{item.familyName} / {item.familyPhoneNumber}</CustomText>
+        <CustomText style={SocialWorkerStyle.name}>
+          {item.seniorName} / {item.seniorAge} / {item.seniorPhoneNumber}
+        </CustomText>
+        <CustomText style={SocialWorkerStyle.info}>
+          {item.familyName} / {item.familyPhoneNumber}
+        </CustomText>
       </View>
       <View style={SocialWorkerStyle.buttonContainer}>
-        <Button title="승인" onPress={() => handleApprove(item.id)} color="#4CAF50" />
-        <Button title="거절" onPress={() => handleReject(item.id)} color="#FF8A80" />
+        <Button
+          title="승인"
+          onPress={() => handleApprove(item.id)}
+          color="#4CAF50"
+        />
+        <Button
+          title="거절"
+          onPress={() => handleReject(item.id)}
+          color="#FF8A80"
+        />
       </View>
     </View>
   );
@@ -79,7 +91,7 @@ const SocialWorkerApprovalScreen: React.FC = () => {
       <FlatList
         data={requests}
         renderItem={renderRequest}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={item => item.id.toString()}
         contentContainerStyle={SocialWorkerStyle.listContainer}
       />
     </View>

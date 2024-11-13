@@ -10,6 +10,7 @@ const FamilyStyle = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     textAlign: 'center',
+    marginTop: 50,
     marginBottom: 30,
   },
   inputContainer: {
@@ -17,6 +18,7 @@ const FamilyStyle = StyleSheet.create({
   },
   label: {
     fontSize: 16,
+    paddingLeft: 15,
     fontWeight: '500',
     marginBottom: 5,
     color: '#333',

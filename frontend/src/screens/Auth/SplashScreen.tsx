@@ -1,20 +1,19 @@
 import React, {useEffect, useRef} from 'react';
 import {View, Image, Animated} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {
-  SplashScreenNavigationProp,
-  SplashScreenProps,
-} from '../../../types/navigation.d';
+import {SplashScreenNavigationProp} from '../../../types/navigation.d';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import CookieManager from '@react-native-cookies/cookies';
 
 import defaultStyle from '../../styles/DefaultStyle';
 import splashStyle from '../../styles/Auth/SplashStyle';
 import CustomText from '../../components/CustomText';
+import useAuthStore from '../../stores/useAuthStore'; // Zustand store import
 
-const SplashScreen = ({setIsLoggedIn}: SplashScreenProps): JSX.Element => {
+const SplashScreen = (): JSX.Element => {
   const opacity = useRef(new Animated.Value(1)).current;
   const navigation = useNavigation<SplashScreenNavigationProp>();
+  const {setIsLoggedIn} = useAuthStore(); // Zustand에서 setIsLoggedIn 가져오기
 
   // 자동 로그인 검사 함수
   const checkSession = async () => {
@@ -49,7 +48,7 @@ const SplashScreen = ({setIsLoggedIn}: SplashScreenProps): JSX.Element => {
       }).start(() => {
         checkSession();
       });
-    }, 1500);
+    }, 1000);
 
     return () => clearTimeout(timeoutId);
   }, [navigation, opacity]);
