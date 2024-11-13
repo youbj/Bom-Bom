@@ -1,5 +1,6 @@
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RouteProp} from '@react-navigation/native';
+import {DetailInfo} from '../src/screens/DetailScreen';
 
 // 로그인 과정에 들어가는 StackParamList
 export type AuthStackParamList = {
@@ -15,6 +16,7 @@ export type MainNavigatorParamList = {
   FloatNavigator: {screen: keyof FloatNavigatorParamList};
   Enroll: undefined;
   Detail: undefined;
+  Revise: {detail: DetailInfo};
 };
 
 export type FloatNavigatorParamList = {
@@ -67,6 +69,7 @@ export type MainStackParamList = {
   Main: undefined;
   Enroll: undefined;
   Detail: {seniorId: number};
+  Revise: {detail: DetailInfo};
 };
 
 export type EnrollStackParamList = {
@@ -86,4 +89,10 @@ export type MainToDetailNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
   'Detail'
 >;
+
+export type DetailToReviseNavigationProp = NativeStackNavigationProp<
+  MainNavigatorParamList,
+  'Revise'
+>;
+
 export type MainScreenRouteProp = RouteProp<EnrollStackParamList, 'Main'>;

@@ -1,6 +1,6 @@
-import React, { useEffect, useState, createContext, useContext } from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useNavigationState } from '@react-navigation/native';
+import React, {useEffect, useState, createContext, useContext} from 'react';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {useNavigationState} from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import MainScreen from '../screens/MainScreen';
 import DetailScreen from '../screens/DetailScreen';
@@ -8,6 +8,7 @@ import FloatNavigator from './FloatNavigator';
 import EnrollScreen from '../screens/EnrollScreen';
 import FloatingButton from '../components/FloatingButton';
 import Overlay from '../components/Overlay';
+import ReviseScreen from '../screens/ReviseScreen';
 
 const UserTypeContext = createContext<string | null>(null);
 export const useUserType = () => useContext(UserTypeContext);
@@ -18,9 +19,14 @@ const MainNavigator = (): JSX.Element => {
   const [userType, setUserType] = useState<string | null>(null);
   const [isFloatingButtonOpen, setFloatingButtonOpen] = useState(false);
 
-  const isDetailScreen = useNavigationState(state => 
-    state?.routes?.some(route => route.name === 'Detail') ?? false
-  );
+  const isDetailScreen = useNavigationState((state) => {
+    if (!state || !state.routes) {
+      return false; // state 또는 routes가 정의되지 않은 경우 false를 반환
+    }
+    const currentRoute = state.routes[state.index];
+    return currentRoute?.name === 'Detail';
+  });
+  
 
   useEffect(() => {
     const fetchUserType = async () => {
@@ -42,23 +48,25 @@ const MainNavigator = (): JSX.Element => {
         <Stack.Screen
           name="Main"
           component={MainScreen}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
-        <Stack.Screen
-          name="FloatNavigator"
-          options={{ headerShown: false }}
-        >
+        <Stack.Screen name="FloatNavigator" options={{headerShown: false}}>
           {() => <FloatNavigator userType={userType} />}
         </Stack.Screen>
         <Stack.Screen
           name="Enroll"
           component={EnrollScreen}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
         <Stack.Screen
           name="Detail"
           component={DetailScreen}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="Revise"
+          component={ReviseScreen}
+          options={{headerShown: false}}
         />
       </Stack.Navigator>
 

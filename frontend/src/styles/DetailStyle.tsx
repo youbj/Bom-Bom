@@ -21,6 +21,8 @@ const detailStyle = StyleSheet.create({
   },
   title: {
     fontSize: 30,
+    paddingLeft: 35,
+    paddingRight: 5,
   },
   bottomContainer: {
     flex: 1,

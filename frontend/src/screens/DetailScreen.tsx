@@ -1,21 +1,24 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {View, Alert, Image, TouchableOpacity, StyleSheet} from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
-import instance, {localURL} from '../api/axios';
+import instance from '../api/axios';
 import BackButton from '../components/BackButton';
 import LogoutButton from '../components/LogoutButton';
 import CustomText from '../components/CustomText';
 import defaultStyle from '../styles/DefaultStyle';
 import detailStyle from '../styles/DetailStyle';
-import {RouteProp, useRoute} from '@react-navigation/native';
-import {MainStackParamList} from '../../types/navigation.d';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
+import {
+  DetailToReviseNavigationProp,
+  MainStackParamList,
+} from '../../types/navigation.d';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import DonutChart from '../components/DonutChart';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type DetailScreenRouteProp = RouteProp<MainStackParamList, 'Detail'>;
 
-interface DetailInfo {
+export interface DetailInfo {
   seniorId: number;
   name: string;
   address: string;
@@ -48,6 +51,7 @@ const DetailScreen = (): JSX.Element => {
   const route = useRoute<DetailScreenRouteProp>();
   const {seniorId} = route.params;
   const progress = 76;
+  const reviseNavigation = useNavigation<DetailToReviseNavigationProp>();
 
   const fetchType = async () => {
     try {
@@ -125,10 +129,16 @@ const DetailScreen = (): JSX.Element => {
     }
   };
 
-  useEffect(() => {
-    fetchType();
-    fetchDetailList();
-  }, []);
+  const onRevise = () => {
+    reviseNavigation.navigate('Revise', {detail});
+  };
+
+  useEffect(
+    useCallback(() => {
+      fetchType();
+      fetchDetailList();
+    }, []),
+  );
 
   useEffect(() => {
     console.log('Updated imageUri:', imageUri);
@@ -164,7 +174,17 @@ const DetailScreen = (): JSX.Element => {
         </View>
       )}
 
-      <CustomText style={detailStyle.title}>{detail.name}</CustomText>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+        <CustomText style={detailStyle.title}>{detail.name}</CustomText>
+        <TouchableOpacity onPress={onRevise}>
+          <Icon name="eraser" color="black" size={30} />
+        </TouchableOpacity>
+      </View>
       <CustomText>
         {detail.age}세 / {detail.gender === 'MALE' ? '남' : '여'}
       </CustomText>
