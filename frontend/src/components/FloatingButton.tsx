@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {View, TouchableOpacity, Animated} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import EncryptedStorage from 'react-native-encrypted-storage';
 import {MainNavigatorProp} from '../../types/navigation.d';
 import FloatingButtonStyle from '../styles/Float/FloatingButtonStyle';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';

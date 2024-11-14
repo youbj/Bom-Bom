@@ -15,6 +15,7 @@ import {
 } from '@react-navigation/native';
 import {
   DetailToReviseNavigationProp,
+  DetailToPlanNavigationProp,
   MainStackParamList,
 } from '../../types/navigation.d';
 import EncryptedStorage from 'react-native-encrypted-storage';
@@ -57,6 +58,7 @@ const DetailScreen = (): JSX.Element => {
   const {seniorId} = route.params;
   const progress = 76;
   const reviseNavigation = useNavigation<DetailToReviseNavigationProp>();
+  const planNavigation = useNavigation<DetailToPlanNavigationProp>();
 
   const fetchType = async () => {
     try {
@@ -146,6 +148,10 @@ const DetailScreen = (): JSX.Element => {
     }, []),
   );
 
+  const onPlan = () => {
+    planNavigation.navigate('Plan', {seniorId});
+  };
+
   return (
     <View
       style={[
@@ -154,43 +160,47 @@ const DetailScreen = (): JSX.Element => {
       ]}>
       <BackButton />
       <LogoutButton />
-      <View style={detailStyle.picture}>
-        {imageUri && (
-          <Image
-            source={{uri: imageUri}}
-            style={{width: '100%', height: '100%'}}
-          />
-        )}
-      </View>
-      {type === 'SOCIAL_WORKER' ? (
-        <TouchableOpacity
-          onPress={isImageSelected ? saveImage : ShowPicker}
-          style={detailStyle.button}>
-          <CustomText style={{fontWeight: '600'}}>
-            {isImageSelected ? '저장' : '이미지 업로드'}
-          </CustomText>
-        </TouchableOpacity>
-      ) : (
-        <View style={{marginTop: 20, marginBottom: 5}}>
-          <Icon name="heart" color="red" size={40} />
-        </View>
-      )}
 
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-        <CustomText style={detailStyle.title}>{detail.name}</CustomText>
-        <TouchableOpacity onPress={onRevise}>
-          <Icon name="eraser" color="black" size={30} />
-        </TouchableOpacity>
+      <View style={{flex: 3, alignItems: 'center'}}>
+        <View style={detailStyle.picture}>
+          {imageUri && (
+            <Image
+              source={{uri: imageUri}}
+              style={{width: '100%', height: '100%'}}
+            />
+          )}
+        </View>
+        {type === 'SOCIAL_WORKER' ? (
+          <TouchableOpacity
+            onPress={isImageSelected ? saveImage : ShowPicker}
+            style={detailStyle.button}>
+            <CustomText style={{fontWeight: '600'}}>
+              {isImageSelected ? '저장' : '이미지 업로드'}
+            </CustomText>
+          </TouchableOpacity>
+        ) : (
+          <View style={{marginTop: 20, marginBottom: 5}}>
+            <Icon name="heart" color="red" size={40} />
+          </View>
+        )}
+
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+          <CustomText style={detailStyle.title}>{detail.name}</CustomText>
+          <TouchableOpacity onPress={onRevise}>
+            <Icon name="eraser" color="black" size={30} />
+          </TouchableOpacity>
+        </View>
+        <CustomText>
+          {detail.age}세 / {detail.gender === 'MALE' ? '남' : '여'}
+        </CustomText>
       </View>
-      <CustomText>
-        {detail.age}세 / {detail.gender === 'MALE' ? '남' : '여'}
-      </CustomText>
-      <View style={{flex: 1}}>
+
+      <View style={{flex: 2, position: 'relative'}}>
         <View style={detailStyle.bottomContainer}>
           <View style={detailStyle.subContainer}>
             <DonutChart progress={progress} />
@@ -225,6 +235,13 @@ const DetailScreen = (): JSX.Element => {
               ))}
             </View>
           </View>
+
+          {/* 아이콘을 오른쪽 위에 위치시키는 버튼 */}
+          <TouchableOpacity
+            onPress={onPlan}
+            style={{position: 'absolute', top: 10, right: 10}}>
+            <Icon name="calendar" size={30} color="#000" />
+          </TouchableOpacity>
         </View>
       </View>
     </View>
