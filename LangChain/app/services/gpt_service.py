@@ -92,7 +92,7 @@ class GPTService:
             return self._get_default_analysis()
 
     async def generate_response( self, user_message: str, conversation_id: str, memory_id: str, senior_id: int,
-    is_initial: bool = False) -> Dict:
+        is_initial: bool = False) -> Dict:
         start_time = datetime.now()
         logger.info(f"=== Starting request at: {start_time.isoformat()} ===")
 
@@ -100,6 +100,30 @@ class GPTService:
             if is_initial:
                 response_text = "안녕하세요! 오늘 하루는 어떻게 보내고 계신가요?"
                 user_analysis = self._get_default_analysis()
+                # Kafka 데이터 전송
+                kafka_data = {
+                    "response_text": response_text,
+                    "senior_id": senior_id,
+                    "conversation_id": conversation_id,
+                    "timestamp": datetime.now().isoformat()
+                }
+                kafka_sent = await self.send_to_kafka(kafka_data)
+
+                # 처리 시간 계산
+                total_duration = (datetime.now() - start_time).total_seconds()
+
+                return {
+                    "response_text": response_text,
+                    "conversation_id": conversation_id,
+                    "memory_id": memory_id,
+                    "kafka_sent": kafka_sent,
+                    "user_analysis": user_analysis,
+                    "mysql_data": None,
+                    "timestamp": datetime.now().isoformat(),
+                    "processing_times": {
+                        "total_time": total_duration
+                    }
+                }
             else:
                 # 1. AI 응답 생성 (최우선)
                 logger.info("1. Generating AI response...")

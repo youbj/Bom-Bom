@@ -94,6 +94,33 @@ class MySQLManager:
                     logger.error(f"Failed to get conversation memories: {str(e)}")
                     return []
 
+    async def get_conversation_messages(self, conversation_id: str) -> List[Dict]:
+        """대화의 모든 메시지 조회"""
+        await self.ensure_connection()
+        
+        query = """
+            SELECT speaker, content, memory_id 
+            FROM Memory 
+            WHERE conversation_id = %s 
+            ORDER BY id ASC
+        """
+        try:
+            async with self.pool.acquire() as conn:
+                async with conn.cursor() as cursor:
+                    await cursor.execute(query, (conversation_id,))
+                    messages = await cursor.fetchall()
+                    return [
+                        {
+                            'speaker': msg[0],
+                            'content': msg[1],
+                            'memory_id': msg[2]
+                        }
+                        for msg in messages
+                    ]
+        except Exception as e:
+            logger.error(f"Failed to get conversation messages: {str(e)}")
+            return []
+        
     async def start_conversation(self, memory_id: str, senior_id: int = 1) -> Optional[int]:
         """새로운 대화 세션 시작"""
         await self.ensure_connection()
