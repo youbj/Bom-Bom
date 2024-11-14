@@ -1,8 +1,8 @@
 package org.jeongkkili.bombom.conversation.domain;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.jeongkkili.bombom.senior.domain.Senior;
 
 import jakarta.persistence.Column;
@@ -27,25 +27,29 @@ public class Conversation {
 	@Column(name = "conversation_id")
 	private Long id;
 
-	@Column(name = "summary", columnDefinition = "TEXT", nullable = false)
-	private String summary;
+	@Column(name = "start_date", nullable = false)
+	private LocalDate startDate;
 
-	@Column(name = "emotion", columnDefinition = "FLOAT", nullable = false)
-	private Double emotion;
+	@Column(name = "end_time", nullable = false)
+	private LocalTime endTime;
 
-	@CreationTimestamp
-	@Column(name = "created_at", nullable = false)
-	private LocalDateTime createdAt;
+	@Column(name = "memory_id", nullable = false)
+	private String memoryId;
+
+	@Column(name = "avg_score", columnDefinition = "FLOAT", nullable = false)
+	private Double avgScore;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "senior_id")
 	private Senior senior;
 
 	@Builder
-	public Conversation(String summary, Double emotion, Senior senior) {
-		this.summary = summary;
-		this.emotion = emotion;
+	public Conversation(String memoryId, Double avgScore, Senior senior) {
+		this.memoryId = memoryId;
+		this.avgScore = avgScore;
 		addSenior(senior);
+		this.startDate = LocalDate.now();
+		this.endTime = LocalTime.now();
 	}
 
 	private void addSenior(Senior senior) {
