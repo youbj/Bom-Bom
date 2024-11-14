@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-public class GetConvController {
+public class GetConvController extends ConversationController {
 
 	private final GetConvService getConvService;
 
