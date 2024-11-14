@@ -9,5 +9,7 @@ public interface GetConvService {
 
 	List<GetConvListDto> getConvList(Long memberId, Long seniorId);
 
+	List<Double> getWeekAvg(Long memberId, Long seniorId);
+
 	Double getTodayEmotion(Senior senior);
 }

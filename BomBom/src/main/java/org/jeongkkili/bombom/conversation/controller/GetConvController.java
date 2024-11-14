@@ -25,4 +25,11 @@ public class GetConvController extends ConversationController {
 		Long memberId = MemberContext.getMemberId();
 		return ResponseEntity.ok(getConvService.getConvList(memberId, seniorId));
 	}
+
+	@RequireJwtoken
+	@GetMapping("/weekavg")
+	public ResponseEntity<List<Double>> getWeekAvg(@RequestParam("senior-id") Long seniorId) {
+		Long memberId = MemberContext.getMemberId();
+		return ResponseEntity.ok(getConvService.getWeekAvg(memberId, seniorId));
+	}
 }

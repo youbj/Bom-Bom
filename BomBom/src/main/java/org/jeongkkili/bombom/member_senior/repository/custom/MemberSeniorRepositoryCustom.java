@@ -2,6 +2,8 @@ package org.jeongkkili.bombom.member_senior.repository.custom;
 
 import static org.jeongkkili.bombom.member_senior.domain.QMemberSenior.*;
 
+import java.util.List;
+
 import org.jeongkkili.bombom.member.domain.Member;
 import org.jeongkkili.bombom.member_senior.exception.AssociationNotFoundException;
 import org.jeongkkili.bombom.senior.domain.Senior;
@@ -27,5 +29,17 @@ public class MemberSeniorRepositoryCustom {
 			throw new AssociationNotFoundException("Association between member and senior not found");
 		}
 		return member;
+	}
+
+	public List<Member> findBySenior(Senior senior) {
+		List<Member> members = queryFactory.select(memberSenior.member)
+			.from(memberSenior)
+			.where(memberSenior.senior.eq(senior))
+			.fetch();
+
+		if (members.isEmpty()) {
+			throw new AssociationNotFoundException("No associations found between member and senior");
+		}
+		return members;
 	}
 }

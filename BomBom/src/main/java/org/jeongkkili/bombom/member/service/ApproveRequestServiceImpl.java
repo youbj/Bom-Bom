@@ -55,7 +55,7 @@ public class ApproveRequestServiceImpl implements ApproveRequestService {
 				.seniorPhoneNumber(senior.getPhoneNumber())
 				.seniorBirth(senior.getBirth())
 			.build());
-		// notificationService.notifyUser(socialWorker.getId(), "새로운 승인 요청", "새로운 보호자 승인 요청이 도착했습니다.");
+		notificationService.notifyUser(socialWorker.getId(), "새로운 승인 요청", "새로운 보호자 승인 요청이 도착했습니다.");
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class ApproveRequestServiceImpl implements ApproveRequestService {
 		Senior senior = getSeniorService.getSeniorById(req.getSeniorId());
 		req.changeType(ApproveType.APPROVED);
 		memberSeniorService.addAssociation(family, senior);
-		// notificationService.notifyUser(family.getId(), "승인 완료", "보호자 승인 요청이 승인되었습니다.");
+		notificationService.notifyUser(family.getId(), "승인 완료", "보호자 승인 요청이 승인되었습니다.");
 	}
 
 	@Override
@@ -87,6 +87,6 @@ public class ApproveRequestServiceImpl implements ApproveRequestService {
 		}
 		Member family = memberService.getMemberById(req.getFamilyId());
 		req.changeType(ApproveType.REJECTED);
-		// notificationService.notifyUser(family.getId(), "승인 거절", "보호자 승인 요청이 거절되었습니다.");
+		notificationService.notifyUser(family.getId(), "승인 거절", "보호자 승인 요청이 거절되었습니다.");
 	}
 }
