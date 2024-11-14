@@ -47,6 +47,11 @@ public class MemberSeniorServiceImpl implements MemberSeniorService {
 	}
 
 	@Override
+	public List<Member> getMembersBySenior(Senior senior) {
+		return memberSeniorRepositoryCustom.findBySenior(senior);
+	}
+
+	@Override
 	public boolean existAssociation(Member member, Senior senior) {
 		return memberSeniorRepository.findByMemberAndSenior(member, senior).isPresent();
 	}
