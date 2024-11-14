@@ -41,13 +41,28 @@ async def process_message(
 ) -> Dict:
     """메시지 처리"""
     try:
-        if conversation_id:
-            manager.current_conversation_id = conversation_id
+        if not conversation_id:
+            # 새 대화 시작
+            start_response = await manager.start_conversation(senior_id=input_data.senior_id)
+            conversation_id = start_response["conversation_id"]
             
-        response = await manager.process_message(input_data.text)
+        # conversation_id 설정
+        manager.current_conversation_id = str(conversation_id)  # str로 변환 추가
+        
+        # 메시지 처리
+        response = await manager.process_message(
+            text=input_data.text,
+            senior_id=input_data.senior_id
+        )
         return response
+        
     except Exception as e:
         logger.error(f"Failed to process message: {str(e)}")
+        if "No active conversation" in str(e):
+            raise HTTPException(
+                status_code=404,
+                detail="대화를 찾을 수 없습니다. 새로운 대화를 시작해주세요."
+            )
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/status/{conversation_id}")

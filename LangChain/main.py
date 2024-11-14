@@ -2,6 +2,7 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.router import api_router
+from app.services.gpt_service import GPTService
 import logging
 import uvicorn
 import platform
@@ -29,14 +30,22 @@ app.add_middleware(
 
 # API 라우터 등록
 app.include_router(api_router)
+gpt_service = None
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info("애플리케이션 시작")
+    global gpt_service
+    gpt_service = GPTService()
+    await gpt_service.initialize()
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    logger.info("애플리케이션 종료")
+    global gpt_service
+    if gpt_service:
+        await gpt_service.aclose()
+        
+def get_gpt_service():
+    return gpt_service
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

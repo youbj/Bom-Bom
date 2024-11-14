@@ -1,6 +1,8 @@
 from openai import AsyncOpenAI
 from langchain.memory import ConversationBufferMemory
+from langchain_core.messages import HumanMessage, AIMessage
 from confluent_kafka import Producer
+from aiokafka import AIOKafkaProducer
 import asyncio
 import json
 import logging
@@ -13,24 +15,17 @@ from app.models.schema import (
 )
 
 logger = logging.getLogger(__name__)
-
+        
 class GPTService:
     def __init__(self):
         """GPT 서비스 초기화"""
         self.client = AsyncOpenAI(api_key=settings.gpt.api_key)
         self.memory = ConversationBufferMemory(
             memory_key="chat_history",
-            return_messages=True,
-            input_key="input",
-            output_key="output"
+            return_messages=True
         )
         
-        # Kafka Producer 초기화
-        self.kafka_config = {
-            'bootstrap.servers': settings.kafka.bootstrap_servers,
-            'client.id': 'gpt_service_producer'
-        }
-        self.producer = Producer(self.kafka_config)
+        self.producer = None
         self.response_topic = settings.kafka.conversation_topic
         
         self.system_prompt = """당신은 노인과 대화하는 AI 상담사입니다.
@@ -47,9 +42,18 @@ class GPTService:
                 - 긍정적인 마무리 멘트를 합니다
                 - 다음에 또 이야기 나누자는 따뜻한 인사로 마무리합니다
                 - 더 이상 질문은 하지 않습니다"""
-
-    async def analyze_input(self, text: str) -> Dict:
-        """사용자 입력 분석 (ConversationAnalyzer와 동일한 포맷 사용)"""
+    
+    async def initialize(self):
+        """비동기 초기화"""
+        if not self.producer:
+            self.producer = AIOKafkaProducer(
+                bootstrap_servers=settings.kafka.bootstrap_servers,
+                client_id='gpt_service_producer'
+            )
+            await self.producer.start()
+        
+    async def analyze_conversation(self, text: str) -> Dict:
+        """사용자 입력 분석"""
         try:
             completion = await self.client.chat.completions.create(
                 model=settings.gpt.model_name,
@@ -81,188 +85,209 @@ class GPTService:
             )
             
             analysis = json.loads(completion.choices[0].message.content)
-            
-            # 스키마에 맞게 변환
-            return {
-                'sentiment_analysis': SentimentAnalysis(
-                    score=float(analysis['sentiment']['score']),
-                    is_positive=analysis['sentiment']['is_positive'],
-                    confidence=float(analysis['sentiment']['confidence']),
-                    emotional_state=analysis['sentiment']['emotional_state'],
-                    emotion_score=float(analysis['sentiment']['emotion_score']),
-                    emotion_description=analysis['sentiment']['description']
-                ).dict(),
-                
-                'risk_assessment': RiskAssessment(
-                    risk_level=RiskLevel(analysis['risk']['level']),
-                    risk_factors=analysis['risk']['factors'],
-                    needed_actions=analysis['risk']['actions']
-                ).dict(),
-                
-                'keywords': analysis['keywords'],
-                'summary': analysis['summary']
-            }
+            return analysis
             
         except Exception as e:
-            logger.error(f"Input analysis failed: {str(e)}")
+            logger.error(f"Conversation analysis failed: {str(e)}")
             return self._get_default_analysis()
 
-    async def generate_response(
-        self, 
-        user_message: str,
-        conversation_id: int,
-        memory_id: int,
-        is_initial: bool = False
-    ) -> Dict:
+    async def generate_response(self, user_message: str, conversation_id: str, memory_id: str,
+        senior_id: int, is_initial: bool = False) -> Dict:
         """응답 생성 및 처리"""
+        start_time = datetime.now()
+        logger.info(f"Request received at: {start_time.isoformat()}")
+        
         try:
-            # 1. 사용자 입력 분석
-            analysis_result = await self.analyze_input(user_message)
-            
-            # 2. 응답 생성
+            # 1. 초기 대화인 경우
             if is_initial:
                 response_text = "안녕하세요! 오늘 하루는 어떻게 보내고 계신가요?"
+                user_analysis = self._get_default_analysis()
+                analysis_time = datetime.now()
+                logger.info(f"Initial response generated at: {analysis_time.isoformat()}")
+                logger.info(f"Analysis time: {(analysis_time - start_time).total_seconds()}s")
             else:
-                messages = [
-                    {"role": "system", "content": self.system_prompt}
-                ]
-                
-                # 대화 히스토리 추가
+                # 2.1 사용자 입력 분석
+                analysis_start = datetime.now()
+                user_analysis = await self.analyze_conversation(user_message)
+                analysis_time = datetime.now()
+                logger.info(f"Analysis completed at: {analysis_time.isoformat()}")
+                logger.info(f"Analysis time: {(analysis_time - analysis_start).total_seconds()}s")
+    
+                # 2.2 AI 응답 생성
+                response_start = datetime.now()
                 chat_history = self.memory.load_memory_variables({}).get("chat_history", [])
-                if chat_history:
-                    history_text = "\n".join([
-                        f"{'User' if msg.type == 'human' else 'Assistant'}: {msg.content}"
-                        for msg in chat_history[-3:]
-                    ])
-                    messages.append({"role": "user", "content": f"이전 대화:\n{history_text}"})
-                
+                messages = [{"role": "system", "content": self.system_prompt}]
+    
+                for message in chat_history[-6:]:
+                    if isinstance(message, HumanMessage):
+                        messages.append({"role": "user", "content": message.content})
+                    elif isinstance(message, AIMessage):
+                        messages.append({"role": "assistant", "content": message.content})
+    
                 messages.append({"role": "user", "content": user_message})
-                
-                response = await self.client.chat.completions.create(
+    
+                completion = await self.client.chat.completions.create(
                     model=settings.gpt.model_name,
                     messages=messages,
                     temperature=0.7
                 )
-                response_text = response.choices[0].message.content
-
-            # 3. 응답 검증
-            is_valid, validation_result = await self.validate_response(response_text, user_message)
+                response_text = completion.choices[0].message.content
+                response_time = datetime.now()
+                logger.info(f"Response generated at: {response_time.isoformat()}")
+                logger.info(f"Response generation time: {(response_time - response_start).total_seconds()}s")
+    
+                # 2.3 AI 응답 검증
+                validation_start = datetime.now()
+                validation_result = await self.validate_response(response_text, user_message)
+                validation_time = datetime.now()
+                logger.info(f"Validation completed at: {validation_time.isoformat()}")
+                logger.info(f"Validation time: {(validation_time - validation_start).total_seconds()}s")
+                
+                if not validation_result.get("is_valid", True):
+                    logger.warning("Response validation failed")
+                    return self._get_error_response(conversation_id, memory_id)
+    
+            # 3. Kafka로 전송
+            kafka_start = datetime.now()
+            kafka_data = {
+                "response_text": response_text,
+                "senior_id": senior_id,
+                "timestamp": datetime.now().isoformat(),
+                "processing_times": {
+                    "total_time_before_kafka": (kafka_start - start_time).total_seconds(),
+                    "analysis_time": (analysis_time - start_time).total_seconds() if not is_initial else 0,
+                    "response_generation_time": (response_time - response_start).total_seconds() if not is_initial else 0,
+                    "validation_time": (validation_time - validation_start).total_seconds() if not is_initial else 0
+                }
+            }
             
-            if not is_valid:
-                logger.warning(f"Response validation failed: {validation_result}")
-                return self._get_error_response(conversation_id, memory_id)
-
-            # 4. MySQL 저장용 데이터 준비
-            memory_data = {
+            kafka_sent = await self.send_to_kafka(kafka_data)
+            kafka_end = datetime.now()
+            logger.info(f"Kafka message sent at: {kafka_end.isoformat()}")
+            logger.info(f"Kafka sending time: {(kafka_end - kafka_start).total_seconds()}s")
+            logger.info(f"Total processing time: {(kafka_end - start_time).total_seconds()}s")
+    
+            # 4. MySQL 데이터 준비
+            mysql_data = {
                 'memory_id': memory_id,
                 'conversation_id': conversation_id,
                 'speaker': SpeakerType.AI,
                 'content': response_text,
-                'summary': analysis_result['summary'],
-                'positivity_score': analysis_result['sentiment_analysis']['score'],
-                'keywords': json.dumps(analysis_result['keywords']),
-                'response_plan': json.dumps(analysis_result['risk_assessment']['needed_actions'])
+                'summary': user_analysis.get('summary'),
+                'positivity_score': user_analysis.get('sentiment', {}).get('score'),
+                'keywords': json.dumps(user_analysis.get('keywords', []), ensure_ascii=False),
+                'response_plan': '[]'
             }
-
-            # 5. Kafka 전송 데이터 준비
-            kafka_data = {
-                "conversation_id": conversation_id,
-                "memory_id": memory_id,
-                "response_text": response_text,
-                "analysis": analysis_result,
-                "validation": validation_result,
-                "timestamp": datetime.now().isoformat()
-            }
-
-            # 6. Kafka로 전송
-            kafka_success = await self.send_to_kafka(kafka_data)
-            if not kafka_success:
-                logger.error("Failed to send message to Kafka")
-
-            # 7. 메모리 업데이트
+    
+            # 5. 메모리 업데이트
             self.memory.save_context(
-                {"input": user_message},
+                {"input": user_message if not is_initial else ""},
                 {"output": response_text}
             )
-
-            # 8. 결과 반환 (MySQL 저장용 데이터 포함)
+    
+            # 6. 결과 반환에 처리 시간 포함
             return {
                 "response_text": response_text,
                 "conversation_id": conversation_id,
                 "memory_id": memory_id,
-                "analysis": analysis_result,
-                "validation": validation_result,
-                "kafka_sent": kafka_success,
-                "memory_saved": True,
-                "mysql_data": memory_data  # ConversationManager에서 사용
+                "kafka_sent": kafka_sent,
+                "mysql_data": mysql_data,
+                "user_analysis": user_analysis,
+                "timestamp": datetime.now().isoformat(),
+                "processing_times": {
+                    "total_time": (datetime.now() - start_time).total_seconds(),
+                    "analysis_time": (analysis_time - start_time).total_seconds() if not is_initial else 0,
+                    "response_generation_time": (response_time - response_start).total_seconds() if not is_initial else 0,
+                    "validation_time": (validation_time - validation_start).total_seconds() if not is_initial else 0,
+                    "kafka_time": (kafka_end - kafka_start).total_seconds()
+                }
             }
-
+    
         except Exception as e:
-            logger.error(f"Response generation failed: {str(e)}")
+            end_time = datetime.now()
+            logger.error(f"Response generation failed after {(end_time - start_time).total_seconds()}s: {str(e)}")
             return self._get_error_response(conversation_id, memory_id)
-
-    def _get_default_analysis(self) -> Dict:
-        """기본 분석 결과 반환 (ConversationAnalyzer와 동일한 포맷)"""
+        
+    def _get_error_response(self, conversation_id: str, memory_id: str) -> Dict:
+        """에러 응답 생성"""
         return {
-            'sentiment_analysis': SentimentAnalysis(
-                score=50.0,
-                is_positive=True,
-                confidence=0.0,
-                emotional_state=EmotionalState.NEUTRAL,
-                emotion_score=50.0,
-                emotion_description="분석 실패"
-            ).dict(),
-            
-            'risk_assessment': RiskAssessment(
-                risk_level=RiskLevel.NONE,
-                risk_factors=[],
-                needed_actions=[]
-            ).dict(),
-            
-            'keywords': [],
-            'summary': "분석 실패"
+            "response_text": "죄송합니다. 일시적인 오류가 발생했습니다. 다시 말씀해 주시겠어요?",
+            "conversation_id": conversation_id,
+            "memory_id": memory_id,
+            "timestamp": datetime.now().isoformat(),
+            "user_analysis": self._get_default_analysis(),
+            "kafka_sent": False,
+            "mysql_data": None
         }
-
-    def delivery_report(self, err, msg):
-        """Kafka 전송 결과 콜백"""
-        if err is not None:
-            logger.error(f'Message delivery failed: {err}')
-        else:
-            logger.info(f'Message delivered to {msg.topic()} [{msg.partition()}]')
+        
+    def _get_default_analysis(self) -> Dict:
+        """기본 분석 결과 반환"""
+        return {
+            "sentiment": {
+                "score": 50.0,
+                "is_positive": True,
+                "confidence": 0.0,
+                "emotional_state": "neutral",
+                "emotion_score": 50.0,
+                "description": "분석 실패"
+            },
+            "risk": {
+                "level": "none",
+                "factors": [],
+                "actions": []
+            },
+            "keywords": [],
+            "summary": "분석 실패"
+        }
 
     async def validate_response(self, response: str, context: str = "", elderly_state: Dict = None) -> Dict:
         """응답의 적절성 검증"""
         try:
-            validation_prompt = fr"""다음 응답의 적절성을 검증하여 JSON 형식으로 응답해주세요:
-            
-            응답: {response}
-            맥락: {context}
-            노인 상태: {json.dumps(elderly_state, ensure_ascii=False) if elderly_state else "정보 없음"}
-            
-            다음 기준으로 평가해주세요:
-            1. 공감도: 노인의 감정과 상황에 대한 이해를 보여주는가
-            2. 명확성: 이해하기 쉽고 간단한 언어를 사용했는가
-            3. 적절성: 노인의 현재 상태와 맥락에 맞는 응답인가
-            4. 안전성: 위험 신호에 적절히 대응했는가
-            5. 유용성: 실질적인 도움이나 의미 있는 대화를 제공하는가"""
-
             completion = await self.client.chat.completions.create(
                 model=settings.gpt.model_name,
                 messages=[
                     {"role": "system", "content": "응답 검증 전문가입니다."},
-                    {"role": "user", "content": validation_prompt}
+                    {"role": "user", "content": f"""다음 응답의 적절성을 검증해주세요:
+                    
+응답: {response}
+맥락: {context}
+
+다음 항목들을 0에서 5점 사이로 평가하여 JSON 형식으로 응답해주세요:
+
+{{
+    "scores": {{
+        "empathy": "공감도 점수 (0-5)",
+        "clarity": "명확성 점수 (0-5)",
+        "appropriateness": "적절성 점수 (0-5)",
+        "safety": "안전성 점수 (0-5)",
+        "usefulness": "유용성 점수 (0-5)"
+    }},
+    "suggestions": ["개선이 필요한 사항들"],
+    "strengths": ["잘된 점들"]
+}}"""}
                 ],
                 temperature=0.3,
                 response_format={"type": "json_object"}
             )
 
             validation_result = json.loads(completion.choices[0].message.content)
+            
+            # 평균 점수 계산 및 유효성 판단
+            scores = validation_result.get("scores", {})
+            if scores:
+                average_score = sum(float(score) for score in scores.values()) / len(scores)
+                validation_result["average_score"] = round(average_score, 2)
+                validation_result["is_valid"] = average_score >= 3.0
+            else:
+                validation_result["is_valid"] = True  # 기본값
+
             logger.info(f"Response validation result: {validation_result}")
             return validation_result
             
         except Exception as e:
-            logger.error(f"Validation failed: {str(e)}")
+            logger.error(f"검증 실패 in gpt_service: {str(e)}")
             return {
+                "is_valid": True,
                 "scores": {
                     "empathy": 3,
                     "clarity": 3,
@@ -271,23 +296,26 @@ class GPTService:
                     "usefulness": 3
                 },
                 "average_score": 3.0,
-                "improvements_needed": [],
+                "suggestions": [],
                 "strengths": []
             }
 
-    async def send_response_to_kafka(self, response_data: Dict) -> bool:
-        """Kafka로 응답 전송"""
+    async def send_to_kafka(self, data: Dict) -> bool:
         try:
-            self.producer.produce(
+            if not self.producer:
+                await self.initialize()
+
+            # 비동기적으로 메시지 전송
+            await self.producer.send_and_wait(
                 self.response_topic,
-                value=json.dumps(response_data).encode('utf-8'),
-                callback=self.delivery_report
+                json.dumps(data).encode('utf-8')
             )
-            self.producer.flush(timeout=5)
+            logger.info(f'Message sent to Kafka topic: {self.response_topic}')
             return True
         except Exception as e:
             logger.error(f"Failed to send message to Kafka: {str(e)}")
             return False
+        
     def reset_memory(self):
         """메모리 초기화"""
         if hasattr(self, 'memory'):
@@ -299,8 +327,9 @@ class GPTService:
 
     async def aclose(self):
         """비동기 정리"""
+        if self.producer:
+            await self.producer.stop()
         self.reset_memory()
-        # 추가적인 비동기 정리 작업이 필요한 경우 여기에 구현
 
     def __del__(self):
         """소멸자"""

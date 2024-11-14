@@ -18,14 +18,20 @@ class MySQLManager:
             "user": settings.mysql.user,
             "password": settings.mysql.password,
             "charset": settings.mysql.charset,
-            "autocommit": True
+            "autocommit": True,
+            "minsize": 1,
+            "maxsize": 10
         }
 
     async def initialize(self):
         """비동기 풀 초기화"""
         if not self.pool:
-            self.pool = await aiomysql.create_pool(**self.config)
-            logger.info("MySQL connection pool established")
+            try:
+                self.pool = await aiomysql.create_pool(**self.config)
+                logger.info("MySQL connection pool established")
+            except Exception as e:
+                logger.error(f"Failed to initialize MySQL pool: {str(e)}")
+                raise
 
     async def close(self):
         """연결 종료"""
@@ -77,29 +83,33 @@ class MySQLManager:
                     logger.error(f"Failed to get conversation memories: {str(e)}")
                     return []
 
-    async def start_conversation(self, memory_id: int, senior_id: int = 1) -> Optional[int]:
+    async def start_conversation(self, memory_id: str, senior_id: int = 1) -> Optional[int]:
         """새로운 대화 세션 시작"""
+        if not self.pool:
+            await self.initialize()
+
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 try:
                     await cursor.execute("""
                         INSERT INTO Conversation (memory_id, senior_id, start_date)
-                        VALUES (%s, %s, CURDATE())
+                        VALUES (%s, %s, NOW())
                     """, (memory_id, senior_id))
+                    await conn.commit()
                     return cursor.lastrowid
                 except Exception as e:
                     logger.error(f"Failed to start conversation: {str(e)}")
                     return None
 
+
     async def save_memory(self, data: Dict) -> Optional[int]:
         """메모리 저장"""
+        if not self.pool:
+            await self.initialize()
+
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 try:
-                    # JSON 필드 직렬화
-                    keywords = json.dumps(data.get('keywords', []))
-                    response_plan = json.dumps(data.get('response_plan', []))
-                    
                     await cursor.execute("""
                         INSERT INTO Memory (
                             memory_id, conversation_id, speaker, content, 
@@ -112,9 +122,10 @@ class MySQLManager:
                         data['content'],
                         data.get('summary'),
                         data.get('positivity_score', 50),
-                        keywords,
-                        response_plan
+                        data.get('keywords', '[]'),
+                        data.get('response_plan', '[]')
                     ))
+                    await conn.commit()
                     return cursor.lastrowid
                 except Exception as e:
                     logger.error(f"Failed to save memory: {str(e)}")

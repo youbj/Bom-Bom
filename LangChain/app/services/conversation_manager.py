@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 import uuid
 import logging
+import json
 from datetime import datetime
 from app.services.gpt_service import GPTService
 from app.database.mysql_manager import MySQLManager
@@ -22,56 +23,63 @@ class ConversationManager:
         self.warning_threshold = settings.warning_threshold
         self.current_turn = 0
 
-    async def start_conversation(self, senior_id: int = 1) -> Dict:
+    async def start_conversation(self, senior_id: int) -> Dict:
         """새로운 대화 시작"""
         try:
             # Memory ID 생성
-            self.memory_id = uuid.uuid4().int >> 64  # 64비트 정수로 변환
-            
+            self.memory_id = str(uuid.uuid4())
+
             # DB에 대화 세션 생성
-            self.current_conversation_id = self.mysql_manager.start_conversation(
+            self.current_conversation_id = await self.mysql_manager.start_conversation(
                 memory_id=self.memory_id,
                 senior_id=senior_id
             )
-            
+
             if not self.current_conversation_id:
-                raise Exception("Failed to create conversation session")
+                raise Exception("대화 memory 모듈 생성 실패")
 
             # 초기 응답 생성
             initial_response = await self.gpt_service.generate_response(
                 user_message="",
                 conversation_id=self.current_conversation_id,
                 memory_id=self.memory_id,
+                senior_id=senior_id,
                 is_initial=True
             )
-            
+
             # AI 응답 저장
-            await self.mysql_manager.save_memory({
+            memory_data = {
                 'memory_id': self.memory_id,
                 'conversation_id': self.current_conversation_id,
-                'speaker': SpeakerType.AI,
-                'content': initial_response['response_text']
-            })
-            
+                'speaker': 'AI',  # enum 값과 정확히 일치하도록 수정
+                'content': initial_response['response_text'],
+                'summary': None,
+                'positivity_score': 50,  # 기본값 설정
+                'keywords': json.dumps([]),  # JSON 문자열로 변환
+                'response_plan': json.dumps([])  # JSON 문자열로 변환
+            }
+
+            await self.mysql_manager.save_memory(memory_data)
+
             logger.info(f"Started new conversation: {self.current_conversation_id}")
             return {
                 "conversation_id": self.current_conversation_id,
                 "memory_id": self.memory_id,
                 "response": initial_response
             }
-            
+
         except Exception as e:
             logger.error(f"Failed to start conversation: {str(e)}")
             raise
 
-    async def process_message(self, text: str) -> Dict:
+    async def process_message(self, text: str, senior_id: int) -> Dict:
         """메시지 처리"""
         try:
             if not self.current_conversation_id:
                 raise Exception("No active conversation")
 
             self.current_turn += 1
-            
+
             # 대화 턴 수 체크
             if self.current_turn >= self.max_turns:
                 return await self.end_conversation(
@@ -79,34 +87,43 @@ class ConversationManager:
                 )
 
             # 사용자 메시지 저장
-            await self.mysql_manager.save_memory({
+            user_memory_data = {
                 'memory_id': self.memory_id,
                 'conversation_id': self.current_conversation_id,
-                'speaker': SpeakerType.USER,
-                'content': text
-            })
+                'speaker': 'User',  # enum 값과 정확히 일치하도록 수정
+                'content': text,
+                'summary': None,
+                'positivity_score': 50,  # 기본값 설정
+                'keywords': json.dumps([]),  # JSON 문자열로 변환
+                'response_plan': json.dumps([])  # JSON 문자열로 변환
+            }
 
-            # GPT 응답 생성 (Kafka 전송 및 분석 포함)
+            await self.mysql_manager.save_memory(user_memory_data)
+
+            # GPT 응답 생성
             gpt_response = await self.gpt_service.generate_response(
                 user_message=text,
                 conversation_id=self.current_conversation_id,
-                memory_id=self.memory_id
+                memory_id=self.memory_id,
+                senior_id=senior_id,
+                is_initial=False
             )
 
             # AI 응답 저장
-            await self.mysql_manager.save_memory({
+            ai_memory_data = {
                 'memory_id': self.memory_id,
                 'conversation_id': self.current_conversation_id,
-                'speaker': SpeakerType.AI,
+                'speaker': 'AI',  # enum 값과 정확히 일치하도록 수정
                 'content': gpt_response['response_text'],
-                'summary': gpt_response['analysis'].get('summary'),
-                'positivity_score': gpt_response['analysis'].get('positivity_score'),
-                'keywords': gpt_response['analysis'].get('keywords'),
-                'response_plan': gpt_response['analysis'].get('response_plan')
-            })
+                'summary': gpt_response.get('user_analysis', {}).get('summary'),
+                'positivity_score': gpt_response.get('user_analysis', {}).get('sentiment', {}).get('score', 50),
+                'keywords': json.dumps(gpt_response.get('user_analysis', {}).get('keywords', [])),  # JSON 문자열로 변환
+                'response_plan': json.dumps(gpt_response.get('user_analysis', {}).get('response_plan', []))  # JSON 문자열로 변환
+            }
 
-            # 응답 데이터 구성
-            response_data = {
+            await self.mysql_manager.save_memory(ai_memory_data)
+
+            return {
                 "conversation_id": self.current_conversation_id,
                 "memory_id": self.memory_id,
                 "response": gpt_response,
@@ -114,8 +131,6 @@ class ConversationManager:
                 "remaining_turns": self.max_turns - self.current_turn,
                 "should_warn": self.current_turn >= self.warning_threshold
             }
-
-            return response_data
 
         except Exception as e:
             logger.error(f"Failed to process message: {str(e)}")
