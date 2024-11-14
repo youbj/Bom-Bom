@@ -36,6 +36,14 @@ public class GetConvServiceImpl implements GetConvService {
 	}
 
 	@Override
+	public List<Double> getWeekAvg(Long memberId, Long seniorId) {
+		Member member = memberService.getMemberById(memberId);
+		Senior senior = getSeniorService.getSeniorById(seniorId);
+		memberSeniorService.checkAssociation(member, senior);
+		return convRepositoryCustom.getAvgScoresForLastWeek(senior);
+	}
+
+	@Override
 	public Double getTodayEmotion(Senior senior) {
 		return convRepositoryCustom.getTodayEmotionAvg(senior);
 	}
