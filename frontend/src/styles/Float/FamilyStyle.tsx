@@ -7,7 +7,7 @@ const FamilyStyle = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: '600',
     textAlign: 'center',
     marginTop: 50,
@@ -17,16 +17,16 @@ const FamilyStyle = StyleSheet.create({
     marginBottom: 15,
   },
   label: {
-    fontSize: 16,
+    fontSize: 20,
     paddingLeft: 15,
-    fontWeight: '500',
+    fontWeight: '600',
     marginBottom: 5,
     color: '#333',
   },
   input: {
     height: 50,
     backgroundColor: '#FED7C3',
-    borderRadius: 25,
+    borderRadius: 15,
     paddingHorizontal: 20,
     fontSize: 16,
     color: '#333',
@@ -35,6 +35,14 @@ const FamilyStyle = StyleSheet.create({
     // shadowOpacity: 0.1,
     // shadowRadius: 5,
     // elevation: 5,
+  },
+  button: {
+    backgroundColor: '#FF8A80',
+    padding: 10,
+    margin: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    elevation: 2,
   },
 });
 
