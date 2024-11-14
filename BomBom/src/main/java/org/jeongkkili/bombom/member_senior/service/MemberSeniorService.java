@@ -16,5 +16,7 @@ public interface MemberSeniorService {
 
 	Member getSocialWorker(Senior senior);
 
+	List<Member> getMembersBySenior(Senior senior);
+
 	boolean existAssociation(Member member, Senior senior);
 }
