@@ -24,23 +24,22 @@ public class ConversationRepositoryCustom {
 
 	public List<GetConvListDto> getConversationList(Senior senior) {
 		return queryFactory.select(Projections.constructor(GetConvListDto.class,
-			conversation.emotion,
-			conversation.createdAt
+			conversation.avgScore,
+			conversation.startDate,
+			conversation.endTime
 			))
 			.from(conversation)
 			.where(conversation.senior.eq(senior))
-			.orderBy(conversation.createdAt.desc())
+			.orderBy(conversation.endTime.desc())
 			.fetch();
 	}
 
 	public Double getTodayEmotionAvg(Senior senior) {
 		LocalDate today = LocalDate.now();
-		LocalDateTime startOfDay = today.atStartOfDay();
-		LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
-		return queryFactory.select(conversation.emotion.avg())
+		return queryFactory.select(conversation.avgScore.avg())
 			.from(conversation)
 			.where(conversation.senior.eq(senior)
-				.and(conversation.createdAt.between(startOfDay, endOfDay)))
+				.and(conversation.startDate.eq(today)))
 			.fetchOne();
 	}
 }

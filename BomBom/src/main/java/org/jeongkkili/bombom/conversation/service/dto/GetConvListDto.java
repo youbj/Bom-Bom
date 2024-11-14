@@ -1,6 +1,7 @@
 package org.jeongkkili.bombom.conversation.service.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +12,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class GetConvListDto {
 
-	private Double emotion;
-	private LocalDateTime createdAt;
+	private Double avgScore;
+	private LocalDate startDate;
+	private LocalTime endTime;
 }
