@@ -22,6 +22,15 @@ class MySQLManager:
             "minsize": 1,
             "maxsize": 10
         }
+    async def ensure_connection(self):
+        """연결 보장"""
+        if not self.pool:
+            try:
+                self.pool = await aiomysql.create_pool(**self.config)
+                logger.info("MySQL connection pool established")
+            except Exception as e:
+                logger.error(f"Failed to initialize MySQL pool: {str(e)}")
+                raise
 
     async def initialize(self):
         """비동기 풀 초기화"""
@@ -42,6 +51,8 @@ class MySQLManager:
 
     async def get_conversation_status(self, conversation_id: int) -> Optional[Dict]:
         """대화 상태 조회"""
+        await self.ensure_connection()
+        
         async with self.pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
                 try:
@@ -85,9 +96,8 @@ class MySQLManager:
 
     async def start_conversation(self, memory_id: str, senior_id: int = 1) -> Optional[int]:
         """새로운 대화 세션 시작"""
-        if not self.pool:
-            await self.initialize()
-
+        await self.ensure_connection()
+        
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 try:
@@ -104,9 +114,8 @@ class MySQLManager:
 
     async def save_memory(self, data: Dict) -> Optional[int]:
         """메모리 저장"""
-        if not self.pool:
-            await self.initialize()
-
+        await self.ensure_connection()
+        
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 try:
@@ -130,6 +139,13 @@ class MySQLManager:
                 except Exception as e:
                     logger.error(f"Failed to save memory: {str(e)}")
                     return None
+
+    async def close(self):
+        """연결 종료"""
+        if self.pool:
+            self.pool.close()
+            await self.pool.wait_closed()
+            logger.info("MySQL connection pool closed")
 
     async def end_conversation(self, conversation_id: int) -> bool:
         """대화 세션 종료"""

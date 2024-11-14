@@ -16,11 +16,10 @@ async def get_gpt_service() -> AsyncGenerator[GPTService, None]:
     """GPTService 의존성 제공"""
     gpt_service = GPTService()
     try:
+        await gpt_service.initialize()  # Kafka producer 초기화
         yield gpt_service
     finally:
-        if hasattr(gpt_service, 'producer'):
-            gpt_service.producer.flush()
-        await gpt_service.aclose()  # 비동기 정리 추가
+        await gpt_service.aclose()  # 비동기 cleanup 호출
 
 async def get_conversation_manager(
     mysql_manager: MySQLManager = Depends(get_mysql_manager),

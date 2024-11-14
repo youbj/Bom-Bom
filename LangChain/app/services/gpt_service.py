@@ -91,41 +91,30 @@ class GPTService:
             logger.error(f"Conversation analysis failed: {str(e)}")
             return self._get_default_analysis()
 
-    async def generate_response(self, user_message: str, conversation_id: str, memory_id: str,
-        senior_id: int, is_initial: bool = False) -> Dict:
-        """응답 생성 및 처리"""
+    async def generate_response( self, user_message: str, conversation_id: str, memory_id: str, senior_id: int,
+    is_initial: bool = False) -> Dict:
         start_time = datetime.now()
-        logger.info(f"Request received at: {start_time.isoformat()}")
-        
+        logger.info(f"=== Starting request at: {start_time.isoformat()} ===")
+
         try:
-            # 1. 초기 대화인 경우
             if is_initial:
                 response_text = "안녕하세요! 오늘 하루는 어떻게 보내고 계신가요?"
                 user_analysis = self._get_default_analysis()
-                analysis_time = datetime.now()
-                logger.info(f"Initial response generated at: {analysis_time.isoformat()}")
-                logger.info(f"Analysis time: {(analysis_time - start_time).total_seconds()}s")
             else:
-                # 2.1 사용자 입력 분석
-                analysis_start = datetime.now()
-                user_analysis = await self.analyze_conversation(user_message)
-                analysis_time = datetime.now()
-                logger.info(f"Analysis completed at: {analysis_time.isoformat()}")
-                logger.info(f"Analysis time: {(analysis_time - analysis_start).total_seconds()}s")
-    
-                # 2.2 AI 응답 생성
+                # 1. AI 응답 생성 (최우선)
+                logger.info("1. Generating AI response...")
                 response_start = datetime.now()
                 chat_history = self.memory.load_memory_variables({}).get("chat_history", [])
                 messages = [{"role": "system", "content": self.system_prompt}]
-    
+
                 for message in chat_history[-6:]:
                     if isinstance(message, HumanMessage):
                         messages.append({"role": "user", "content": message.content})
                     elif isinstance(message, AIMessage):
                         messages.append({"role": "assistant", "content": message.content})
-    
+
                 messages.append({"role": "user", "content": user_message})
-    
+
                 completion = await self.client.chat.completions.create(
                     model=settings.gpt.model_name,
                     messages=messages,
@@ -133,41 +122,50 @@ class GPTService:
                 )
                 response_text = completion.choices[0].message.content
                 response_time = datetime.now()
-                logger.info(f"Response generated at: {response_time.isoformat()}")
-                logger.info(f"Response generation time: {(response_time - response_start).total_seconds()}s")
-    
-                # 2.3 AI 응답 검증
-                validation_start = datetime.now()
+                response_duration = (response_time - response_start).total_seconds()
+                logger.info(f"Response generated in {response_duration:.2f}s")
+
+                # 2. 응답 검증
+                logger.info("2. Validating response...")
+                validation_start = response_time
                 validation_result = await self.validate_response(response_text, user_message)
                 validation_time = datetime.now()
-                logger.info(f"Validation completed at: {validation_time.isoformat()}")
-                logger.info(f"Validation time: {(validation_time - validation_start).total_seconds()}s")
-                
-                if not validation_result.get("is_valid", True):
-                    logger.warning("Response validation failed")
-                    return self._get_error_response(conversation_id, memory_id)
-    
-            # 3. Kafka로 전송
-            kafka_start = datetime.now()
-            kafka_data = {
-                "response_text": response_text,
-                "senior_id": senior_id,
-                "timestamp": datetime.now().isoformat(),
-                "processing_times": {
-                    "total_time_before_kafka": (kafka_start - start_time).total_seconds(),
-                    "analysis_time": (analysis_time - start_time).total_seconds() if not is_initial else 0,
-                    "response_generation_time": (response_time - response_start).total_seconds() if not is_initial else 0,
-                    "validation_time": (validation_time - validation_start).total_seconds() if not is_initial else 0
+                validation_duration = (validation_time - validation_start).total_seconds()
+                logger.info(f"Validation completed in {validation_duration:.2f}s")
+
+                # 3. Kafka로 즉시 전송
+                logger.info("3. Sending to Kafka...")
+                kafka_start = datetime.now()
+                kafka_data = {
+                    "response_text": response_text,
+                    "senior_id": senior_id,
+                    "conversation_id": conversation_id,
+                    "timestamp": datetime.now().isoformat()
                 }
-            }
-            
-            kafka_sent = await self.send_to_kafka(kafka_data)
-            kafka_end = datetime.now()
-            logger.info(f"Kafka message sent at: {kafka_end.isoformat()}")
-            logger.info(f"Kafka sending time: {(kafka_end - kafka_start).total_seconds()}s")
-            logger.info(f"Total processing time: {(kafka_end - start_time).total_seconds()}s")
-    
-            # 4. MySQL 데이터 준비
+                kafka_sent = await self.send_to_kafka(kafka_data)
+                kafka_time = datetime.now()
+                kafka_duration = (kafka_time - kafka_start).total_seconds()
+                logger.info(f"Kafka message sent in {kafka_duration:.2f}s")
+
+                # 4. 사용자 입력 분석 (백그라운드)
+                logger.info("4. Starting background analysis...")
+                analysis_start = datetime.now()
+                # 비동기로 분석 시작
+                analysis_task = asyncio.create_task(self.analyze_conversation(user_message))
+
+                # 다른 작업 계속 진행
+                self.memory.save_context(
+                    {"input": user_message},
+                    {"output": response_text}
+                )
+
+                # 분석 결과 기다리기
+                user_analysis = await analysis_task
+                analysis_time = datetime.now()
+                analysis_duration = (analysis_time - analysis_start).total_seconds()
+                logger.info(f"Background analysis completed in {analysis_duration:.2f}s")
+
+            # MySQL 데이터 준비
             mysql_data = {
                 'memory_id': memory_id,
                 'conversation_id': conversation_id,
@@ -178,14 +176,10 @@ class GPTService:
                 'keywords': json.dumps(user_analysis.get('keywords', []), ensure_ascii=False),
                 'response_plan': '[]'
             }
-    
-            # 5. 메모리 업데이트
-            self.memory.save_context(
-                {"input": user_message if not is_initial else ""},
-                {"output": response_text}
-            )
-    
-            # 6. 결과 반환에 처리 시간 포함
+
+            total_duration = (datetime.now() - start_time).total_seconds()
+            logger.info(f"=== Total processing time: {total_duration:.2f}s ===")
+
             return {
                 "response_text": response_text,
                 "conversation_id": conversation_id,
@@ -195,13 +189,18 @@ class GPTService:
                 "user_analysis": user_analysis,
                 "timestamp": datetime.now().isoformat(),
                 "processing_times": {
-                    "total_time": (datetime.now() - start_time).total_seconds(),
-                    "analysis_time": (analysis_time - start_time).total_seconds() if not is_initial else 0,
-                    "response_generation_time": (response_time - response_start).total_seconds() if not is_initial else 0,
-                    "validation_time": (validation_time - validation_start).total_seconds() if not is_initial else 0,
-                    "kafka_time": (kafka_end - kafka_start).total_seconds()
+                    "response_generation_time": response_duration,
+                    "validation_time": validation_duration,
+                    "kafka_time": kafka_duration,
+                    "analysis_time": analysis_duration,
+                    "total_time": total_duration
                 }
             }
+
+        except Exception as e:
+            end_time = datetime.now()
+            logger.error(f"Response generation failed after {(end_time - start_time).total_seconds()}s: {str(e)}")
+            return self._get_error_response(conversation_id, memory_id)
     
         except Exception as e:
             end_time = datetime.now()
@@ -318,19 +317,25 @@ class GPTService:
         
     def reset_memory(self):
         """메모리 초기화"""
-        if hasattr(self, 'memory'):
-            self.memory.clear()
-            
-        # Kafka producer 정리
-        if hasattr(self, 'producer'):
-            self.producer.flush()
+        try:
+            if hasattr(self, 'memory'):
+                self.memory.clear()
+        except Exception as e:
+            logger.error(f"Error in reset_memory: {e}")
 
     async def aclose(self):
         """비동기 정리"""
-        if self.producer:
-            await self.producer.stop()
-        self.reset_memory()
+        try:
+            if self.producer:
+                await self.producer.stop()
+                self.producer = None
+            self.reset_memory()
+        except Exception as e:
+            logger.error(f"Error in aclose: {e}")
 
     def __del__(self):
         """소멸자"""
-        self.reset_memory()
+        try:
+            self.reset_memory()
+        except Exception as e:
+            logger.error(f"Error in destructor: {e}")

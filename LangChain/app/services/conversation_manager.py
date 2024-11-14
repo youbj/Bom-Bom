@@ -78,6 +78,14 @@ class ConversationManager:
             if not self.current_conversation_id:
                 raise Exception("No active conversation")
 
+            if not self.memory_id:
+                conversation_info = await self.mysql_manager.get_conversation_status(self.current_conversation_id)
+                if conversation_info and 'memory_id' in conversation_info:
+                    self.memory_id = conversation_info['memory_id']
+                else:
+                    # memory_id가 없으면 새로 생성
+                    self.memory_id = str(uuid.uuid4())
+
             self.current_turn += 1
 
             # 대화 턴 수 체크
