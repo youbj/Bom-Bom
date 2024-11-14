@@ -1,6 +1,6 @@
 // src/screens/Verify/FamilyVerifyRequestScreen.tsx
 import React, {useState} from 'react';
-import {View, Button, Alert} from 'react-native';
+import {View, Button, Alert, TouchableOpacity} from 'react-native';
 import CustomText from '../../../components/CustomText';
 import CustomTextInput from '../../../components/CustomTextInput';
 import FamilyStyle from '../../../styles/Float/FamilyStyle';
@@ -62,11 +62,12 @@ const FamilyVerifyRequestScreen: React.FC = () => {
           keyboardType="phone-pad"
         />
       </View>
-      <Button
-        title="승인 요청 보내기"
-        onPress={handleSubmitRequest}
-        color="#FF8A80"
-      />
+
+      <TouchableOpacity style={FamilyStyle.button}>
+        <CustomText style={{fontWeight: '600', fontSize: 16, color: '#fff'}}>
+          승인 요청 보내기
+        </CustomText>
+      </TouchableOpacity>
     </View>
   );
 };
