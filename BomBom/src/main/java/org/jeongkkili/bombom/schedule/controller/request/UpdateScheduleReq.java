@@ -15,5 +15,6 @@ import lombok.NoArgsConstructor;
 public class UpdateScheduleReq {
 
 	private String memo;
-	private LocalDateTime scheduleAt;
+	private LocalDateTime startAt;
+	private LocalDateTime endAt;
 }

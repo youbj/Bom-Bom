@@ -32,7 +32,8 @@ public class RegistScheduleServiceImpl implements RegistScheduleService {
 		memberSeniorService.checkAssociation(member, senior);
 		scheduleRepository.save(Schedule.builder()
 			.senior(senior)
-			.scheduleAt(req.getScheduleAt())
+			.startAt(req.getStartAt())
+			.endAt(req.getEndAt())
 			.memo(req.getMemo())
 			.build());
 	}
