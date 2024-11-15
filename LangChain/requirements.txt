@@ -6,6 +6,9 @@ aiofiles>=23.1.0,<24.0.0
 
 # Database
 mysql-connector-python==8.2.0
+aiomysql>=0.2.0
+aiohttp>=3.8.1
+aiokafka
 
 # Message Queue
 confluent-kafka==2.4.0
@@ -32,9 +35,6 @@ keyboard==0.13.5
 # HTTP & API
 requests>=2.31.0,<3.0.0
 httpx>=0.23.0,<1.0.0
-
-# PDF Generation
-fpdf==1.7.2
 
 # Testing
 pytest==8.1.1
