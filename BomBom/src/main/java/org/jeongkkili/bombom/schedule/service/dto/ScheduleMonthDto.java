@@ -13,5 +13,6 @@ public class ScheduleMonthDto {
 
 	private Long scheduleId;
 	private String memo;
-	private LocalDateTime date;
+	private LocalDateTime startAt;
+	private LocalDateTime endAt;
 }

@@ -26,20 +26,23 @@ public class ScheduleRepositoryCustom {
 			.select(Projections.constructor(ScheduleMonthDto.class,
 				schedule.scheduleId,
 				schedule.memo,
-				schedule.scheduleAt))
+				schedule.startAt,
+				schedule.endAt))
 			.from(schedule)
 			.where(
 				schedule.senior.eq(senior),
 				getMonth(year, month)
 			)
-			.orderBy(schedule.scheduleAt.asc())
+			.orderBy(schedule.startAt.asc())
 			.fetch();
 	}
 
 	private BooleanExpression getMonth(Integer year, Integer month)  {
 		LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0);
 		LocalDateTime endDate = startDate.plusMonths(1).minusNanos(1);
-		return schedule.scheduleAt.between(startDate, endDate);
+		return schedule.startAt.between(startDate, endDate)
+			.or(schedule.endAt.between(startDate, endDate))
+			.or(schedule.startAt.before(startDate).and(schedule.endAt.after(endDate)));
 	}
 
 }

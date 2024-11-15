@@ -27,6 +27,6 @@ public class UpdateScheduleServiceImpl implements UpdateScheduleService {
 		Schedule schedule = scheduleRepository.getOrThrow(scheduleId);
 		Member member = memberService.getMemberById(memberId);
 		memberSeniorService.checkAssociation(member, schedule.getSenior());
-		schedule.updateSchedule(req.getScheduleAt(), req.getMemo());
+		schedule.updateSchedule(req.getStartAt(), req.getEndAt(), req.getMemo());
 	}
 }
