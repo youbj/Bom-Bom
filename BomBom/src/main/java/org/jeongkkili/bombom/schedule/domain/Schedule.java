@@ -30,8 +30,11 @@ public class Schedule {
 	@Column(name = "schedule_id")
 	private Long scheduleId;
 
-	@Column(name = "schedule_at", nullable = false)
-	private LocalDateTime scheduleAt;
+	@Column(name = "start_at", nullable = false)
+	private LocalDateTime startAt;
+
+	@Column(name = "end_at")
+	private LocalDateTime endAt;
 
 	@Column(name = "memo", nullable = false)
 	private String memo;
@@ -45,14 +48,16 @@ public class Schedule {
 	private Senior senior;
 
 	@Builder
-	public Schedule(LocalDateTime scheduleAt, String memo, Senior senior) {
-		this.scheduleAt = scheduleAt;
+	public Schedule(LocalDateTime startAt, LocalDateTime endAt, String memo, Senior senior) {
+		this.startAt = startAt;
+		this.endAt = endAt;
 		this.memo = memo;
 		addSenior(senior);
 	}
 
-	public void updateSchedule(LocalDateTime scheduleAt, String memo) {
-		this.scheduleAt = scheduleAt;
+	public void updateSchedule(LocalDateTime startAt, LocalDateTime endAt, String memo) {
+		this.startAt = startAt;
+		this.endAt = endAt;
 		this.memo = memo;
 	}
 

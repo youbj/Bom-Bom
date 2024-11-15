@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class RegistScheduleReq {
 
 	private Long seniorId;
-	private LocalDateTime scheduleAt;
+	private LocalDateTime startAt;
+	private LocalDateTime endAt;
 	private String memo;
 }
