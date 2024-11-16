@@ -107,7 +107,8 @@ class GPTService:
 
         try:
             if is_initial:
-                response_text = "안녕하세요! 오늘 하루는 어떻게 보내고 계신가요?"
+                # response_text = "안녕하세요! 오늘 하루는 어떻게 보내고 계신가요?"
+                response_text = "네! 부르셨나요?"
                 self.memory.save_context({"input": ""}, {"output": response_text})
                 user_analysis = self._get_default_analysis()
                 # Kafka 데이터 전송
@@ -118,6 +119,7 @@ class GPTService:
                     "timestamp": datetime.now().isoformat()
                 }
                 kafka_sent = await self.send_to_kafka(kafka_data)
+                # kafka_send = True
 
                 # 처리 시간 계산
                 total_duration = (datetime.now() - start_time).total_seconds()
