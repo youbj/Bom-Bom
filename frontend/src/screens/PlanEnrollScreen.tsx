@@ -1,46 +1,59 @@
 import React, {useState} from 'react';
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  StyleSheet,
-} from 'react-native';
+import {View, TouchableOpacity, Alert} from 'react-native';
 import CustomText from '../components/CustomText';
 import CustomTextInput from '../components/CustomTextInput';
 import defaultStyle from '../styles/DefaultStyle';
 import PlanEnrollStyle from '../styles/PlanEnrollStyle';
 import BackButton from '../components/BackButton';
 import LogoutButton from '../components/LogoutButton';
-import {useRoute, RouteProp} from '@react-navigation/native';
+import {useRoute, RouteProp, useNavigation} from '@react-navigation/native';
 import {MainStackParamList} from '../../types/navigation.d';
 import instance from '../api/axios';
+import {renderDateTimeInput} from '../utils/RenderDateTimeInput';
 
 type PlanEnrollScreenRouteProp = RouteProp<MainStackParamList, 'PlanEnroll'>;
 
 const PlanEnrollScreen = () => {
   const route = useRoute<PlanEnrollScreenRouteProp>();
   const {seniorId} = route.params;
+  const navigation = useNavigation();
 
-  const [scheduleAt, setScheduleAt] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [memo, setMemo] = useState('');
 
+  const combineTime = (date: string, time: string): string =>
+    `${date}T${time}:00`;
+
   const handleSave = async () => {
-    if (!scheduleAt || !memo) {
-      Alert.alert('입력 오류', '모든 필드를 입력해주세요.');
+    if (!startDate || !startTime || !memo) {
+      Alert.alert('입력 오류', '시작 일정, 시간, 메모는 필수 입력 사항입니다.');
       return;
     }
 
-    const requestData = {
+    const requestData: {
+      seniorId: number;
+      startAt: string;
+      endAt?: string; // 선택적 필드
+      memo: string;
+    } = {
       seniorId,
-      scheduleAt,
+      startAt: combineTime(startDate, startTime),
       memo,
     };
 
+    // endDate와 endTime이 모두 입력된 경우에만 endAt 추가
+    if (endDate && endTime) {
+      requestData.endAt = combineTime(endDate, endTime);
+    }
+
     try {
-      const response = await instance.post('/schedules/create', requestData);
+      const response = await instance.post('/schedule/regist', requestData);
       if (response.status === 200) {
         Alert.alert('성공', '일정이 성공적으로 등록되었습니다.');
+        navigation.goBack();
       }
     } catch (error) {
       console.error('Error saving schedule:', error);
@@ -58,31 +71,21 @@ const PlanEnrollScreen = () => {
       <LogoutButton />
       <CustomText style={PlanEnrollStyle.title}>일정 등록하기</CustomText>
 
-      <CustomText style={PlanEnrollStyle.subTitle}>시작 일정</CustomText>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          width: '100%',ㅊ
-        }}>
-        <View style={{width: '50%'}}>
-          <CustomTextInput
-            placeholder="YYYY-MM-DD"
-            value={scheduleAt}
-            onChangeText={setScheduleAt}
-            style={[defaultStyle.input, {marginHorizontal: 5}]}
-          />
-        </View>
+      {renderDateTimeInput(
+        '시작 일정',
+        startDate,
+        setStartDate,
+        startTime,
+        setStartTime,
+      )}
 
-        <View style={{width: '50%'}}>
-          <CustomTextInput
-            placeholder="YYYY-MM-DD"
-            value={scheduleAt}
-            onChangeText={setScheduleAt}
-            style={[defaultStyle.input, {marginHorizontal: 5}]}
-          />
-        </View>
-      </View>
+      {renderDateTimeInput(
+        '종료 일정',
+        endDate,
+        setEndDate,
+        endTime,
+        setEndTime,
+      )}
 
       <CustomText style={PlanEnrollStyle.subTitle}>메모</CustomText>
       <CustomTextInput
@@ -92,9 +95,11 @@ const PlanEnrollScreen = () => {
         style={defaultStyle.input}
       />
 
-      <TouchableOpacity onPress={handleSave} style={PlanEnrollStyle.button}>
-        <CustomText style={PlanEnrollStyle.buttonText}>저장</CustomText>
-      </TouchableOpacity>
+      <View style={{alignItems: 'flex-end', width: '100%'}}>
+        <TouchableOpacity onPress={handleSave} style={PlanEnrollStyle.button}>
+          <CustomText style={PlanEnrollStyle.buttonText}>저장</CustomText>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

@@ -18,3 +18,12 @@ export const formatBirth = (input: string) => {
     6,
   )}-${limitedBirths.slice(6)}`;
 };
+
+export const formatTime = (input: string) => {
+  const time = input.replace(/[^\d]/g, '');
+  const limitedTime = time.slice(0, 4);
+
+  if (limitedTime.length < 3) return time;
+
+  return `${limitedTime.slice(0, 2)}:${limitedTime.slice(2)}`;
+};

@@ -17,13 +17,16 @@ const PlanEnrollStyle = StyleSheet.create({
   },
   button: {
     backgroundColor: '#FED7C3',
-    marginTop: 20,
-    padding: 10,
+    marginTop: 5,
+    marginRight: 5,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
     alignItems: 'flex-end',
     borderRadius: 5,
     elevation: 2,
   },
   buttonText: {
+    fontSize: 16,
     fontWeight: '600',
   },
 });

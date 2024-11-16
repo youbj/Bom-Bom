@@ -20,6 +20,17 @@ const PlanStyle = StyleSheet.create({
     elevation: 5,
     paddingVertical: 10,
   },
+  plan: {
+    marginTop: 20,
+    paddingLeft: 15,
+    paddingTop: 10,
+    backgroundColor: '#FED7C3',
+    width: '95%',
+    elevation: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    height: 120,
+  },
   button: {
     backgroundColor: '#FED7C3',
     marginTop: 20,
