@@ -153,6 +153,7 @@ const LoginScreen = (): JSX.Element => {
       <CustomTextInput
         style={defaultStyle.input}
         placeholder="아이디"
+        placeholderTextColor="#999999"
         autoCapitalize="none"
         value={loginId}
         onChangeText={text => setLoginId(text)}
@@ -161,12 +162,13 @@ const LoginScreen = (): JSX.Element => {
       <CustomTextInput
         style={[defaultStyle.input, {flex: 1}]}
         placeholder="비밀번호"
+        placeholderTextColor="#999999"
         right={
           <Icon
             name={passwordVisible ? 'eye' : 'eye-off'}
             onPress={() => setPasswordVisible(!passwordVisible)}
             size={20}
-            color={'#ccc'}
+            color={'#bbb'}
           />
         }
         secureTextEntry={!passwordVisible}

@@ -172,7 +172,7 @@ const EnrollScreen = (): JSX.Element => {
                   onPress={() =>
                     setCurrentPerson({...currentPerson, gender: 'FEMALE'})
                   }>
-                  <CustomText style={{fontWeight: '600'}}>녀</CustomText>
+                  <CustomText style={{fontWeight: '600'}}>여</CustomText>
                 </TouchableOpacity>
               </View>
             </View>

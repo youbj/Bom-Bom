@@ -16,7 +16,7 @@ const defaultStyle = StyleSheet.create({
     borderColor: '#E5E8EB',
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingLeft: 16,
     marginBottom: 16,
   },
 });

@@ -11,13 +11,17 @@ export type AuthStackParamList = {
   JoinDetail: {isType: 'SOCIAL_WORKER' | 'FAMILY'};
 };
 
-export type MainNavigatorParamList = {
+export type MainStackParamList = {
   Main: undefined;
   FloatNavigator: {screen: keyof FloatNavigatorParamList};
   Enroll: undefined;
-  Detail: undefined;
+  Detail: {seniorId: number};
   Revise: {detail: DetailInfo};
+  Plan: {seniorId: number};
+  PlanEnroll: {seniorId: number};
 };
+
+// 메인 페이지 이후의 StackParamList
 
 export type FloatNavigatorParamList = {
   MessageScreen: undefined;
@@ -46,8 +50,7 @@ export type AuthToMainNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
   'Login'
 >;
-export type MainNavigatorProp =
-  NativeStackNavigationProp<MainNavigatorParamList>;
+export type MainNavigatorProp = NativeStackNavigationProp<MainStackParamList>;
 export type FloatNavigatorProp =
   NativeStackNavigationProp<FloatNavigatorParamList>;
 
@@ -62,14 +65,6 @@ export type LoginScreenProps = {
 
 export type SplashScreenProps = {
   setIsLoggedIn: (loggedIn: boolean) => void;
-};
-// 메인 페이지 이후의 StackParamList
-
-export type MainStackParamList = {
-  Main: undefined;
-  Enroll: undefined;
-  Detail: {seniorId: number};
-  Revise: {detail: DetailInfo};
 };
 
 export type EnrollStackParamList = {
@@ -91,8 +86,18 @@ export type MainToDetailNavigationProp = NativeStackNavigationProp<
 >;
 
 export type DetailToReviseNavigationProp = NativeStackNavigationProp<
-  MainNavigatorParamList,
+  MainStackParamList,
   'Revise'
+>;
+
+export type DetailToPlanNavigationProp = NativeStackNavigationProp<
+  MainStackParamList,
+  'Plan'
+>;
+
+export type PlanToEnrollNavigationProp = NativeStackNavigationProp<
+  MainStackParamList,
+  'PlanEnroll'
 >;
 
 export type MainScreenRouteProp = RouteProp<EnrollStackParamList, 'Main'>;

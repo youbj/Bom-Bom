@@ -219,7 +219,8 @@ const MainScreen = (): JSX.Element => {
       </View>
       <ScrollView
         contentContainerStyle={{flexGrow: 1}}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        style={{marginBottom: 80}}>
         {filteredResult.map((elder, index) => (
           <View
             key={index}

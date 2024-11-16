@@ -9,7 +9,9 @@ const detailStyle = StyleSheet.create({
     borderWidth: 2,
     height: 160,
     width: 128,
-    marginTop: 120,
+    marginTop: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   button: {
     backgroundColor: '#FED7C3',
@@ -18,6 +20,7 @@ const detailStyle = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 10,
     elevation: 1,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 30,
@@ -31,7 +34,6 @@ const detailStyle = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#FED7C3',
     width: '100%',
-    marginTop: 50,
     paddingVertical: 10,
   },
   subContainer: {
