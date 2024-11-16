@@ -58,8 +58,8 @@ class MySQLManager:
                 try:
                     await cursor.execute("""
                         SELECT c.*, COUNT(m.id) as message_count
-                        FROM Conversation c
-                        LEFT JOIN Memory m ON c.conversation_id = m.conversation_id
+                        FROM conversation c
+                        LEFT JOIN memory m ON c.conversation_id = m.conversation_id
                         WHERE c.conversation_id = %s
                         GROUP BY c.conversation_id
                     """, (conversation_id,))
@@ -76,7 +76,7 @@ class MySQLManager:
                 try:
                     await cursor.execute("""
                         SELECT *
-                        FROM Memory
+                        FROM memory
                         WHERE conversation_id = %s
                         ORDER BY id ASC
                     """, (conversation_id,))
@@ -100,7 +100,7 @@ class MySQLManager:
         
         query = """
             SELECT speaker, content, memory_id 
-            FROM Memory 
+            FROM memory 
             WHERE conversation_id = %s 
             ORDER BY id ASC
         """
@@ -129,7 +129,7 @@ class MySQLManager:
             async with conn.cursor() as cursor:
                 try:
                     await cursor.execute("""
-                        INSERT INTO Conversation (memory_id, senior_id, start_date)
+                        INSERT INTO conversation (memory_id, senior_id, start_date)
                         VALUES (%s, %s, NOW())
                     """, (memory_id, senior_id))
                     await conn.commit()
@@ -147,7 +147,7 @@ class MySQLManager:
             async with conn.cursor() as cursor:
                 try:
                     await cursor.execute("""
-                        INSERT INTO Memory (
+                        INSERT INTO memory (
                             memory_id, conversation_id, speaker, content, 
                             summary, positivity_score, keywords, response_plan
                         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -181,11 +181,11 @@ class MySQLManager:
                 try:
                     # 평균 점수 계산 및 종료 시간 업데이트
                     await cursor.execute("""
-                        UPDATE Conversation c
+                        UPDATE conversation c
                         SET end_time = CURTIME(),
                             avg_score = (
                                 SELECT AVG(positivity_score)
-                                FROM Memory
+                                FROM memory
                                 WHERE conversation_id = %s
                             )
                         WHERE conversation_id = %s

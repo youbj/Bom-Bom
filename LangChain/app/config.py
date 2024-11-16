@@ -16,11 +16,11 @@ class KafkaSettings(BaseModel):
 
 class MySQLSettings(BaseModel):
     """MySQL 설정"""
-    host: str = "localhost"
+    host: str = "k11a202.p.ssafy.io"
     port: int = 3306
-    database: str = "elderly_care"
-    user: str = "root"
-    password: str = "1234"
+    database: str = "ssafy"
+    user: str = "ssafy"
+    password: str = "ssafy"
     charset: str = "utf8mb4"
     pool_size: int = 5
 
