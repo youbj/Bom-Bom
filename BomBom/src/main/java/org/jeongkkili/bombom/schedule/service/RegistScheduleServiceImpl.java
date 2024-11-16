@@ -5,6 +5,7 @@ import org.jeongkkili.bombom.member.service.MemberService;
 import org.jeongkkili.bombom.member_senior.service.MemberSeniorService;
 import org.jeongkkili.bombom.schedule.controller.request.RegistScheduleReq;
 import org.jeongkkili.bombom.schedule.domain.Schedule;
+import org.jeongkkili.bombom.schedule.exception.InvalidDateRangeException;
 import org.jeongkkili.bombom.schedule.repository.ScheduleRepository;
 import org.jeongkkili.bombom.senior.domain.Senior;
 import org.jeongkkili.bombom.senior.service.GetSeniorService;
@@ -27,6 +28,9 @@ public class RegistScheduleServiceImpl implements RegistScheduleService {
 
 	@Override
 	public void registSchedule(RegistScheduleReq req, Long memberId) {
+		if(req.getStartAt().isAfter(req.getEndAt())) {
+			throw new InvalidDateRangeException("End dates must be after than start date");
+		}
 		Member member = memberService.getMemberById(memberId);
 		Senior senior = getSeniorService.getSeniorById(req.getSeniorId());
 		memberSeniorService.checkAssociation(member, senior);
