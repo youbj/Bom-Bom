@@ -57,7 +57,7 @@ class MessageCounter:
         """대화 통계 조회"""
         return self._conversations.get(conversation_id)
     
-    def should_end_conversation(self, conversation_id: str, max_messages: int = 16) -> bool:
+    def should_end_conversation(self, conversation_id: str, max_messages: int = 10) -> bool:
         """대화 종료 여부 판단"""
         stats = self.get_stats(conversation_id)
         if not stats:
