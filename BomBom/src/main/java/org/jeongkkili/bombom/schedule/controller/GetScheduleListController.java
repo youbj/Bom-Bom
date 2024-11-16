@@ -6,6 +6,7 @@ import org.jeongkkili.bombom.core.aop.annotation.RequireJwtoken;
 import org.jeongkkili.bombom.core.aop.member.MemberContext;
 import org.jeongkkili.bombom.schedule.service.GetScheduleListService;
 import org.jeongkkili.bombom.schedule.service.dto.ScheduleMonthDto;
+import org.jeongkkili.bombom.schedule.service.dto.ScheduleTodayDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,5 +29,10 @@ public class GetScheduleListController extends ScheduleController {
 	) {
 		Long memberId = MemberContext.getMemberId();
 		return ResponseEntity.ok(getScheduleListService.getMonthlyScheduleList(seniorId, year, month, memberId));
+	}
+
+	@GetMapping("/today")
+	public ResponseEntity<List<ScheduleTodayDto>> getTodayScheduleList(@RequestParam("senior-id") Long seniorId) {
+		return ResponseEntity.ok(getScheduleListService.getTodayScheduleList(seniorId));
 	}
 }
