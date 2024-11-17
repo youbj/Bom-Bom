@@ -19,6 +19,7 @@ export type MainStackParamList = {
   Revise: {detail: DetailInfo};
   Plan: {seniorId: number};
   PlanEnroll: {seniorId: number};
+  FeelingDetail: {seniorId: number};
 };
 
 // 메인 페이지 이후의 StackParamList
@@ -93,6 +94,11 @@ export type DetailToReviseNavigationProp = NativeStackNavigationProp<
 export type DetailToPlanNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
   'Plan'
+>;
+
+export type DetailToFeelingNavigationProp = NativeStackNavigationProp<
+  MainStackParamList,
+  'FeelingDetail'
 >;
 
 export type PlanToEnrollNavigationProp = NativeStackNavigationProp<
