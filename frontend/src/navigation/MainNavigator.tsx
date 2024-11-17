@@ -11,6 +11,7 @@ import Overlay from '../components/Overlay';
 import ReviseScreen from '../screens/ReviseScreen';
 import PlanScreen from '../screens/PlanScreen';
 import PlanEnrollScreen from '../screens/PlanEnrollScreen';
+import FeelingDetailScreen from '../screens/FeelingDetailScreen';
 
 const UserTypeContext = createContext<string | null>(null);
 export const useUserType = () => useContext(UserTypeContext);
@@ -62,6 +63,11 @@ const MainNavigator = (): JSX.Element => {
         <Stack.Screen
           name="Detail"
           component={DetailScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="FeelingDetail"
+          component={FeelingDetailScreen}
           options={{headerShown: false}}
         />
         <Stack.Screen

@@ -1,10 +1,15 @@
-// src/screens/Verify/SocialWorkerApprovalScreen.tsx
 import React, {useEffect, useState} from 'react';
-import {View, Button, FlatList, Alert} from 'react-native';
+import {
+  View,
+  FlatList,
+  Alert,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 import CustomText from '../../../components/CustomText';
-import SocialWorkerStyle from '../../../styles/Float/SocialWorkerStyle';
 import BackButton from '../../../components/BackButton';
-import instance, {localURL} from '../../../api/axios';
+import instance from '../../../api/axios';
+import defaultStyle from '../../../styles/DefaultStyle';
 
 interface Request {
   id: number;
@@ -60,42 +65,106 @@ const SocialWorkerApprovalScreen: React.FC = () => {
   };
 
   const renderRequest = ({item}: {item: Request}) => (
-    <View style={SocialWorkerStyle.requestItem}>
-      <View style={SocialWorkerStyle.textContainer}>
-        <CustomText style={SocialWorkerStyle.name}>
-          {item.seniorName} / {item.seniorAge} / {item.seniorPhoneNumber}
+    <View style={styles.card}>
+      <View style={styles.textContainer}>
+        <CustomText style={styles.seniorInfo}>
+          {item.seniorName} ({item.seniorAge}세) {item.seniorPhoneNumber}
         </CustomText>
-        <CustomText style={SocialWorkerStyle.info}>
-          {item.familyName} / {item.familyPhoneNumber}
+        <CustomText style={styles.familyInfo}>
+          보호자 : {item.familyName} {item.familyPhoneNumber}
         </CustomText>
       </View>
-      <View style={SocialWorkerStyle.buttonContainer}>
-        <Button
-          title="승인"
-          onPress={() => handleApprove(item.id)}
-          color="#4CAF50"
-        />
-        <Button
-          title="거절"
-          onPress={() => handleReject(item.id)}
-          color="#FF8A80"
-        />
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.button, styles.approveButton]}
+          onPress={() => handleApprove(item.id)}>
+          <CustomText style={styles.buttonText}>승인</CustomText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.rejectButton]}
+          onPress={() => handleReject(item.id)}>
+          <CustomText style={styles.buttonText}>거절</CustomText>
+        </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <View style={SocialWorkerStyle.container}>
+    <View style={defaultStyle.container}>
       <BackButton />
-      <CustomText style={SocialWorkerStyle.title}>인원 목록</CustomText>
+      <CustomText style={styles.title}>승인 요청 목록</CustomText>
       <FlatList
         data={requests}
         renderItem={renderRequest}
         keyExtractor={item => item.id.toString()}
-        contentContainerStyle={SocialWorkerStyle.listContainer}
+        contentContainerStyle={styles.listContainer}
       />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  title: {
+    fontSize: 25,
+    fontWeight: '600',
+    marginBottom: 16,
+    marginTop: 50,
+  },
+  listContainer: {
+    paddingBottom: 20,
+    paddingHorizontal: 10,
+  },
+  card: {
+    backgroundColor: '#FED7C3',
+    borderRadius: 10,
+    padding: 16,
+    marginVertical: 8,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  textContainer: {
+    marginBottom: 16,
+  },
+  seniorInfo: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 5,
+    paddingLeft: 5,
+  },
+  familyInfo: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 10,
+    paddingLeft: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    gap: 50,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 5, // 버튼 사이 여백 조정
+  },
+  approveButton: {
+    backgroundColor: '#A8D98A',
+  },
+  rejectButton: {
+    backgroundColor: '#FF8A80',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+});
 
 export default SocialWorkerApprovalScreen;

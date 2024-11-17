@@ -25,7 +25,6 @@ const FamilyVerifyRequestScreen: React.FC = () => {
         seniorName,
         seniorPhoneNumber,
       });
-      console.log(response);
 
       if (response.status === 200) {
         Alert.alert('사회복지사에게 인증 요청을 보냈습니다.');
@@ -63,7 +62,9 @@ const FamilyVerifyRequestScreen: React.FC = () => {
         />
       </View>
 
-      <TouchableOpacity style={FamilyStyle.button}>
+      <TouchableOpacity
+        style={FamilyStyle.button}
+        onPress={handleSubmitRequest}>
         <CustomText style={{fontWeight: '600', fontSize: 16, color: '#fff'}}>
           승인 요청 보내기
         </CustomText>

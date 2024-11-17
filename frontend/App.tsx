@@ -1,13 +1,14 @@
-import React, { useEffect } from 'react';
-import { Alert, Platform, PermissionsAndroid } from 'react-native';
+import 'react-native-reanimated';
+import React, {useEffect} from 'react';
+import {Alert, Platform, PermissionsAndroid} from 'react-native';
 import messaging from '@react-native-firebase/messaging';
-import { NavigationContainer } from '@react-navigation/native';
+import {NavigationContainer} from '@react-navigation/native';
 import AuthNavigator from './src/navigation/AuthNavigator';
 import MainNavigator from './src/navigation/MainNavigator';
 import useAuthStore from './src/stores/useAuthStore';
 
 const App = (): JSX.Element => {
-  const { isLoggedIn } = useAuthStore();
+  const {isLoggedIn} = useAuthStore();
 
   // 알림 권한 요청 함수
   const requestNotificationPermission = async () => {
