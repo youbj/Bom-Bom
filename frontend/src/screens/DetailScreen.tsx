@@ -17,6 +17,7 @@ import {
   DetailToReviseNavigationProp,
   DetailToPlanNavigationProp,
   MainStackParamList,
+  DetailToFeelingNavigationProp,
 } from '../../types/navigation.d';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import DonutChart from '../components/DonutChart';
@@ -37,6 +38,7 @@ export interface DetailInfo {
     memberName: string;
     memberPhoneNumber: string;
   }>;
+  todayEmotion: number;
 }
 
 const DetailScreen = (): JSX.Element => {
@@ -50,15 +52,16 @@ const DetailScreen = (): JSX.Element => {
     age: 0,
     birth: '',
     familyList: [],
+    todayEmotion: 0,
   });
   const [type, setType] = useState<string>('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [isImageSelected, setIsImageSelected] = useState<boolean>(false);
   const route = useRoute<DetailScreenRouteProp>();
   const {seniorId} = route.params;
-  const progress = 76;
   const reviseNavigation = useNavigation<DetailToReviseNavigationProp>();
   const planNavigation = useNavigation<DetailToPlanNavigationProp>();
+  const feelingNavigation = useNavigation<DetailToFeelingNavigationProp>();
 
   const fetchType = async () => {
     try {
@@ -77,6 +80,7 @@ const DetailScreen = (): JSX.Element => {
       });
       const data = response.data;
       if (response.status === 200) {
+        console.log(data);
         setDetail(data);
         setImageUri(data.profileImgUrl);
       }
@@ -152,6 +156,10 @@ const DetailScreen = (): JSX.Element => {
     planNavigation.navigate('Plan', {seniorId});
   };
 
+  const onFeeling = () => {
+    feelingNavigation.navigate('FeelingDetail', {seniorId});
+  };
+
   return (
     <View
       style={[
@@ -203,7 +211,7 @@ const DetailScreen = (): JSX.Element => {
       <View style={{flex: 2, position: 'relative'}}>
         <View style={detailStyle.bottomContainer}>
           <View style={detailStyle.subContainer}>
-            <DonutChart progress={progress} />
+            <DonutChart progress={detail.todayEmotion} />
             <CustomText style={detailStyle.graphTitle}>
               오늘의 행복지수
             </CustomText>
@@ -212,7 +220,8 @@ const DetailScreen = (): JSX.Element => {
                 style={StyleSheet.flatten([
                   detailStyle.graphTitle,
                   {color: '#FF6F61', marginTop: 5},
-                ])}>
+                ])}
+                onPress={onFeeling}>
                 전체 행복지수 보기 <Icon name="heart" size={20} />
               </CustomText>
             </TouchableOpacity>
