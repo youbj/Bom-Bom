@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {View, Image, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Image, TouchableOpacity} from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import instance from '../api/axios';
 import BackButton from '../components/BackButton';
@@ -57,7 +57,8 @@ const DetailScreen = (): JSX.Element => {
   });
 
   const [type, setType] = useState<string>('');
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [currentImageUri, setCurrentImageUri] = useState<string | null>(null);
+  const [newImageUri, setNewImageUri] = useState<string | null>(null);
 
   const [alertState, setAlertState] = useState({
     visible: false,
@@ -90,7 +91,7 @@ const DetailScreen = (): JSX.Element => {
         params: {'senior-id': seniorId},
       });
       setDetail(response.data);
-      setImageUri(response.data.profileImgUrl);
+      setCurrentImageUri(response.data.profileImgUrl);
     } catch (error) {
       showAlert('오류', '어르신 정보 불러오기에 실패했습니다.');
       console.error('Detail fetch error:', error);
@@ -100,7 +101,7 @@ const DetailScreen = (): JSX.Element => {
   const showImagePicker = () => {
     launchImageLibrary({mediaType: 'photo'}, res => {
       if (res.assets?.[0]?.uri) {
-        setImageUri(res.assets[0].uri);
+        setNewImageUri(res.assets[0].uri);
         showAlert('이미지', '이미지 선택이 완료되었습니다.');
       } else {
         showAlert('이미지', '이미지 선택이 취소되었습니다.');
@@ -109,11 +110,11 @@ const DetailScreen = (): JSX.Element => {
   };
 
   const saveImage = async () => {
-    if (!imageUri) return;
+    if (!newImageUri) return;
 
     const formdata = new FormData();
     formdata.append('profileImg', {
-      uri: imageUri,
+      uri: newImageUri,
       name: 'profile.jpg',
       type: 'image/jpeg',
     });
@@ -124,6 +125,8 @@ const DetailScreen = (): JSX.Element => {
         headers: {'Content-Type': 'multipart/form-data'},
       });
       showAlert('성공', '이미지가 성공적으로 저장되었습니다.');
+      setCurrentImageUri(newImageUri);
+      setNewImageUri(null); // 새 이미지 초기화
     } catch (error) {
       showAlert('오류', '이미지 저장에 실패했습니다.');
       console.error('Image save error:', error);
@@ -148,19 +151,19 @@ const DetailScreen = (): JSX.Element => {
 
       <View style={{flex: 3, alignItems: 'center'}}>
         <View style={detailStyle.picture}>
-          {imageUri && (
+          {currentImageUri && (
             <Image
-              source={{uri: imageUri}}
+              source={{uri: currentImageUri}}
               style={{width: '100%', height: '100%'}}
             />
           )}
         </View>
         {type === 'SOCIAL_WORKER' ? (
           <TouchableOpacity
-            onPress={imageUri ? saveImage : showImagePicker}
+            onPress={newImageUri ? saveImage : showImagePicker}
             style={detailStyle.button}>
             <CustomText style={{fontWeight: '600'}}>
-              {imageUri ? '저장' : '이미지 업로드'}
+              {newImageUri ? '저장' : '이미지 업로드'}
             </CustomText>
           </TouchableOpacity>
         ) : (
