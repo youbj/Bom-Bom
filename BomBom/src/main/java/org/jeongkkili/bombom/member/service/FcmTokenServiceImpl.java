@@ -20,10 +20,13 @@ public class FcmTokenServiceImpl implements FcmTokenService {
 
 	@Override
 	public void saveOrUpdateFcmToken(Long memberId, String fcmToken) {
-		MemberFcmToken existingToken = fcmTokenRepository.findByMemberId(memberId);
-
-		if (existingToken != null) {
-			existingToken.updateFcmToken(fcmToken);
+		MemberFcmToken existingMemberToken = fcmTokenRepository.findByMemberId(memberId);
+		MemberFcmToken existingToken = fcmTokenRepository.findByFcmToken(fcmToken);
+		if(existingToken != null) {
+			fcmTokenRepository.delete(existingToken);
+		}
+		if (existingMemberToken != null) {
+			existingMemberToken.updateFcmToken(fcmToken);
 		} else {
 			Member member = memberService.getMemberById(memberId);
 			MemberFcmToken newToken = MemberFcmToken.builder()
