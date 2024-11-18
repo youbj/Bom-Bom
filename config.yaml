@@ -1,0 +1,241 @@
+# # GPU config
+# GPU : 
+#   cuda: False
+#   gpu_ids: [0]  # set the GPU ids to use, e.g. [0] or [1, 2]
+
+# # SVL parameters
+# SVL : 
+#   dataset :   
+#     dataset_path: ./csi_dataset/domain_A
+#     activity_labels: ['empty', 'sit', 'stand', 'walk', 'fall']
+#     window_size: 10
+#     bandwidth: 20MHz
+#     train_proportion: 0.8
+
+#   train : 
+#     epoch: 70 
+#     batch_size: 1
+#     lr: 0.0001
+#     step_size : 10
+#     gamma : 0.9
+#     save_path: ./checkpoint/svl_vit
+
+#   test : 
+#     save_model_path: ./checkpoint/svl_vit/svl_best_model.pt
+  
+#   preprocessing:
+#     sliding_window_size: 3
+#     remove_outliers: true
+#     normalize: true
+#     smooth_signal: true
+    
+#   augmentation:
+#     noise_std: 0.01
+#     shift_range: [-2, 2]
+#     scale_range: [0.9, 1.1]
+#     noise_prob: 0.5
+#     shift_prob: 0.5
+#     scale_prob: 0.5
+
+# # FSL parameters
+# FSL :
+#   dataset : 
+#     train_dataset_path: ./csi_dataset/domain_A
+#     test_dataset_path: ./csi_dataset/domain_B
+#     support_dataset_path: ./csi_dataset/realtime
+#     train_activity_labels: ['empty', 'sit', 'stand', 'walk']
+#     test_activity_labels: ['empty', 'sit', 'stand', 'walk', 'fall']
+#     window_size: 10
+#     bandwidth: 20MHz
+    
+#   train : 
+#     epoch: 50
+#     epoch_size: 500
+#     lr: 0.0001 
+#     step_size : 10
+#     gamma : 0.9
+
+#     n_way : 4
+#     n_support :  30
+#     n_query :  10
+#     save_path: ./checkpoint/few_vit
+
+#   test : 
+#     epoch_size: 1
+
+#     n_way : 5
+#     n_support :  30
+#     n_query :  15
+#     save_model_path: ./checkpoint/few_vit/fsl_best_model.pt
+
+# # Model parameters
+# # model : 
+# #   ViT :
+# #     in_channels: 1
+# #     # patch_size: 4
+# #     patch_size: 10 # new
+# #     # embed_dim: 72
+# #     embed_dim: 60 # new
+# #     num_layers: 6
+# #     num_heads: 6
+# #     # mlp_dim: 144
+# #     mlp_dim: 128 #new
+# model : 
+#   ViT :
+#     in_channels: 1
+#     patch_size: 5
+#     embed_dim: 36
+#     num_layers: 8
+#     num_heads: 9
+#     mlp_dim: 32
+
+# # number of subcarriers information
+# subcarrier : 
+#   20MHz: 64
+#   # 20MHz: 52
+#   40MHz: 128
+#   80MHz: 256
+#   160MHz: 512
+
+# application :
+#   # Server
+#   server : 
+#     ip: '172.16.231.242'
+#     port: 1111
+
+#   # Client
+#   client  :
+#     mac : '4e45584d4f4e'
+#     window_size: 20
+#     bandwidth : 20MHz
+#     activity_labels: ['empty', 'sit', 'stand', 'walk', 'fall']
+
+#   model : 
+#     ViT :
+#       in_channels: 1
+#       patch_size: 5
+#       embed_dim: 36
+#       num_layers: 8
+#       num_heads: 9
+#       mlp_dim: 32
+
+#   # model : 
+#   #   ViT :
+#   #     in_channels: 1
+#   #     # patch_size: 4
+#   #     patch_size: 10 # new
+#   #     # embed_dim: 72
+#   #     embed_dim: 60 # new
+#   #     num_layers: 6
+#   #     num_heads: 6
+#   #     # mlp_dim: 144
+#   #     mlp_dim: 128 #new
+
+#   SVL : 
+#     # save_model_path: ./model/svl_best_model_old.pt
+#     save_model_path: ./model/save_model_best_lstm.pth
+
+#   FSL : 
+#     save_model_path : ./model/fsl_best_model.pt
+
+
+# GPU config
+GPU : 
+  cuda: false
+  gpu_ids: [0]  # set the GPU ids to use, e.g. [0] or [1, 2]
+
+# SVL parameters
+SVL : 
+  dataset : 
+    dataset_path: ./csi_dataset/domain_A
+    activity_labels: ['empty', 'sit', 'stand', 'walk', 'fall']
+    window_size: 50
+    bandwidth: 20MHz
+    train_proportion: 0.8
+
+  train : 
+    epoch: 50
+    batch_size: 1
+    lr: 0.001 
+    step_size : 10
+    gamma : 0.9
+    save_path: ./checkpoint/svl_vit
+
+  test : 
+    save_model_path: ./checkpoint/svl_vit/svl_best_model.pt
+
+# FSL parameters
+FSL :
+  dataset : 
+    train_dataset_path: ./csi_dataset/domain_A
+    test_dataset_path: ./csi_dataset/realtime
+    support_dataset_path: ./csi_dataset/realtime
+    train_activity_labels: ['empty', 'sit', 'stand', 'walk']
+    test_activity_labels: ['empty', 'sit', 'stand', 'walk', 'fall']
+    window_size: 10
+    bandwidth: 20MHz
+    
+  train : 
+    epoch: 50
+    epoch_size: 500
+    lr: 0.0001 
+    step_size : 10
+    gamma : 0.9
+
+    n_way : 4
+    n_support :  30
+    n_query :  10
+    save_path: ./checkpoint/few_vit
+
+  test : 
+    epoch_size: 1
+
+    n_way : 5
+    n_support :  30
+    n_query :  15
+    save_model_path: ./checkpoint/few_vit/fsl_best_model.pt
+
+# Model parameters
+model : 
+  ViT :
+    in_channels: 1
+    patch_size: 5
+    embed_dim: 36
+    num_layers: 8
+    num_heads: 9
+    mlp_dim: 32
+
+# number of subcarriers information
+subcarrier : 
+  20MHz: 64
+  40MHz: 128
+  80MHz: 256
+  160MHz: 512
+
+application :
+  # Server
+  server : 
+    ip: 'xxx.xxx.xxx.xxx'
+    port: 1111
+
+  # Client
+  client  :
+    mac : 'b4b024d555e7'
+    window_size: 50
+    bandwidth : 20MHz
+    activity_labels: ['empty', 'sit', 'stand', 'walk', 'fall']
+  
+  model : 
+    ViT :
+      in_channels: 1
+      patch_size: 5
+      embed_dim: 36
+      num_layers: 8
+      num_heads: 9
+      mlp_dim: 32
+
+  SVL : 
+    save_model_path: ./model/svl_best_model_11181624.pt
+
+  FSL : 
+    save_model_path : ./model/fsl_best_model_new_wifi.pt
