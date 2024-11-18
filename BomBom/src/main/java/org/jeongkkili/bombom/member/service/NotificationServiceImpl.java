@@ -26,4 +26,11 @@ public class NotificationServiceImpl implements NotificationService {
 		MemberFcmToken fcmToken = memberFcmTokenRepository.findByMemberId(memberId);
 		firebaseService.sendNotification(fcmToken.getFcmToken(), title, message, screen);
 	}
+
+	@Override
+	public void notifyUser(Long memberId, String title, String message, String screen, String seniorId) {
+		Member member = memberService.getMemberById(memberId);
+		MemberFcmToken fcmToken = memberFcmTokenRepository.findByMemberId(memberId);
+		firebaseService.sendNotification(fcmToken.getFcmToken(), title, message, screen, seniorId);
+	}
 }

@@ -87,12 +87,13 @@ public class Senior {
 	private List<Conversation> conversations = new ArrayList<>();
 
 	@Builder
-	public Senior(String name, String phoneNumber, String address, Gender gender, Date birth) {
+	public Senior(String name, String phoneNumber, String address, Gender gender, Date birth, String profileImg) {
 		this.name = name;
 		this.phoneNumber = phoneNumber;
 		this.address = address;
 		this.gender = gender;
 		this.birth = birth;
+		this.profileImg = profileImg;
 	}
 
 	public void updateInfo(String name, String phoneNumber, String address, Gender gender, Date birth) {

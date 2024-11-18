@@ -27,7 +27,7 @@ public class FallDetectServiceImpl implements FallDetectService {
 		Senior senior = getSeniorService.getSeniorById(seniorId);
 		List<Member> members = memberSeniorService.getMembersBySenior(senior);
 		for (Member member : members) {
-			notificationService.notifyUser(member.getId(), "낙상 감지", senior.getName() + "님의 낙상이 감지되었습니다.", "DetailScreen");
+			notificationService.notifyUser(member.getId(), "낙상 감지", senior.getName() + "님의 낙상이 감지되었습니다.", "DetailScreen", seniorId.toString());
 		}
 	}
 }

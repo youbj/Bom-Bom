@@ -31,4 +31,24 @@ public class FirebaseServiceImpl implements FirebaseService {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public void sendNotification(String token, String title, String body, String screen, String seniorId) {
+		Message message = Message.builder()
+			.setToken(token)
+			.setNotification(Notification.builder()
+				.setTitle(title)
+				.setBody(body)
+				.build())
+			.putData("screen", screen)
+			.putData("senior-id", seniorId)
+			.build();
+
+		try {
+			String response = FirebaseMessaging.getInstance().send(message);
+			// System.out.println("Successfully sent message: " + response);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
