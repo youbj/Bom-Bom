@@ -115,6 +115,7 @@ const FeelingDetailScreen = () => {
       <FlatList
         data={filteredList}
         keyExtractor={(item, index) => index.toString()}
+        showsVerticalScrollIndicator={false}
         renderItem={({item, index}) => (
           <View style={FeelingDetailStyle.listRow}>
             <View style={FeelingDetailStyle.leftContainer}>
