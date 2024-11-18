@@ -14,13 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FirebaseServiceImpl implements FirebaseService {
 
-	public void sendNotification(String token, String title, String body) {
+	public void sendNotification(String token, String title, String body, String screen) {
 		Message message = Message.builder()
 			.setToken(token)
 			.setNotification(Notification.builder()
 				.setTitle(title)
 				.setBody(body)
 				.build())
+			.putData("screen", screen)
 			.build();
 
 		try {
