@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {View, ScrollView, TouchableOpacity, Alert} from 'react-native';
+import {View, ScrollView, TouchableOpacity, Dimensions} from 'react-native';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import CustomText from '../components/CustomText';
@@ -14,7 +14,7 @@ import {
 } from '../../types/navigation.d';
 import instance from '../api/axios';
 import LogoutButton from '../components/LogoutButton';
-import {Dimensions} from 'react-native';
+import CustomAlert from '../components/CustomAlert';
 
 type Elder = {
   index: number;
@@ -37,10 +37,32 @@ const MainScreen = (): JSX.Element => {
   const [markedForDeletion, setMarkedForDeletion] = useState<Set<number>>(
     new Set(),
   );
+
+  const [alertState, setAlertState] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => setAlertState(prev => ({...prev, visible: false})),
+  });
+
   const screenWidth = Dimensions.get('window').width;
 
   const enrollNavigation = useNavigation<MainToEnrollNavigationProp>();
   const detailNavigation = useNavigation<MainToDetailNavigationProp>();
+
+  const showAlert = (
+    title: string,
+    message: string,
+    onConfirm?: () => void,
+  ) => {
+    setAlertState({
+      visible: true,
+      title,
+      message,
+      onConfirm:
+        onConfirm || (() => setAlertState(prev => ({...prev, visible: false}))),
+    });
+  };
 
   const onPressEnroll = () => enrollNavigation.navigate('Enroll');
 
@@ -63,7 +85,6 @@ const MainScreen = (): JSX.Element => {
 
   const saveDeletions = async () => {
     try {
-      // 각 seniorId에 대해 delete 요청을 보냄
       await Promise.all(
         Array.from(markedForDeletion).map(seniorId =>
           instance.delete(`/seniors/delete?senior-id=${seniorId}`),
@@ -71,12 +92,11 @@ const MainScreen = (): JSX.Element => {
       );
       setDeleteMode(false);
       setMarkedForDeletion(new Set());
-      Alert.alert('삭제 완료', '선택한 항목이 삭제되었습니다.');
-
-      // 삭제 완료 후 최신 데이터를 다시 조회
-      fetchElderList();
+      showAlert('삭제 완료', '선택한 항목이 삭제되었습니다.', () =>
+        fetchElderList(),
+      );
     } catch (error) {
-      Alert.alert('삭제 실패', '항목을 삭제하는 데 실패했습니다.');
+      showAlert('삭제 실패', '항목을 삭제하는 데 실패했습니다.');
       console.error('삭제 오류:', error);
     }
   };
@@ -87,7 +107,7 @@ const MainScreen = (): JSX.Element => {
       setElderList(response.data);
       setFilteredResult(response.data);
     } catch (error) {
-      Alert.alert('데이터를 불러오는 데 실패했습니다.');
+      showAlert('오류', '데이터를 불러오는 데 실패했습니다.');
     }
   };
 
@@ -280,6 +300,17 @@ const MainScreen = (): JSX.Element => {
           </View>
         )}
       </ScrollView>
+      {/* CustomAlert 추가 */}
+      <CustomAlert
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        onClose={() => {
+          alertState.onConfirm();
+          setAlertState(prev => ({...prev, visible: false})); // 모달 닫기
+        }}
+      />
+      ;
     </View>
   );
 };

@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {View, Alert, Image, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Image, TouchableOpacity, StyleSheet} from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import instance from '../api/axios';
 import BackButton from '../components/BackButton';
@@ -22,6 +22,7 @@ import {
 import EncryptedStorage from 'react-native-encrypted-storage';
 import DonutChart from '../components/DonutChart';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import CustomAlert from '../components/CustomAlert';
 
 type DetailScreenRouteProp = RouteProp<MainStackParamList, 'Detail'>;
 
@@ -54,20 +55,30 @@ const DetailScreen = (): JSX.Element => {
     familyList: [],
     todayEmotion: 0,
   });
+
   const [type, setType] = useState<string>('');
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [isImageSelected, setIsImageSelected] = useState<boolean>(false);
+
+  const [alertState, setAlertState] = useState({
+    visible: false,
+    title: '',
+    message: '',
+  });
+
   const route = useRoute<DetailScreenRouteProp>();
   const {seniorId} = route.params;
   const reviseNavigation = useNavigation<DetailToReviseNavigationProp>();
   const planNavigation = useNavigation<DetailToPlanNavigationProp>();
   const feelingNavigation = useNavigation<DetailToFeelingNavigationProp>();
 
+  const showAlert = (title: string, message: string) => {
+    setAlertState({visible: true, title, message});
+  };
+
   const fetchType = async () => {
     try {
       const session = await EncryptedStorage.getItem('user_session');
-      const storedType = session ? JSON.parse(session).type : '';
-      setType(storedType);
+      setType(session ? JSON.parse(session).type : '');
     } catch (error) {
       console.error('type 가져오기 오류:', error);
     }
@@ -78,33 +89,21 @@ const DetailScreen = (): JSX.Element => {
       const response = await instance.get(`/seniors/detail`, {
         params: {'senior-id': seniorId},
       });
-      const data = response.data;
-      if (response.status === 200) {
-        console.log(data);
-        setDetail(data);
-        setImageUri(data.profileImgUrl);
-      }
-    } catch {
-      Alert.alert('어르신 정보 불러오기에 실패했습니다.');
+      setDetail(response.data);
+      setImageUri(response.data.profileImgUrl);
+    } catch (error) {
+      showAlert('오류', '어르신 정보 불러오기에 실패했습니다.');
+      console.error('Detail fetch error:', error);
     }
   };
 
-  const ShowPicker = () => {
-    const options = {
-      mediaType: 'photo' as const,
-    };
-
-    launchImageLibrary(options, res => {
-      if (res.assets && res.assets[0]) {
-        const uri = res.assets[0].uri ?? '';
-        console.log(uri);
-        Alert.alert('이미지', '선택 완료');
-
-        // 이미지 URI를 상태에 반영
-        setImageUri(uri);
-        setIsImageSelected(true); // 이미지가 선택되었음을 표시
+  const showImagePicker = () => {
+    launchImageLibrary({mediaType: 'photo'}, res => {
+      if (res.assets?.[0]?.uri) {
+        setImageUri(res.assets[0].uri);
+        showAlert('이미지', '이미지 선택이 완료되었습니다.');
       } else {
-        Alert.alert('이미지 선택이 취소되었습니다.');
+        showAlert('이미지', '이미지 선택이 취소되었습니다.');
       }
     });
   };
@@ -113,36 +112,22 @@ const DetailScreen = (): JSX.Element => {
     if (!imageUri) return;
 
     const formdata = new FormData();
-
-    // 이미지 파일 추가
     formdata.append('profileImg', {
       uri: imageUri,
-      name: 'abc.jpg',
+      name: 'profile.jpg',
       type: 'image/jpeg',
     });
-
-    // Add the senior ID as additional form data
-    formdata.append('senior-id', JSON.stringify(seniorId)); // Stringify if JSON format is needed
+    formdata.append('senior-id', JSON.stringify(seniorId));
 
     try {
-      const uploadResponse = await instance.post(`/seniors/profile`, formdata, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      await instance.post(`/seniors/profile`, formdata, {
+        headers: {'Content-Type': 'multipart/form-data'},
       });
-
-      if (uploadResponse.status === 200) {
-        Alert.alert('이미지 저장 성공');
-        setIsImageSelected(false);
-      }
+      showAlert('성공', '이미지가 성공적으로 저장되었습니다.');
     } catch (error) {
-      Alert.alert('이미지 저장에 실패했습니다.');
-      console.error(error);
+      showAlert('오류', '이미지 저장에 실패했습니다.');
+      console.error('Image save error:', error);
     }
-  };
-
-  const onRevise = () => {
-    reviseNavigation.navigate('Revise', {detail});
   };
 
   useFocusEffect(
@@ -151,14 +136,6 @@ const DetailScreen = (): JSX.Element => {
       fetchDetailList();
     }, []),
   );
-
-  const onPlan = () => {
-    planNavigation.navigate('Plan', {seniorId});
-  };
-
-  const onFeeling = () => {
-    feelingNavigation.navigate('FeelingDetail', {seniorId});
-  };
 
   return (
     <View
@@ -180,16 +157,19 @@ const DetailScreen = (): JSX.Element => {
         </View>
         {type === 'SOCIAL_WORKER' ? (
           <TouchableOpacity
-            onPress={isImageSelected ? saveImage : ShowPicker}
+            onPress={imageUri ? saveImage : showImagePicker}
             style={detailStyle.button}>
             <CustomText style={{fontWeight: '600'}}>
-              {isImageSelected ? '저장' : '이미지 업로드'}
+              {imageUri ? '저장' : '이미지 업로드'}
             </CustomText>
           </TouchableOpacity>
         ) : (
-          <View style={{marginTop: 20, marginBottom: 5}}>
-            <Icon name="heart" color="red" size={40} />
-          </View>
+          <Icon
+            name="heart"
+            color="red"
+            size={40}
+            style={{marginVertical: 20}}
+          />
         )}
 
         <View
@@ -199,13 +179,14 @@ const DetailScreen = (): JSX.Element => {
             alignItems: 'center',
           }}>
           <CustomText style={detailStyle.title}>{detail.name}</CustomText>
-          <TouchableOpacity onPress={onRevise}>
+          <TouchableOpacity
+            onPress={() => reviseNavigation.navigate('Revise', {detail})}>
             <Icon name="eraser" color="black" size={30} />
           </TouchableOpacity>
         </View>
-        <CustomText>
-          {detail.age}세 / {detail.gender === 'MALE' ? '남' : '여'}
-        </CustomText>
+        <CustomText>{`${detail.age}세 / ${
+          detail.gender === 'MALE' ? '남' : '여'
+        }`}</CustomText>
       </View>
 
       <View style={{flex: 2, position: 'relative'}}>
@@ -215,13 +196,15 @@ const DetailScreen = (): JSX.Element => {
             <CustomText style={detailStyle.graphTitle}>
               오늘의 행복지수
             </CustomText>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() =>
+                feelingNavigation.navigate('FeelingDetail', {seniorId})
+              }>
               <CustomText
-                style={StyleSheet.flatten([
+                style={[
                   detailStyle.graphTitle,
                   {color: '#FF6F61', marginTop: 5},
-                ])}
-                onPress={onFeeling}>
+                ]}>
                 전체 행복지수 보기 <Icon name="heart" size={20} />
               </CustomText>
             </TouchableOpacity>
@@ -238,21 +221,28 @@ const DetailScreen = (): JSX.Element => {
             <View style={[detailStyle.info, {borderBottomWidth: 0}]}>
               <CustomText style={detailStyle.subTitle}>가족</CustomText>
               {detail.familyList.map((member, index) => (
-                <CustomText key={index}>
-                  {member.memberName} {member.memberPhoneNumber}
-                </CustomText>
+                <CustomText
+                  key={
+                    index
+                  }>{`${member.memberName} ${member.memberPhoneNumber}`}</CustomText>
               ))}
             </View>
           </View>
 
-          {/* 아이콘을 오른쪽 위에 위치시키는 버튼 */}
           <TouchableOpacity
-            onPress={onPlan}
+            onPress={() => planNavigation.navigate('Plan', {seniorId})}
             style={{position: 'absolute', top: 10, right: 10}}>
             <Icon name="calendar" size={30} color="#000" />
           </TouchableOpacity>
         </View>
       </View>
+
+      <CustomAlert
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        onClose={() => setAlertState({...alertState, visible: false})}
+      />
     </View>
   );
 };

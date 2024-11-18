@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, TouchableOpacity, Alert} from 'react-native';
+import {View, TouchableOpacity} from 'react-native';
 import CustomText from '../components/CustomText';
 import CustomTextInput from '../components/CustomTextInput';
 import defaultStyle from '../styles/DefaultStyle';
@@ -10,6 +10,7 @@ import {useRoute, RouteProp, useNavigation} from '@react-navigation/native';
 import {MainStackParamList} from '../../types/navigation.d';
 import instance from '../api/axios';
 import {renderDateTimeInput} from '../utils/RenderDateTimeInput';
+import CustomAlert from '../components/CustomAlert';
 
 type PlanEnrollScreenRouteProp = RouteProp<MainStackParamList, 'PlanEnroll'>;
 
@@ -24,12 +25,34 @@ const PlanEnrollScreen = () => {
   const [endTime, setEndTime] = useState('');
   const [memo, setMemo] = useState('');
 
+  // CustomAlert 상태 관리
+  const [alertState, setAlertState] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => setAlertState(prev => ({...prev, visible: false})),
+  });
+
+  const showAlert = (
+    title: string,
+    message: string,
+    onConfirm?: () => void,
+  ) => {
+    setAlertState({
+      visible: true,
+      title,
+      message,
+      onConfirm:
+        onConfirm || (() => setAlertState(prev => ({...prev, visible: false}))),
+    });
+  };
+
   const combineTime = (date: string, time: string): string =>
     `${date}T${time}:00`;
 
   const handleSave = async () => {
     if (!startDate || !startTime || !memo) {
-      Alert.alert('입력 오류', '시작 일정, 시간, 메모는 필수 입력 사항입니다.');
+      showAlert('입력 오류', '시작 일정, 시간, 메모는 필수 입력 사항입니다.');
       return;
     }
 
@@ -52,12 +75,13 @@ const PlanEnrollScreen = () => {
     try {
       const response = await instance.post('/schedule/regist', requestData);
       if (response.status === 200) {
-        Alert.alert('성공', '일정이 성공적으로 등록되었습니다.');
-        navigation.goBack();
+        showAlert('성공', '일정이 성공적으로 등록되었습니다.', () =>
+          navigation.goBack(),
+        );
       }
     } catch (error) {
       console.error('Error saving schedule:', error);
-      Alert.alert('오류', '일정을 저장하는 중 오류가 발생했습니다.');
+      showAlert('오류', '일정을 저장하는 중 오류가 발생했습니다.');
     }
   };
 
@@ -100,6 +124,14 @@ const PlanEnrollScreen = () => {
           <CustomText style={PlanEnrollStyle.buttonText}>저장</CustomText>
         </TouchableOpacity>
       </View>
+
+      {/* CustomAlert 추가 */}
+      <CustomAlert
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        onClose={alertState.onConfirm}
+      />
     </View>
   );
 };

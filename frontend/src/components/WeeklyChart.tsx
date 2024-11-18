@@ -37,7 +37,7 @@ const WeeklyChart = ({rawData}: WeeklyChartProps): JSX.Element => {
 
   // BarChart에 맞는 데이터로 변환
   const chartData = rawData.map((value, index) => ({
-    value: value !== null ? value : 0, // null을 0으로 처리
+    value: value !== null ? Math.round(value) : 0, // null을 0으로 처리
     label: last7Days[index], // 날짜를 라벨로 설정
     frontColor: calculateColor(value), // 색상 계산 결과 적용
     barBorderRadius: value !== null && value > 0 ? 10 : 0, // 윗부분만 둥글게

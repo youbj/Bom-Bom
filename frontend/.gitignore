@@ -78,3 +78,6 @@ yarn-error.log
 # google-services.json
 android/app/google-services.json
 android/app/src/main/assets/index.android.bundle
+
+# Keystore file
+android/app/release-key.keystore

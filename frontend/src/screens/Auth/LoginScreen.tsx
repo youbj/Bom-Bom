@@ -1,10 +1,8 @@
-// LoginScreen.tsx
 import React, {useState} from 'react';
 import {
   View,
   Image,
   TouchableOpacity,
-  Alert,
   Platform,
   PermissionsAndroid,
 } from 'react-native';
@@ -21,6 +19,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import instance, {localURL} from '../../api/axios';
 import messaging from '@react-native-firebase/messaging';
 import useAuthStore from '../../stores/useAuthStore';
+import CustomAlert from '../../components/CustomAlert';
 
 const LoginScreen = (): JSX.Element => {
   const setIsLoggedIn = useAuthStore(state => state.setIsLoggedIn);
@@ -29,11 +28,23 @@ const LoginScreen = (): JSX.Element => {
   const [password, setPassword] = useState<string>('');
   const navigation = useNavigation<LoginScreenNavigationProp>();
 
+  // CustomAlert 상태 관리
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertOnClose, setAlertOnClose] = useState<() => void>(() => {});
+
+  const showAlert = (title: string, message: string, onClose?: () => void) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+    setAlertOnClose(() => onClose || (() => setAlertVisible(false)));
+  };
+
   const onPressJoin = () => {
     navigation.navigate('Join');
   };
 
-  // EncryptedStorage에 accessToken과 type 저장
   const storeDataInEncryptedStorage = async (
     accessToken: string,
     type: string,
@@ -52,7 +63,6 @@ const LoginScreen = (): JSX.Element => {
     }
   };
 
-  // 쿠키에 refreshToken 저장
   const storeRefreshTokenInCookie = async (refreshToken: string) => {
     try {
       await CookieManager.set('http://10.0.2.2', {
@@ -62,14 +72,12 @@ const LoginScreen = (): JSX.Element => {
         secure: false,
         httpOnly: true,
       });
-
       console.log('쿠키에 refreshToken 저장 성공');
     } catch (error) {
       console.error('쿠키에 refreshToken 저장 실패:', error);
     }
   };
 
-  // Android 13 이상 알림 권한 요청
   const requestNotificationPermission = async () => {
     if (Platform.OS === 'android' && Platform.Version >= 33) {
       const granted = await PermissionsAndroid.request(
@@ -80,7 +88,6 @@ const LoginScreen = (): JSX.Element => {
     return true;
   };
 
-  // 로그인 이후 FCM 토큰을 백엔드로 전송
   const sendFcmToken = async () => {
     try {
       const permissionGranted = await requestNotificationPermission();
@@ -92,7 +99,6 @@ const LoginScreen = (): JSX.Element => {
       await messaging().registerDeviceForRemoteMessages();
       const fcmToken = await messaging().getToken();
 
-      // FCM 토큰을 포함한 요청을 보낼 때 accessToken을 header에 포함
       const fcmResponse = await instance.post(`/members/fcmtoken`, {
         fcmToken,
       });
@@ -104,7 +110,6 @@ const LoginScreen = (): JSX.Element => {
     }
   };
 
-  // 로그인 요청 및 FCM 토큰 전송
   const onLogin = async () => {
     try {
       const response = await axios.post(`${localURL}/members/login`, {
@@ -117,75 +122,84 @@ const LoginScreen = (): JSX.Element => {
       const type = data.type;
 
       if (response.status === 200) {
-        // accessToken과 type을 EncryptedStorage에 저장
         await storeDataInEncryptedStorage(accessToken, type);
-
-        // refreshToken을 쿠키에 저장
         await storeRefreshTokenInCookie(refreshToken);
-
-        // accessToken을 포함해 FCM 토큰을 백엔드로 전송
         await sendFcmToken();
 
-        setIsLoggedIn(true); // 상태 관리 스토어에서 로그인 상태를 true로 설정
+        setIsLoggedIn(true);
+        showAlert('로그인 성공', '환영합니다!', () => {
+          setAlertVisible(false);
+        });
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          Alert.alert('아이디 혹은 비밀번호를 확인해주세요.');
+          showAlert('로그인 실패', '아이디 혹은 비밀번호를 확인해주세요.');
         } else {
-          Alert.alert('로그인 중 오류가 발생했습니다.');
+          showAlert('로그인 실패', '로그인 중 오류가 발생했습니다.');
         }
       } else {
-        Alert.alert('예상치 못한 오류가 발생했습니다.');
+        showAlert('오류', '예상치 못한 오류가 발생했습니다.');
       }
     }
   };
 
   return (
-    <View style={defaultStyle.container}>
-      <Image
-        source={require('../../assets/images/logo.png')}
-        style={loginStyle.logo}
-      />
-      <CustomText style={loginStyle.title}>봄 : 봄</CustomText>
-      <View style={loginStyle.longSpace} />
+    <>
+      <View style={defaultStyle.container}>
+        <Image
+          source={require('../../assets/images/logo.png')}
+          style={loginStyle.logo}
+        />
+        <CustomText style={loginStyle.title}>봄 : 봄</CustomText>
+        <View style={loginStyle.longSpace} />
 
-      <CustomTextInput
-        style={defaultStyle.input}
-        placeholder="아이디"
-        placeholderTextColor="#999999"
-        autoCapitalize="none"
-        value={loginId}
-        onChangeText={text => setLoginId(text)}
-      />
+        <CustomTextInput
+          style={defaultStyle.input}
+          placeholder="아이디"
+          placeholderTextColor="#999999"
+          autoCapitalize="none"
+          value={loginId}
+          onChangeText={text => setLoginId(text)}
+        />
 
-      <CustomTextInput
-        style={[defaultStyle.input, {flex: 1}]}
-        placeholder="비밀번호"
-        placeholderTextColor="#999999"
-        right={
-          <Icon
-            name={passwordVisible ? 'eye' : 'eye-off'}
-            onPress={() => setPasswordVisible(!passwordVisible)}
-            size={20}
-            color={'#bbb'}
-          />
-        }
-        secureTextEntry={!passwordVisible}
-        value={password}
-        onChangeText={text => setPassword(text)}
-      />
+        <CustomTextInput
+          style={[defaultStyle.input, {flex: 1}]}
+          placeholder="비밀번호"
+          placeholderTextColor="#999999"
+          right={
+            <Icon
+              name={passwordVisible ? 'eye' : 'eye-off'}
+              onPress={() => setPasswordVisible(!passwordVisible)}
+              size={20}
+              color={'#bbb'}
+            />
+          }
+          secureTextEntry={!passwordVisible}
+          value={password}
+          onChangeText={text => setPassword(text)}
+        />
 
-      <TouchableOpacity style={loginStyle.button} onPress={onLogin}>
-        <CustomText style={loginStyle.buttonText}>로그인</CustomText>
-      </TouchableOpacity>
-      <View style={loginStyle.space} />
-      <TouchableOpacity
-        style={[loginStyle.button, loginStyle.transparentButton]}
-        onPress={onPressJoin}>
-        <CustomText style={loginStyle.text}>아직 회원이 아니시라면?</CustomText>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity style={loginStyle.button} onPress={onLogin}>
+          <CustomText style={loginStyle.buttonText}>로그인</CustomText>
+        </TouchableOpacity>
+        <View style={loginStyle.space} />
+        <TouchableOpacity
+          style={[loginStyle.button, loginStyle.transparentButton]}
+          onPress={onPressJoin}>
+          <CustomText style={loginStyle.text}>
+            아직 회원이 아니시라면?
+          </CustomText>
+        </TouchableOpacity>
+      </View>
+
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={alertOnClose}
+      />
+    </>
   );
 };
 

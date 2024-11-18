@@ -8,3 +8,15 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# Firebase 관련 ProGuard 설정
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class com.google.** { *; }
+-dontwarn com.google.**
+
+# React Native 관련 ProGuard 설정
+-keep class com.facebook.** { *; }
+-dontwarn com.facebook.**
+-keep class androidx.** { *; }
+-dontwarn androidx.**

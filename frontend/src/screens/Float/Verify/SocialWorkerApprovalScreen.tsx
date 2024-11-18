@@ -1,13 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  FlatList,
-  Alert,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import {View, FlatList, TouchableOpacity, StyleSheet} from 'react-native';
 import CustomText from '../../../components/CustomText';
 import BackButton from '../../../components/BackButton';
+import CustomAlert from '../../../components/CustomAlert';
 import instance from '../../../api/axios';
 import defaultStyle from '../../../styles/DefaultStyle';
 
@@ -22,6 +17,26 @@ interface Request {
 
 const SocialWorkerApprovalScreen: React.FC = () => {
   const [requests, setRequests] = useState<Request[]>([]);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertOnClose, setAlertOnClose] = useState<() => void>(() => {});
+
+  // Alert 보여주기 함수
+  const showAlert = (title: string, message: string, onClose?: () => void) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+    setAlertOnClose(() => {
+      const closeModal = () => setAlertVisible(false);
+      return onClose
+        ? () => {
+            onClose();
+            closeModal();
+          }
+        : closeModal;
+    });
+  };
 
   // 데이터 가져오기 함수
   const fetchRequests = async () => {
@@ -30,7 +45,7 @@ const SocialWorkerApprovalScreen: React.FC = () => {
       setRequests(response.data);
     } catch (error) {
       console.error('Failed to fetch requests:', error);
-      Alert.alert('데이터를 불러오는 데 실패했습니다.');
+      showAlert('오류', '데이터를 불러오는 데 실패했습니다.');
     }
   };
 
@@ -42,12 +57,11 @@ const SocialWorkerApprovalScreen: React.FC = () => {
     try {
       const response = await instance.post(`/members/approve`, {id});
       if (response.status === 200) {
-        Alert.alert('승인 완료', '요청이 승인되었습니다.');
-        fetchRequests(); // 승인 후 리스트를 새로 고침
+        showAlert('승인 완료', '요청이 승인되었습니다.', fetchRequests);
       }
     } catch (error) {
       console.error('Failed to approve request:', error);
-      Alert.alert('승인 실패', '요청을 승인하는 중 오류가 발생했습니다.');
+      showAlert('승인 실패', '요청을 승인하는 중 오류가 발생했습니다.');
     }
   };
 
@@ -55,12 +69,11 @@ const SocialWorkerApprovalScreen: React.FC = () => {
     try {
       const response = await instance.post(`/members/reject`, {id});
       if (response.status === 200) {
-        Alert.alert('거절 완료', '요청이 거절되었습니다.');
-        fetchRequests(); // 거절 후 리스트를 새로 고침
+        showAlert('거절 완료', '요청이 거절되었습니다.', fetchRequests);
       }
     } catch (error) {
       console.error('Failed to reject request:', error);
-      Alert.alert('거절 실패', '요청을 거절하는 중 오류가 발생했습니다.');
+      showAlert('거절 실패', '요청을 거절하는 중 오류가 발생했습니다.');
     }
   };
 
@@ -90,16 +103,29 @@ const SocialWorkerApprovalScreen: React.FC = () => {
   );
 
   return (
-    <View style={defaultStyle.container}>
-      <BackButton />
-      <CustomText style={styles.title}>승인 요청 목록</CustomText>
-      <FlatList
-        data={requests}
-        renderItem={renderRequest}
-        keyExtractor={item => item.id.toString()}
-        contentContainerStyle={styles.listContainer}
+    <>
+      <View style={defaultStyle.container}>
+        <BackButton />
+        <CustomText style={styles.title}>승인 요청 목록</CustomText>
+        <FlatList
+          data={requests}
+          renderItem={renderRequest}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.listContainer}
+        />
+      </View>
+
+      {/* CustomAlert 추가 */}
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => {
+          alertOnClose(); // 사용자 정의 콜백 실행
+          setAlertVisible(false); // 모달 닫기
+        }}
       />
-    </View>
+    </>
   );
 };
 
@@ -152,7 +178,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 5, // 버튼 사이 여백 조정
+    marginHorizontal: 5,
   },
   approveButton: {
     backgroundColor: '#A8D98A',

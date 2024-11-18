@@ -1,5 +1,5 @@
-import React, {useState, useCallback, useEffect} from 'react';
-import {View, TouchableOpacity, Text, ScrollView, Alert} from 'react-native';
+import React, {useState, useCallback} from 'react';
+import {View, TouchableOpacity, ScrollView} from 'react-native';
 import {Calendar, LocaleConfig} from 'react-native-calendars';
 import {
   useNavigation,
@@ -19,6 +19,7 @@ import {
   MainStackParamList,
 } from '../../types/navigation.d';
 import ScheduleModal from '../components/ScheduleModal';
+import CustomAlert from '../components/CustomAlert';
 
 LocaleConfig.locales['ko'] = {
   monthNames: [
@@ -85,10 +86,20 @@ const PlanScreen = (): JSX.Element => {
     endAt: '',
     memo: '',
   });
+  const [alertState, setAlertState] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    onClose: () => {},
+  });
 
   const navigation = useNavigation<PlanToEnrollNavigationProp>();
   const route = useRoute<RouteProp<MainStackParamList, 'Plan'>>();
   const {seniorId} = route.params;
+
+  const showAlert = (title: string, message: string, onClose = () => {}) => {
+    setAlertState({visible: true, title, message, onClose});
+  };
 
   const onEnroll = () => {
     navigation.navigate('PlanEnroll', {seniorId});
@@ -116,44 +127,34 @@ const PlanScreen = (): JSX.Element => {
       await instance.patch(`/schedule/update`, editedSchedule, {
         params: {'schedule-id': selectedSchedule.scheduleId},
       });
-      await getInfo(currentYear, currentMonth);
+      await fetchSchedules(currentYear, currentMonth);
       closeModal();
+      showAlert('수정 성공', '일정이 성공적으로 수정되었습니다.');
     } catch (error) {
       console.error(error);
-      Alert.alert('수정 실패', '수정 중 문제가 발생했습니다.');
+      showAlert('수정 실패', '일정 수정 중 문제가 발생했습니다.');
     }
   };
 
   const handleDelete = async () => {
     if (!selectedSchedule) return;
 
-    Alert.alert(
-      '일정 삭제',
-      '이 일정을 삭제하시겠습니까?',
-      [
-        {text: '취소', style: 'cancel'},
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await instance.delete('/schedule/delete', {
-                params: {'schedule-id': selectedSchedule.scheduleId},
-              });
-              await getInfo(currentYear, currentMonth);
-              closeModal();
-            } catch (error) {
-              console.error(error);
-              Alert.alert('삭제 실패', '삭제 중 문제가 발생했습니다.');
-            }
-          },
-        },
-      ],
-      {cancelable: true},
-    );
+    showAlert('일정 삭제', '이 일정을 삭제하시겠습니까?', async () => {
+      try {
+        await instance.delete('/schedule/delete', {
+          params: {'schedule-id': selectedSchedule.scheduleId},
+        });
+        await fetchSchedules(currentYear, currentMonth);
+        closeModal();
+        showAlert('삭제 성공', '일정이 성공적으로 삭제되었습니다.');
+      } catch (error) {
+        console.error(error);
+        showAlert('삭제 실패', '일정 삭제 중 문제가 발생했습니다.');
+      }
+    });
   };
 
-  const getInfo = async (year: number, month: string) => {
+  const fetchSchedules = async (year: number, month: string) => {
     try {
       const response = await instance.get('/schedule', {
         params: {'senior-id': seniorId, year, month},
@@ -192,24 +193,26 @@ const PlanScreen = (): JSX.Element => {
       setMarkedDates(newMarkedDates);
       setScheduleDetails(scheduleData);
 
-      const updatedFilteredSchedules = scheduleData.filter(schedule => {
-        const startDate = schedule.startAt.split('T')[0];
-        const endDate = schedule.endAt.split('T')[0];
-        return selectedDate >= startDate && selectedDate <= endDate;
-      });
-      setFilteredSchedules(updatedFilteredSchedules);
+      if (selectedDate) {
+        setFilteredSchedules(filterSchedulesByDate(scheduleData, selectedDate));
+      }
     } catch (error) {
       console.error(error);
+      showAlert('오류', '일정을 불러오는 중 문제가 발생했습니다.');
     }
   };
 
-  const handleDayPress = (date: string) => {
-    setSelectedDate(date);
-    const filtered = scheduleDetails.filter(schedule => {
+  const filterSchedulesByDate = (schedules: Schedule[], date: string) => {
+    return schedules.filter(schedule => {
       const startDate = schedule.startAt.split('T')[0];
       const endDate = schedule.endAt.split('T')[0];
       return date >= startDate && date <= endDate;
     });
+  };
+
+  const handleDayPress = (date: string) => {
+    setSelectedDate(date);
+    const filtered = filterSchedulesByDate(scheduleDetails, date);
     setFilteredSchedules(filtered);
   };
 
@@ -221,13 +224,12 @@ const PlanScreen = (): JSX.Element => {
     setCurrentMonth(newMonth);
 
     setSelectedDate('');
-
-    getInfo(newYear, newMonth);
+    fetchSchedules(newYear, newMonth);
   };
 
   useFocusEffect(
     useCallback(() => {
-      getInfo(currentYear, currentMonth);
+      fetchSchedules(currentYear, currentMonth);
     }, [currentYear, currentMonth]),
   );
 
@@ -245,9 +247,10 @@ const PlanScreen = (): JSX.Element => {
           const year = date.getFullYear();
           const month = (date.getMonth() + 1).toString().padStart(2, '0');
           return (
-            <Text style={{fontSize: 18, fontFamily: getFontFamily('500')}}>
+            <CustomText
+              style={{fontSize: 18, fontFamily: getFontFamily('500')}}>
               {year}년 {month}월
-            </Text>
+            </CustomText>
           );
         }}
         markedDates={{
@@ -255,19 +258,19 @@ const PlanScreen = (): JSX.Element => {
           [selectedDate]: {
             ...markedDates[selectedDate],
             selected: true,
-            selectedColor: 'transparent',
+            selectedColor: '#1E90FF',
           },
         }}
         theme={{
           backgroundColor: 'white',
           calendarBackground: 'white',
-          todayTextColor: '#FF8C69',
-          selectedDayTextColor: '#1E90FF',
+          todayTextColor: '#FF4500',
+          selectedDayTextColor: '#FFFFFF',
           textDayFontFamily: getFontFamily('600'),
           textDayHeaderFontFamily: getFontFamily('600'),
-          arrowColor: '#FF8C69',
-          textSectionTitleColor: '#FF8C69',
-          textDayHeaderFontSize: 18,
+          arrowColor: '#FF4500',
+          textSectionTitleColor: '#000000',
+          textDayHeaderFontSize: 16,
         }}
       />
       {filteredSchedules.length > 0 && (
@@ -304,6 +307,12 @@ const PlanScreen = (): JSX.Element => {
           <CustomText style={PlanStyle.buttonText}>일정 등록</CustomText>
         </TouchableOpacity>
       </View>
+      <CustomAlert
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        onClose={alertState.onClose}
+      />
     </View>
   );
 };

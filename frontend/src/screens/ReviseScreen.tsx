@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import CustomText from '../components/CustomText';
 import CustomTextInput from '../components/CustomTextInput';
-import {View, TouchableOpacity, Alert} from 'react-native';
+import {View, TouchableOpacity} from 'react-native';
 import instance from '../api/axios';
 import BackButton from '../components/BackButton';
 import LogoutButton from '../components/LogoutButton';
@@ -10,6 +10,7 @@ import ReviseStyle from '../styles/ReviseStyle';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {MainStackParamList} from '../../types/navigation.d';
 import {formatPhoneNumber, formatBirth} from '../utils/Format';
+import CustomAlert from '../components/CustomAlert';
 
 type ReviseScreenRouteProp = RouteProp<MainStackParamList, 'Revise'>;
 
@@ -25,6 +26,18 @@ const ReviseScreen = () => {
   );
   const [birth, setBirth] = useState(formatBirth(detail.birth));
   const [gender, setGender] = useState(detail.gender);
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertOnClose, setAlertOnClose] = useState<() => void>(() => {});
+
+  const showAlert = (title: string, message: string, onClose?: () => void) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertOnClose(() => onClose || (() => setAlertVisible(false)));
+    setAlertVisible(true);
+  };
 
   const onSave = async () => {
     try {
@@ -42,11 +55,15 @@ const ReviseScreen = () => {
         },
       );
       if (response.status === 200) {
-        Alert.alert('저장이 완료되었습니다.');
-        navigation.goBack();
+        showAlert('저장 완료', '어르신 정보가 성공적으로 수정되었습니다.', () =>
+          navigation.goBack(),
+        );
       }
     } catch {
-      Alert.alert('저장 중 문제가 발생하였습니다.');
+      showAlert(
+        '저장 실패',
+        '어르신 정보를 저장하는 중 문제가 발생하였습니다.',
+      );
     }
   };
 
@@ -122,6 +139,14 @@ const ReviseScreen = () => {
       <TouchableOpacity style={ReviseStyle.button} onPress={onSave}>
         <CustomText style={ReviseStyle.buttonText}>저 장</CustomText>
       </TouchableOpacity>
+
+      {/* CustomAlert 추가 */}
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={alertOnClose}
+      />
     </View>
   );
 };
