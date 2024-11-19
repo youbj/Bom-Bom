@@ -27,7 +27,7 @@
 #### **Backend**  
 | Tool           | Version                 |  
 |----------------|-------------------------|  
-| Java           | openjdk 17.0.12 2024-07-16 |  
+| Java           | 17.0.11 2024-04-16 |  
 | Spring Boot    | 3.3.5                   |  
 | Python (LLM)   | 3.11.0                  |  
 | Python (AI - ViT) | 3.8.0               |  
