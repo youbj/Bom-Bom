@@ -12,7 +12,7 @@
 - **DataGrip**: 2024.1.4  
 
 ### 외부 서비스  
-- **Open AI (chat gpt API)**  
+- **OpenAI (chat gpt API)**: 심리 상담을 위한 Agent 활용을 위해 gpt-4o API 활용 
 
 ### 개발 환경  
 
