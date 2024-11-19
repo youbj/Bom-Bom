@@ -115,7 +115,6 @@
 
 **credentials 설정**
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/b8ec115f-7676-434f-b3a7-2b242096da07/99c40e34-6d0f-4078-87fe-552d775adbf0/image.png)
 
 *   GitLab Token 등록
 *   Docker hub 로그인 정보 등록
