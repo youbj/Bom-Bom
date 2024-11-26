@@ -88,7 +88,7 @@
     AWS_S3_BUCKET_REGION=ap-northeast-2
     AWS_S3_BUCKET_NAME=jungkkiri
     MYSQL_URL=jdbc:mysql://k11a202.p.ssafy.io:3306/ssafy
-    MYSQL_USER=ssafy
+    MYSQL_USER=
     MYSQL_PASSWORD=
     REDIS_URL=k11a202.p.ssafy.io
     FIREBASE_JSON_PATH=firebase-service-account.json
@@ -421,7 +421,7 @@
         jenkins:
             image: jenkins_docker:latest
             container_name: jenkins
-            user: root
+            user:
             volumes:
             - ./jenkins:/var/jenkins_home
             - /var/run/docker.sock:/var/run/docker.sock
@@ -448,10 +448,10 @@
             container_name: mysql
             environment:
             - TZ=Asia/Seoul
-            - MYSQL_ROOT_PASSWORD=Hot&6Man!A606
+            - MYSQL_ROOT_PASSWORD=
             - MYSQL_DATABASE=ssafy
-            - MYSQL_USER=ssafy
-            - MYSQL_PASSWORD=ssafy
+            - MYSQL_USER=
+            - MYSQL_PASSWORD=
             volumes:
             - /home/ubuntu/yongsoo/deploy/0/mysql:/var/lib/mysql
             - ./mysql-init-files/:/docker-entrypoint-initdb.d
@@ -469,8 +469,8 @@
             image: phpmyadmin/phpmyadmin:latest
             container_name: phpmyadmin
             environment:
-            PMA_HOST: mysql
-            MYSQL_ROOT_PASSWORD: Hot&6Man!A606
+            PMA_HOST: 
+            MYSQL_ROOT_PASSWORD: H
             ports:
             - '3366:80'
             restart: always
